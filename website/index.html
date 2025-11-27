@@ -3,89 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MrktDly - Daily Market Education</title>
+    <title>MrktDly - Daily Market Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen">
-    <div class="container mx-auto px-6 py-20">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-6xl md:text-7xl font-bold text-white mb-6">
-                Market Education<br>
-                <span class="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                    In 60 Seconds
-                </span>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div class="container mx-auto px-6 py-8 max-w-5xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">
+                MrktDly
             </h1>
-            
-            <p class="text-xl md:text-2xl text-gray-300 mb-8">
-                Every weekday at 8 AM ET: A fast-paced video breaking down what moved overnight, 
-                key educational concepts, and levels to watch.
-            </p>
-            
-            <div class="flex items-center justify-center gap-4 mb-12">
+            <p class="text-gray-400" id="dateDisplay">Loading...</p>
+            <div class="flex items-center justify-center gap-4 mt-4">
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-gray-400">Educational Content Only</span>
+                    <span class="text-gray-400 text-sm">Educational Content Only</span>
                 </div>
                 <div class="text-gray-600">•</div>
-                <div class="text-gray-400">Not Financial Advice</div>
+                <div class="text-gray-400 text-sm">Free Daily Analysis</div>
             </div>
+        </header>
 
-            <div class="max-w-md mx-auto">
-                <form id="waitlistForm" class="flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Enter your email"
-                        required
-                        class="flex-1 px-6 py-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                        type="submit"
-                        id="submitBtn"
-                        class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
-                    >
-                        Join Waitlist
-                    </button>
-                </form>
-                
-                <p id="message" class="mt-4 text-sm"></p>
-                
-                <p class="mt-4 text-sm text-gray-500">
-                    Launching soon. Be among the first to get daily market education.
+        <!-- Waitlist CTA -->
+        <div class="bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/30 rounded-xl p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-3 text-center">Get Daily Analysis in Your Inbox</h2>
+            <p class="text-gray-300 text-center mb-4">Join the waitlist to receive this analysis via email every morning at 8 AM ET</p>
+            <form id="waitlistForm" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                    class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                >
+                    Join Free
+                </button>
+            </form>
+            <p id="message" class="mt-3 text-sm text-center"></p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="text-gray-400 mt-4">Loading today's analysis...</p>
+        </div>
+
+        <!-- Content -->
+        <div id="content" class="hidden space-y-6">
+            <!-- Market Overview -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📊 Market Overview</h2>
+                <p class="text-gray-300 leading-relaxed" id="marketOverview"></p>
+            </section>
+
+            <!-- Market Insights -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">💡 Market Insights</h2>
+                <ul class="space-y-3 text-gray-300" id="marketInsights"></ul>
+            </section>
+
+            <!-- Levels to Watch -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🎯 Levels to Watch</h2>
+                <div class="space-y-3" id="levelsToWatch"></div>
+            </section>
+
+            <!-- Unusual Activity -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6" id="unusualSection">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Unusual Activity</h2>
+                <div class="space-y-3" id="unusualActivity"></div>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
+                <p class="text-sm text-yellow-200 text-center">
+                    <strong>EDUCATIONAL CONTENT ONLY:</strong> This content is for educational purposes only and does not constitute 
+                    financial advice, investment recommendations, or an offer to buy or sell securities. Always conduct your own 
+                    research and consult with a licensed financial advisor before making investment decisions.
                 </p>
             </div>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 mt-24 max-w-5xl mx-auto">
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8">
-                <div class="text-4xl mb-4">⚡</div>
-                <h3 class="text-xl font-semibold text-white mb-3">60-Second Format</h3>
-                <p class="text-gray-400">Fast-paced, zero fluff. Get the key insights before market open.</p>
-            </div>
-            
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8">
-                <div class="text-4xl mb-4">📚</div>
-                <h3 class="text-xl font-semibold text-white mb-3">Educational Focus</h3>
-                <p class="text-gray-400">Learn trading concepts, patterns, and market dynamics daily.</p>
-            </div>
-            
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8">
-                <div class="text-4xl mb-4">📊</div>
-                <h3 class="text-xl font-semibold text-white mb-3">Key Levels</h3>
-                <p class="text-gray-400">Technical levels to watch on SPY, QQQ, and major stocks.</p>
-            </div>
-        </div>
-
-        <div class="mt-20 max-w-3xl mx-auto p-6 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
-            <p class="text-sm text-yellow-200 text-center">
-                <strong>EDUCATIONAL CONTENT ONLY:</strong> This platform provides educational market commentary and analysis. 
-                It does not constitute financial advice, investment recommendations, or an offer to buy or sell securities. 
-                Always conduct your own research and consult with a licensed financial advisor before making investment decisions.
-            </p>
+        <!-- Error State -->
+        <div id="error" class="hidden text-center py-20">
+            <p class="text-red-400 text-xl">Failed to load today's analysis</p>
+            <p class="text-gray-400 mt-2">Please try again later</p>
         </div>
     </div>
 
     <script>
+        // Waitlist form
         document.getElementById('waitlistForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -105,20 +117,101 @@
                 });
                 
                 if (response.ok) {
-                    msg.className = 'mt-4 text-sm text-green-400';
-                    msg.textContent = '✓ You\'re on the list! We\'ll email you when we launch.';
+                    msg.className = 'mt-3 text-sm text-center text-green-400';
+                    msg.textContent = '✓ You\'re on the list! We\'ll email you daily at 8 AM ET.';
                     document.getElementById('email').value = '';
                 } else {
                     throw new Error('Failed');
                 }
             } catch (error) {
-                msg.className = 'mt-4 text-sm text-red-400';
+                msg.className = 'mt-3 text-sm text-center text-red-400';
                 msg.textContent = 'Something went wrong. Please try again.';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Join Waitlist';
+                btn.textContent = 'Join Free';
             }
         });
+
+        // Load analysis
+        async function loadAnalysis() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // For now, fetch from DynamoDB via a simple API endpoint
+                // You'll need to create this endpoint or use the data directly
+                const response = await fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/analysis?date=${today}`);
+                
+                if (!response.ok) throw new Error('No data');
+                
+                const data = await response.json();
+                displayAnalysis(data.analysis);
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+
+        function displayAnalysis(analysis) {
+            // Date
+            document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Market Overview
+            document.getElementById('marketOverview').textContent = analysis.market_overview;
+
+            // Market Insights
+            const insightsList = document.getElementById('marketInsights');
+            analysis.market_insights.forEach(insight => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `<span class="text-blue-400 mr-2">•</span><span>${insight}</span>`;
+                insightsList.appendChild(li);
+            });
+
+            // Levels to Watch
+            const levelsDiv = document.getElementById('levelsToWatch');
+            analysis.levels_to_watch.forEach(level => {
+                const div = document.createElement('div');
+                div.className = 'bg-[#252a3a] rounded-lg p-4';
+                div.innerHTML = `
+                    <div class="font-semibold text-blue-400 text-lg mb-2">${level.symbol} - $${level.level}</div>
+                    <div class="text-gray-300 text-sm leading-relaxed">${level.note}</div>
+                `;
+                levelsDiv.appendChild(div);
+            });
+
+            // Unusual Activity
+            const unusualDiv = document.getElementById('unusualActivity');
+            if (analysis.unusual_activity && analysis.unusual_activity.length > 0) {
+                analysis.unusual_activity.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-[#252a3a] rounded-lg p-4';
+                    const moveColor = parseFloat(item.move) >= 0 ? 'text-green-400' : 'text-red-400';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-semibold text-orange-400 text-lg">${item.symbol}</span>
+                            <span class="${moveColor} font-semibold">${item.move > 0 ? '+' : ''}${item.move}%</span>
+                        </div>
+                        <div class="text-gray-300 text-sm">${item.note}</div>
+                    `;
+                    unusualDiv.appendChild(div);
+                });
+            } else {
+                document.getElementById('unusualSection').classList.add('hidden');
+            }
+
+            // Show content
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+        }
+
+        // Load on page load
+        loadAnalysis();
     </script>
 </body>
 </html>

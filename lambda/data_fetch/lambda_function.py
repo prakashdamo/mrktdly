@@ -3,6 +3,7 @@ import os
 import boto3
 import urllib.request
 from datetime import datetime, timezone
+from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('mrktdly-data')
@@ -15,12 +16,16 @@ def lambda_handler(event, context):
     # Fetch market data (using free Yahoo Finance API)
     market_data = fetch_market_data()
     
+    # Fetch news
+    news = fetch_news()
+    
     # Store in DynamoDB
     table.put_item(Item={
         'pk': f'DATA#{date_key}',
         'sk': 'MARKET',
         'date': date_key,
         'market_data': market_data,
+        'news': news,
         'timestamp': datetime.now(timezone.utc).isoformat()
     })
     
@@ -28,25 +33,131 @@ def lambda_handler(event, context):
 
 def fetch_market_data():
     """Fetch key market data from Yahoo Finance"""
-    symbols = ['SPY', 'QQQ', 'NVDA', 'TSLA', 'AAPL']
+    # Core indices and ETFs
+    symbols = ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']
+    futures = ['ES=F', 'NQ=F', 'YM=F', 'RTY=F', 'CL=F', 'GC=F', 'SI=F', 'NG=F']
+    
+    # Mega cap tech (Magnificent 7 + key tech)
+    mega_tech = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'TSLA', 'AVGO', 'ORCL', 'ADBE', 'CRM', 'NFLX', 'AMD', 'INTC']
+    
+    # Semiconductors
+    semis = ['TSM', 'ASML', 'QCOM', 'TXN', 'MU', 'AMAT', 'LRCX', 'KLAC', 'MRVL', 'ARM', 'MCHP', 'ON']
+    
+    # AI/Cloud/Software
+    ai_cloud = ['PLTR', 'SNOW', 'DDOG', 'NET', 'CRWD', 'ZS', 'PANW', 'WDAY', 'NOW', 'TEAM', 'MDB', 'HUBS']
+    
+    # Financials
+    financials = ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'BLK', 'SCHW', 'AXP', 'V', 'MA', 'PYPL', 'SQ', 'COIN', 'HOOD']
+    
+    # Healthcare/Biotech
+    healthcare = ['UNH', 'JNJ', 'LLY', 'ABBV', 'MRK', 'TMO', 'ABT', 'PFE', 'DHR', 'BMY', 'AMGN', 'GILD', 'VRTX', 'REGN']
+    
+    # Consumer/Retail
+    consumer = ['AMZN', 'WMT', 'COST', 'HD', 'TGT', 'LOW', 'NKE', 'SBUX', 'MCD', 'DIS', 'BKNG', 'ABNB']
+    
+    # Energy
+    energy = ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO', 'OXY', 'HAL']
+    
+    # Industrials/Aerospace
+    industrials = ['BA', 'CAT', 'GE', 'RTX', 'LMT', 'HON', 'UPS', 'UNP', 'DE', 'MMM']
+    
+    # EV/Auto
+    ev_auto = ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI']
+    
+    # Crypto-related
+    crypto = ['COIN', 'MSTR', 'RIOT', 'MARA', 'CLSK', 'HOOD']
+    
+    # Meme/High volatility
+    meme = ['GME', 'AMC', 'BBBY', 'APE']
+    
+    # Small cap leaders
+    small_caps = ['RKLB', 'IONQ', 'SMCI', 'APP', 'CVNA', 'UPST', 'SOFI', 'AFRM']
+    
+    # Combine and deduplicate
+    all_tickers = list(set(
+        symbols + futures + mega_tech + semis + ai_cloud + financials + 
+        healthcare + consumer + energy + industrials + ev_auto + crypto + 
+        meme + small_caps
+    ))
+    
     data = {}
     
-    for symbol in symbols:
+    # Fetch all tickers
+    for symbol in all_tickers:
         try:
-            url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=2d'
+            url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d'
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=10) as response:
                 result = json.loads(response.read())
                 quote = result['chart']['result'][0]
                 meta = quote['meta']
                 
+                # Get historical closes
+                closes = quote['indicators']['quote'][0].get('close', [])
+                
+                # Filter out None values and get last two valid closes
+                valid_closes = [c for c in closes if c is not None and c > 0]
+                
+                if len(valid_closes) >= 2:
+                    current_price = valid_closes[-1]  # Most recent close
+                    prev_close = valid_closes[-2]     # Previous day close
+                elif len(valid_closes) == 1:
+                    current_price = valid_closes[-1]
+                    prev_close = meta.get('previousClose', valid_closes[-1])
+                else:
+                    current_price = meta.get('regularMarketPrice', 0)
+                    prev_close = meta.get('previousClose', current_price)
+                
+                change = round(current_price - prev_close, 2)
+                change_pct = round((change / prev_close) * 100, 2) if prev_close > 0 else 0
+                
                 data[symbol] = {
-                    'price': round(meta['regularMarketPrice'], 2),
-                    'change': round(meta['regularMarketPrice'] - meta['previousClose'], 2),
-                    'change_percent': round(((meta['regularMarketPrice'] - meta['previousClose']) / meta['previousClose']) * 100, 2)
+                    'price': Decimal(str(round(current_price, 2))),
+                    'change': Decimal(str(change)),
+                    'change_percent': Decimal(str(change_pct))
                 }
+                print(f'{symbol}: ${current_price:.2f} (prev: ${prev_close:.2f}, change: {change_pct:.2f}%)')
         except Exception as e:
             print(f'Error fetching {symbol}: {e}')
-            data[symbol] = {'price': 0, 'change': 0, 'change_percent': 0}
+            data[symbol] = {'price': Decimal('0'), 'change': Decimal('0'), 'change_percent': Decimal('0')}
     
+    print(f'Successfully fetched {len([v for v in data.values() if v["price"] > 0])} out of {len(all_tickers)} tickers')
     return data
+
+def fetch_news():
+    """Fetch top 5 finance news from Yahoo Finance"""
+    try:
+        url = 'https://finance.yahoo.com/news/'
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            html = response.read().decode('utf-8')
+            
+        # Simple parsing for news items
+        news_items = []
+        import re
+        
+        # Look for news article patterns in Yahoo Finance
+        pattern = r'<h3[^>]*><a[^>]*href="([^"]*)"[^>]*>([^<]+)</a></h3>'
+        matches = re.findall(pattern, html)
+        
+        for url, title in matches[:5]:
+            if url.startswith('/'):
+                url = f'https://finance.yahoo.com{url}'
+            news_items.append({'title': title, 'url': url})
+        
+        print(f'Fetched {len(news_items)} news items')
+        return news_items if news_items else get_fallback_news()
+        
+    except Exception as e:
+        print(f'Error fetching news: {e}')
+        return get_fallback_news()
+
+def get_fallback_news():
+    """Fallback news if fetch fails"""
+    return [
+        {'title': 'Market Update: Check Yahoo Finance for latest news', 'url': 'https://finance.yahoo.com'},
+        {'title': 'Economic Calendar: Monitor key data releases', 'url': 'https://finance.yahoo.com/calendar'},
+        {'title': 'Earnings Reports: Track company earnings', 'url': 'https://finance.yahoo.com/calendar/earnings'},
+        {'title': 'Market Analysis: Review technical indicators', 'url': 'https://finance.yahoo.com'},
+        {'title': 'Trading Education: Continue learning market fundamentals', 'url': 'https://finance.yahoo.com'}
+    ]

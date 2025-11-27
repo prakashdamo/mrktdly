@@ -17,7 +17,9 @@ def lambda_handler(event, context):
     try:
         response = table.get_item(Key={'pk': f'DATA#{date_key}', 'sk': 'ANALYSIS'})
         analysis = response['Item']['analysis']
+        print(f"Retrieved analysis: {json.dumps(analysis, default=str)}")
     except Exception as e:
+        print(f"Error fetching analysis: {e}")
         return {'statusCode': 404, 'body': json.dumps(f'No analysis for {date_key}')}
     
     # Get waitlist emails
@@ -42,6 +44,41 @@ def send_email(email, analysis, date_key):
     """Send educational market analysis email"""
     
     date_str = datetime.strptime(date_key, '%Y-%m-%d').strftime('%B %d, %Y')
+    
+    # Validate analysis structure
+    if not isinstance(analysis, dict):
+        raise ValueError(f"Analysis is not a dict: {type(analysis)}")
+    
+    required_keys = ['market_overview', 'market_insights', 'levels_to_watch']
+    for key in required_keys:
+        if key not in analysis:
+            raise ValueError(f"Missing required key: {key}")
+    
+    # Build dynamic content sections
+    insights_html = ''.join([f'<li style="margin-bottom: 10px;">{insight}</li>' for insight in analysis['market_insights']])
+    
+    # Handle levels_to_watch as either strings or objects
+    levels_html = ''
+    for level in analysis['levels_to_watch']:
+        if isinstance(level, dict):
+            levels_html += (
+                f'<div style="background: #252a3a; padding: 15px; border-radius: 8px; margin-bottom: 10px;">'
+                f'<strong style="color: #4a9eff; font-size: 16px;">{level.get("symbol", "")}</strong> - {level.get("level", "")}'
+                f'<p style="color: #aaaaaa; margin: 5px 0 0; font-size: 14px;">{level.get("note", "")}</p></div>'
+            )
+        else:
+            levels_html += f'<div style="background: #252a3a; padding: 15px; border-radius: 8px; margin-bottom: 10px; color: #cccccc; font-size: 15px; line-height: 1.6;">{level}</div>'
+    
+    # Build unusual activity section if present
+    unusual_html = ''
+    if 'unusual_activity' in analysis and analysis['unusual_activity']:
+        for item in analysis['unusual_activity']:
+            unusual_html += (
+                f'<div style="background: #252a3a; padding: 15px; border-radius: 8px; margin-bottom: 10px;">'
+                f'<strong style="color: #ffa500; font-size: 16px;">{item.get("symbol", "")}</strong> '
+                f'<span style="color: #4a9eff;">{item.get("move", "")}%</span>'
+                f'<p style="color: #cccccc; margin: 5px 0 0; font-size: 14px;">{item.get("note", "")}</p></div>'
+            )
     
     html_body = f"""
 <!DOCTYPE html>
@@ -71,12 +108,12 @@ def send_email(email, analysis, date_key):
                         </td>
                     </tr>
                     
-                    <!-- Educational Concepts -->
+                    <!-- Market Insights -->
                     <tr>
                         <td style="padding: 20px 40px;">
-                            <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">📚 Educational Focus</h2>
+                            <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">💡 Market Insights</h2>
                             <ul style="color: #cccccc; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                                {''.join([f'<li style="margin-bottom: 10px;">{concept}</li>' for concept in analysis['educational_concepts']])}
+                                {insights_html}
                             </ul>
                         </td>
                     </tr>
@@ -85,19 +122,12 @@ def send_email(email, analysis, date_key):
                     <tr>
                         <td style="padding: 20px 40px;">
                             <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Levels to Watch</h2>
-                            {''.join([f'<div style="background: #252a3a; padding: 15px; border-radius: 8px; margin-bottom: 10px;"><strong style="color: #4a9eff; font-size: 16px;">{level.get("symbol", "")}</strong> - {level.get("level", "")}<p style="color: #aaaaaa; margin: 5px 0 0; font-size: 14px;">{level.get("note", "")}</p></div>' for level in analysis['levels_to_watch']])}
+                            {levels_html}
                         </td>
                     </tr>
                     
-                    <!-- Risk Factors -->
-                    <tr>
-                        <td style="padding: 20px 40px;">
-                            <h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">⚠️ Risk Factors</h2>
-                            <ul style="color: #cccccc; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                                {''.join([f'<li style="margin-bottom: 10px;">{risk}</li>' for risk in analysis['risk_factors']])}
-                            </ul>
-                        </td>
-                    </tr>
+                    <!-- Unusual Activity (if present) -->
+                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🔥 Unusual Activity</h2>' + unusual_html + '</td></tr>' if unusual_html else ''}
                     
                     <!-- Disclaimer -->
                     <tr>
