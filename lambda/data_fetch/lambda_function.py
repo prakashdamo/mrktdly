@@ -92,11 +92,17 @@ def fetch_market_data():
                 quote = result['chart']['result'][0]
                 meta = quote['meta']
                 
-                # Get historical closes
+                # Get historical closes and other data
                 closes = quote['indicators']['quote'][0].get('close', [])
+                highs = quote['indicators']['quote'][0].get('high', [])
+                lows = quote['indicators']['quote'][0].get('low', [])
+                volumes = quote['indicators']['quote'][0].get('volume', [])
                 
                 # Filter out None values and get last two valid closes
                 valid_closes = [c for c in closes if c is not None and c > 0]
+                valid_highs = [h for h in highs if h is not None and h > 0]
+                valid_lows = [l for l in lows if l is not None and l > 0]
+                valid_volumes = [v for v in volumes if v is not None and v > 0]
                 
                 if len(valid_closes) >= 2:
                     current_price = valid_closes[-1]  # Most recent close
@@ -108,18 +114,39 @@ def fetch_market_data():
                     current_price = meta.get('regularMarketPrice', 0)
                     prev_close = meta.get('previousClose', current_price)
                 
+                # Get high/low/volume for today
+                today_high = valid_highs[-1] if valid_highs else current_price
+                today_low = valid_lows[-1] if valid_lows else current_price
+                today_volume = valid_volumes[-1] if valid_volumes else 0
+                avg_volume = sum(valid_volumes[-10:]) / len(valid_volumes[-10:]) if len(valid_volumes) >= 10 else today_volume
+                
+                # Calculate 5-day high/low
+                high_5d = max(valid_highs[-5:]) if len(valid_highs) >= 5 else today_high
+                low_5d = min(valid_lows[-5:]) if len(valid_lows) >= 5 else today_low
+                
                 change = round(current_price - prev_close, 2)
                 change_pct = round((change / prev_close) * 100, 2) if prev_close > 0 else 0
                 
                 data[symbol] = {
                     'price': Decimal(str(round(current_price, 2))),
                     'change': Decimal(str(change)),
-                    'change_percent': Decimal(str(change_pct))
+                    'change_percent': Decimal(str(change_pct)),
+                    'high': Decimal(str(round(today_high, 2))),
+                    'low': Decimal(str(round(today_low, 2))),
+                    'volume': int(today_volume),
+                    'avg_volume': int(avg_volume),
+                    'high_5d': Decimal(str(round(high_5d, 2))),
+                    'low_5d': Decimal(str(round(low_5d, 2))),
+                    'prev_close': Decimal(str(round(prev_close, 2)))
                 }
                 print(f'{symbol}: ${current_price:.2f} (prev: ${prev_close:.2f}, change: {change_pct:.2f}%)')
         except Exception as e:
             print(f'Error fetching {symbol}: {e}')
-            data[symbol] = {'price': Decimal('0'), 'change': Decimal('0'), 'change_percent': Decimal('0')}
+            data[symbol] = {
+                'price': Decimal('0'), 'change': Decimal('0'), 'change_percent': Decimal('0'),
+                'high': Decimal('0'), 'low': Decimal('0'), 'volume': 0, 'avg_volume': 0,
+                'high_5d': Decimal('0'), 'low_5d': Decimal('0'), 'prev_close': Decimal('0')
+            }
     
     print(f'Successfully fetched {len([v for v in data.values() if v["price"] > 0])} out of {len(all_tickers)} tickers')
     return data

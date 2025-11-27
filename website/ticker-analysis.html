@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticker Analysis - Daily Market Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div class="container mx-auto px-6 py-8 max-w-5xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-block">← Back to Daily Summary</a>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-2" id="tickerTitle">
+                Loading...
+            </h1>
+            <div class="flex items-center gap-4 text-gray-400" id="tickerStats"></div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+            <p class="text-gray-400 mt-4">Analyzing ticker...</p>
+        </div>
+
+        <!-- Content -->
+        <div id="content" class="hidden space-y-6">
+            <!-- Price Action -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📊 Price Action Summary</h2>
+                <p class="text-gray-300 leading-relaxed" id="priceAction"></p>
+            </section>
+
+            <!-- Technical Analysis -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📈 Technical Analysis</h2>
+                <ul class="space-y-3 text-gray-300" id="technicalAnalysis"></ul>
+            </section>
+
+            <!-- Key Levels -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">🎯 Key Levels to Watch</h2>
+                <div class="space-y-3" id="keyLevels"></div>
+            </section>
+
+            <!-- Trading Considerations -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">💡 Trading Considerations</h2>
+                <ul class="space-y-3 text-gray-300" id="tradingConsiderations"></ul>
+            </section>
+
+            <!-- Risk Assessment -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">⚠️ Risk Assessment</h2>
+                <ul class="space-y-3 text-gray-300" id="riskAssessment"></ul>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
+                <p class="text-sm text-yellow-200 text-center">
+                    <strong>EDUCATIONAL CONTENT ONLY:</strong> This analysis is for educational purposes only and does not constitute 
+                    financial advice, investment recommendations, or an offer to buy or sell securities. Always conduct your own 
+                    research and consult with a licensed financial advisor before making investment decisions.
+                </p>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden text-center py-20">
+            <p class="text-red-400 text-xl">Unable to load analysis</p>
+            <p class="text-gray-400 mt-2">Please try again</p>
+            <a href="/" class="mt-4 inline-block text-blue-400 hover:text-blue-300">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        function displayAnalysis() {
+            const data = JSON.parse(sessionStorage.getItem('tickerAnalysis'));
+            
+            if (!data) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+                return;
+            }
+
+            const { ticker, data: tickerData, analysis } = data;
+
+            // Title and stats
+            const changeColor = tickerData.change >= 0 ? 'text-green-400' : 'text-red-400';
+            document.getElementById('tickerTitle').textContent = `${ticker} Analysis`;
+            document.getElementById('tickerStats').innerHTML = `
+                <span class="text-3xl font-bold">$${tickerData.price}</span>
+                <span class="${changeColor} font-semibold">${tickerData.change >= 0 ? '+' : ''}${tickerData.change} (${tickerData.change_percent}%)</span>
+                <span class="text-gray-500">|</span>
+                <span>Vol: ${tickerData.volume.toLocaleString()}</span>
+                <span class="text-gray-500">|</span>
+                <span>52W: $${tickerData.low_52w} - $${tickerData.high_52w}</span>
+            `;
+
+            // Price Action
+            document.getElementById('priceAction').textContent = analysis.price_action;
+
+            // Technical Analysis
+            const techList = document.getElementById('technicalAnalysis');
+            analysis.technical_analysis.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `<span class="text-purple-400 mr-2">•</span><span>${item}</span>`;
+                techList.appendChild(li);
+            });
+
+            // Key Levels
+            const levelsDiv = document.getElementById('keyLevels');
+            analysis.key_levels.forEach(level => {
+                const div = document.createElement('div');
+                div.className = 'bg-[#252a3a] rounded-lg p-4';
+                div.innerHTML = `
+                    <div class="font-semibold text-purple-400 text-lg mb-2">$${level.level}</div>
+                    <div class="text-gray-300 text-sm">${level.note}</div>
+                `;
+                levelsDiv.appendChild(div);
+            });
+
+            // Trading Considerations
+            const tradingList = document.getElementById('tradingConsiderations');
+            analysis.trading_considerations.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `<span class="text-blue-400 mr-2">•</span><span>${item}</span>`;
+                tradingList.appendChild(li);
+            });
+
+            // Risk Assessment
+            const riskList = document.getElementById('riskAssessment');
+            analysis.risk_assessment.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start';
+                li.innerHTML = `<span class="text-yellow-400 mr-2">⚠</span><span>${item}</span>`;
+                riskList.appendChild(li);
+            });
+
+            // Show content
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+        }
+
+        // Load on page load
+        displayAnalysis();
+    </script>
+</body>
+</html>
