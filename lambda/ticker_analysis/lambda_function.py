@@ -163,25 +163,39 @@ def fetch_ticker_data(symbol):
 def generate_ticker_analysis(ticker, data):
     """Generate comprehensive analysis using Bedrock"""
     
+    # Calculate trend explicitly
+    price = data['price']
+    ma_20 = data['ma_20']
+    ma_50 = data['ma_50']
+    
+    trend_vs_ma20 = "ABOVE" if price > ma_20 else "BELOW"
+    trend_vs_ma50 = "ABOVE" if price > ma_50 else "BELOW"
+    trend_direction = "bullish" if price > ma_20 and price > ma_50 else "bearish" if price < ma_20 and price < ma_50 else "mixed"
+    
     prompt = f"""You are a senior equity analyst with 20+ years of experience. Analyze {ticker} using this data:
 
-Price: ${data['price']} (prev ${data['prev_close']}, {data['change_percent']:+.2f}%)
+Price: ${price} (prev ${data['prev_close']}, {data['change_percent']:+.2f}%)
 Range: Today ${data['low']}-${data['high']}, 5d ${data['low_5d']}-${data['high_5d']}, 52w ${data['low_52w']}-${data['high_52w']}
-MAs: 20d ${data['ma_20']}, 50d ${data['ma_50']}
+MAs: 20d ${ma_20}, 50d ${ma_50}
 Volume: {data['volume']:,} (avg {data['avg_volume']:,})
+
+CRITICAL - Price vs Moving Averages:
+- Price ${price} is {trend_vs_ma20} 20-day MA ${ma_20} ({"bullish" if trend_vs_ma20 == "ABOVE" else "bearish"})
+- Price ${price} is {trend_vs_ma50} 50-day MA ${ma_50} ({"bullish" if trend_vs_ma50 == "ABOVE" else "bearish"})
+- Overall trend: {trend_direction}
 
 Provide JSON with:
 
 1. price_action: 2-3 sentences on current position, momentum, and key level proximity
-   Example: "{ticker} at ${data['price']}, up {data['change_percent']}% from ${data['prev_close']}. Trading near 52w high of ${data['high_52w']}, showing strong momentum. Price above both 20d MA (${data['ma_20']}) and 50d MA (${data['ma_50']}), confirming uptrend."
+   Example: "{ticker} at ${price}, {"up" if data['change_percent'] > 0 else "down"} {abs(data['change_percent']):.2f}% from ${data['prev_close']}. Trading {"near" if abs(price - data['high_52w']) < 10 else "below"} 52w high of ${data['high_52w']}. Price is {trend_vs_ma20} 20d MA (${ma_20}) and {trend_vs_ma50} 50d MA (${ma_50}), indicating {trend_direction} trend."
 
 2. technical_analysis: 5 bullet points covering:
-   - Price vs MAs (trend direction and strength)
+   - Price vs MAs: "Price ${price} is {trend_vs_ma20} 20d MA ${ma_20} and {trend_vs_ma50} 50d MA ${ma_50} - {trend_direction} trend"
    - Support/resistance from 52w/5d ranges (specific levels)
-   - Volume analysis vs average (confirmation or divergence)
+   - Volume analysis: Current {data['volume']:,} vs avg {data['avg_volume']:,} ({"above" if data['volume'] > data['avg_volume'] else "below"} average)
    - Technical patterns visible (breakouts, consolidation, etc)
-   - Momentum assessment (bullish/bearish/neutral with reasoning)
-   Use actual numbers. Be specific.
+   - Momentum assessment based on actual price movement
+   Use EXACT numbers. Verify price vs MA relationship.
 
 3. key_levels: 3-4 specific prices with technical reasoning
    Format: {{"level": "285.50", "note": "52w high - major resistance, multiple rejections here. Break above targets $295-300."}}
@@ -202,6 +216,7 @@ Provide JSON with:
 
 Rules:
 - Use ONLY the exact numbers provided above
+- VERIFY: If price < MA, say BELOW. If price > MA, say ABOVE
 - Be specific and actionable
 - This is educational content only
 
