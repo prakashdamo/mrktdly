@@ -127,7 +127,7 @@ def send_email(email, analysis, date_key):
     """
     
     ses.send_email(
-        Source='daily@mrktdly.com',
+        Source='prakash@dalalbytes.com',
         Destination={'ToAddresses': [email]},
         Message={
             'Subject': {'Data': f'📊 MrktDly - {date_str}'},
