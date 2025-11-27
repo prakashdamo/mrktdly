@@ -174,15 +174,31 @@ def generate_ticker_analysis(ticker, data):
     
     prompt = f"""You are a senior equity analyst with 20+ years of experience. Analyze {ticker} using this data:
 
-Price: ${price} (prev ${data['prev_close']}, {data['change_percent']:+.2f}%)
-Range: Today ${data['low']}-${data['high']}, 5d ${data['low_5d']}-${data['high_5d']}, 52w ${data['low_52w']}-${data['high_52w']}
-MAs: 20d ${ma_20}, 50d ${ma_50}
-Volume: {data['volume']:,} (avg {data['avg_volume']:,})
+Current Price: ${price} (prev ${data['prev_close']}, {data['change_percent']:+.2f}%)
 
-CRITICAL - Price vs Moving Averages:
+Price Ranges:
+- Today: ${data['low']} - ${data['high']}
+- 5-day: ${data['low_5d']} - ${data['high_5d']}
+- 52-week: ${data['low_52w']} - ${data['high_52w']}
+
+CRITICAL - 52-Week Range:
+- 52-week HIGH: ${data['high_52w']} (resistance)
+- 52-week LOW: ${data['low_52w']} (support)
+- Current price ${price} is {"near high" if abs(price - data['high_52w']) < 10 else "near low" if abs(price - data['low_52w']) < 10 else "mid-range"}
+
+Moving Averages:
+- 20-day MA: ${ma_20}
+- 50-day MA: ${ma_50}
+
+Price vs MAs:
 - Price ${price} is {trend_vs_ma20} 20-day MA ${ma_20} ({"bullish" if trend_vs_ma20 == "ABOVE" else "bearish"})
 - Price ${price} is {trend_vs_ma50} 50-day MA ${ma_50} ({"bullish" if trend_vs_ma50 == "ABOVE" else "bearish"})
 - Overall trend: {trend_direction}
+
+Volume:
+- Current: {data['volume']:,}
+- Average: {data['avg_volume']:,}
+- Status: {"Above average" if data['volume'] > data['avg_volume'] else "Below average"}
 
 Provide JSON with:
 
@@ -191,11 +207,11 @@ Provide JSON with:
 
 2. technical_analysis: 5 bullet points covering:
    - Price vs MAs: "Price ${price} is {trend_vs_ma20} 20d MA ${ma_20} and {trend_vs_ma50} 50d MA ${ma_50} - {trend_direction} trend"
-   - Support/resistance from 52w/5d ranges (specific levels)
+   - 52-week range: "52w range ${data['low_52w']}-${data['high_52w']}. Current ${price} is [calculate position in range]"
+   - Support/resistance: Use 52w low ${data['low_52w']} as major support, 52w high ${data['high_52w']} as major resistance
    - Volume analysis: Current {data['volume']:,} vs avg {data['avg_volume']:,} ({"above" if data['volume'] > data['avg_volume'] else "below"} average)
-   - Technical patterns visible (breakouts, consolidation, etc)
-   - Momentum assessment based on actual price movement
-   Use EXACT numbers. Verify price vs MA relationship.
+   - Momentum assessment based on actual price movement and trend
+   CRITICAL: 52w low is ${data['low_52w']}, NOT ${data['low_5d']}. 52w high is ${data['high_52w']}, NOT ${data['high_5d']}.
 
 3. key_levels: 3-4 specific prices with technical reasoning
    Format: {{"level": "285.50", "note": "52w high - major resistance, multiple rejections here. Break above targets $295-300."}}
