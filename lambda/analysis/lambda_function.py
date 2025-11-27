@@ -53,68 +53,37 @@ def lambda_handler(event, context):
 def generate_analysis(market_data):
     """Use Bedrock to create educational market analysis"""
     
-    prompt = f"""You are a seasoned market and technical analyst with 15+ years of experience analyzing price action, support/resistance levels, and market structure. You have deep expertise in technical analysis, chart patterns, and identifying key price levels.
+    prompt = f"""You are a senior technical analyst with 15+ years of experience. Analyze today's market data and identify rotation patterns, unusual moves (>5%), and key technical levels.
 
-Today's Market Data (includes major holdings for rotation analysis):
+Market Data:
 {json.dumps(market_data, indent=2, default=decimal_to_float)}
 
-Analyze this data for sector rotation, unusual moves, and market trends. Look for stocks moving >3%, sector rotation patterns, and divergences.
+Output JSON with:
 
-CRITICAL for Levels to Watch: 
-- When identifying resistance, the level MUST be ABOVE the current price
-- When identifying support, the level MUST be BELOW the current price
-- Calculate levels based on: round numbers, recent swing highs/lows, percentage-based levels (1-2% moves)
-- For SPY at $679.68: resistance would be $685, $690, $695 (above current). Support would be $675, $670, $665 (below current)
-- Double-check every level against current price to ensure it makes technical sense
+1. market_overview: 2-3 sentences with actual prices and notable patterns
+   Example: "SPY closed at $679.68 (+0.69%), QQQ at $614.27 (+0.88%). Semiconductors led with NVDA +1.37%, while software lagged with ZS -13.03%, indicating rotation from high-valuation SaaS to hardware."
 
-Create an educational market analysis with these sections:
+2. market_insights: 3 specific observations with tickers and percentages
+   GOOD: "Semis outperforming software: NVDA +1.37%, AMD +3.93% vs WDAY -7.85%, ZS -13.03%. Hardware strength over cloud suggests investors favoring tangible earnings. Watch if this continues - could signal broader risk-off in SaaS."
+   BAD: "Technology sector showing mixed performance today."
+   Max 50 words each. Use actual tickers and percentages.
 
-1. **Market Overview** (2-3 sentences): What's the overall market doing? MUST include actual closing prices (e.g., "SPY closed at $XXX.XX, up/down X.XX%"). Mention any notable rotation patterns or unusual moves.
+3. levels_to_watch: 5-7 tickers, ONE entry per ticker
+   Format: "{{TICKER}} at ${{current}}. Resistance ${{above}} (technical reason: ATH, MA, swing high). Support ${{below}} (technical reason). Trend analysis. Price targets."
+   Example: "SPY at $679.68. Resistance $688 (Nov 22 ATH, strong selling). Support $672 (20-day MA, prior breakout). Bullish momentum with higher lows. Break above targets $695-700."
+   Max 80 words per ticker. Focus on: swing highs/lows, moving averages, breakout levels, volume. Avoid generic "round number" unless it aligns with technical level.
 
-2. **Market Insights** (3 bullet points): What trading concepts or patterns are visible today? MUST be specific to today's data with actual examples:
-   - BAD: "Sector rotation can signal shifts in investor sentiment"
-   - GOOD: "Semiconductors outperforming software today: NVDA +1.37%, AMD +3.93% while WDAY -7.85%, ZS -13.03%. This rotation from high-valuation SaaS to hardware suggests investors favoring tangible earnings over growth stories. Watch if this continues - could signal broader risk-off in cloud names."
-   
-   Use ACTUAL tickers, prices, and percentages from the data. Explain WHY it matters and WHAT to watch next. Make it actionable and specific to today.
+4. unusual_activity: 5-10 stocks with >5% moves or notable patterns
+   Format: {{"symbol": "TICKER", "move": "10.93", "note": "Brief explanation with technical context"}}
+   Include both gainers and losers. If <5 stocks moved >5%, include >3% moves with interesting patterns.
 
-3. **Levels to Watch** (array of objects): Key technical levels based on chart analysis. Each item MUST be an object with:
-   - "symbol": ticker symbol (e.g., "SPY")
-   - "level": specific price level (e.g., "685.00")
-   - "note": comprehensive technical analysis for this ticker
-   
-   CRITICAL RULES:
-   - ONE entry per ticker only (no duplicates - combine all analysis into one note)
-   - Each note should cover BOTH support and resistance in a single comprehensive analysis
-   - RESISTANCE must be ABOVE current price, SUPPORT must be BELOW current price
-   - Prioritize technical analysis over round numbers: recent swing highs/lows, breakout levels, trend lines, moving averages, volume patterns, relative strength
-   - Only mention round numbers if they align with actual technical levels
-   
-   Example format:
-   "SPY currently at $679.68. Key resistance at $688 (recent all-time high from Nov 22, strong selling pressure here). Support at $672 (20-day moving average and previous breakout level). Price showing bullish momentum with higher lows, but watch for rejection at $688. Break above targets $695-$700 zone."
-   
-   Provide 5-7 tickers (one entry each) focusing on: 
-   - SPY and QQQ (always include with comprehensive analysis)
-   - Stocks with unusual activity showing clear technical setups
-   - Sector leaders/laggards with actionable levels
-   
-   Focus on REAL technical analysis: swing points, moving averages, breakout/breakdown levels, trend analysis, volume confirmation. Avoid generic "round number" reasoning unless it's a true technical confluence.
+Rules:
+- Resistance MUST be ABOVE current price, support MUST be BELOW
+- Use ONLY actual numbers from data - no estimates
+- One entry per ticker in levels_to_watch
+- Be specific and actionable
 
-4. **Unusual Activity** (array): Stocks that moved >5% or show unusual patterns. List 5-10 of the most notable moves with:
-   - "symbol": ticker
-   - "move": percentage change (e.g., "10.93" or "-7.85")
-   - "note": brief explanation of what's notable and why it matters (e.g., "PLTR up 8.2% - significant breakout above resistance on high volume, watch for continuation or profit-taking")
-   
-   Prioritize the largest moves (both up and down). Include at least 5 if there are significant moves >5%. If fewer than 5 stocks moved >5%, include stocks with moves >3% that show interesting technical patterns.
-
-CRITICAL REQUIREMENTS:
-- Use ACTUAL NUMBERS from the market data provided
-- Identify sector rotation if present (e.g., small caps outperforming, tech lagging)
-- Highlight unusual moves (>5% changes) as learning opportunities
-- Include specific prices in market_overview
-- Write in a confident, fast-paced style
-- This is EDUCATIONAL content only - never say "buy", "sell", or "recommend"
-
-Return ONLY valid JSON with keys: market_overview, market_insights (array), levels_to_watch (array of objects with symbol/level/note), unusual_activity (array of objects with symbol/move/note - include at least 5 if available)"""
+Return ONLY valid JSON: {{"market_overview": "", "market_insights": [], "levels_to_watch": [{{"symbol": "", "level": "", "note": ""}}], "unusual_activity": [{{"symbol": "", "move": "", "note": ""}}]}}"""
 
     try:
         response = bedrock.invoke_model(

@@ -163,50 +163,49 @@ def fetch_ticker_data(symbol):
 def generate_ticker_analysis(ticker, data):
     """Generate comprehensive analysis using Bedrock"""
     
-    prompt = f"""You are a senior equity analyst with 20+ years of experience in technical and fundamental analysis. Provide a comprehensive analysis of {ticker}.
+    prompt = f"""You are a senior equity analyst with 20+ years of experience. Analyze {ticker} using this data:
 
-Current Data (ALL values are ACTUAL data from Yahoo Finance API - use these exact numbers):
-{json.dumps(data, indent=2)}
+Price: ${data['price']} (prev ${data['prev_close']}, {data['change_percent']:+.2f}%)
+Range: Today ${data['low']}-${data['high']}, 5d ${data['low_5d']}-${data['high_5d']}, 52w ${data['low_52w']}-${data['high_52w']}
+MAs: 20d ${data['ma_20']}, 50d ${data['ma_50']}
+Volume: {data['volume']:,} (avg {data['avg_volume']:,})
 
-CRITICAL: Use the EXACT numbers provided above. Do NOT make up or estimate any values.
-- 52-week high: ${data['high_52w']} (actual from API)
-- 52-week low: ${data['low_52w']} (actual from API)  
-- Current price: ${data['price']}
-- 20-day MA: ${data['ma_20']}
-- 50-day MA: ${data['ma_50']}
-- Today's high: ${data['high']}, low: ${data['low']}
-- Volume: {data['volume']:,} vs avg {data['avg_volume']:,}
+Provide JSON with:
 
-Provide a detailed analysis with these sections:
+1. price_action: 2-3 sentences on current position, momentum, and key level proximity
+   Example: "{ticker} at ${data['price']}, up {data['change_percent']}% from ${data['prev_close']}. Trading near 52w high of ${data['high_52w']}, showing strong momentum. Price above both 20d MA (${data['ma_20']}) and 50d MA (${data['ma_50']}), confirming uptrend."
 
-1. **Price Action Summary** (2-3 sentences): Current price context, recent momentum, position relative to key levels.
+2. technical_analysis: 5 bullet points covering:
+   - Price vs MAs (trend direction and strength)
+   - Support/resistance from 52w/5d ranges (specific levels)
+   - Volume analysis vs average (confirmation or divergence)
+   - Technical patterns visible (breakouts, consolidation, etc)
+   - Momentum assessment (bullish/bearish/neutral with reasoning)
+   Use actual numbers. Be specific.
 
-2. **Technical Analysis** (4-5 bullet points): 
-   - Support and resistance levels (use actual data: 52w high/low, 5d high/low, moving averages)
-   - Trend analysis (price vs MA20, MA50)
-   - Volume analysis (current vs average)
-   - Key technical patterns or setups
-   - Momentum indicators
+3. key_levels: 3-4 specific prices with technical reasoning
+   Format: {{"level": "285.50", "note": "52w high - major resistance, multiple rejections here. Break above targets $295-300."}}
+   Focus on: 52w high/low, MAs, recent swing points, breakout levels. NOT just "round numbers".
 
-3. **Key Levels to Watch** (3-4 specific price levels):
-   - Each with price and reasoning
-   - Include both support and resistance
-   - Use actual data points (52w high/low, MAs, recent swing points)
+4. trading_considerations: 3-4 actionable points
+   - Breakout/breakdown levels to watch
+   - Stop loss zones based on technical levels
+   - Price targets with reasoning
+   - Time frame considerations (short/medium term)
+   Be specific with prices and reasoning.
 
-4. **Trading Considerations** (3-4 points):
-   - What to watch for (breakouts, breakdowns, volume confirmation)
-   - Risk levels (stop loss considerations)
-   - Potential targets
-   - Time frame considerations
+5. risk_assessment: 2-3 current risks
+   - Technical risks (overbought, support breaks, etc)
+   - Volatility considerations based on recent range
+   - Market context risks
+   Be specific to current price action.
 
-5. **Risk Assessment** (2-3 points):
-   - Key risks specific to current price action
-   - Volatility considerations
-   - Market context
+Rules:
+- Use ONLY the exact numbers provided above
+- Be specific and actionable
+- This is educational content only
 
-Use ACTUAL numbers from the data provided. Be specific and actionable. This is educational content only.
-
-Return ONLY valid JSON with keys: price_action, technical_analysis (array), key_levels (array of objects with level/note), trading_considerations (array), risk_assessment (array)"""
+Return ONLY valid JSON: {{"price_action": "", "technical_analysis": [], "key_levels": [{{"level": "", "note": ""}}], "trading_considerations": [], "risk_assessment": []}}"""
 
     try:
         response = bedrock.invoke_model(
