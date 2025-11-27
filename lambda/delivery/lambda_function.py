@@ -95,7 +95,7 @@ def send_email(email, analysis, date_key):
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">MrktDly</h1>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">Daily Market Summary</h1>
                             <p style="margin: 10px 0 0; color: #e0e0e0; font-size: 16px;">{date_str}</p>
                         </td>
                     </tr>
@@ -144,7 +144,7 @@ def send_email(email, analysis, date_key):
                     <tr>
                         <td style="padding: 20px 40px; text-align: center; background: #0a0f19;">
                             <p style="color: #666666; font-size: 13px; margin: 0;">
-                                © 2025 MrktDly. Educational market commentary.
+                                © 2025 Daily Market Summary. Educational market commentary.
                             </p>
                         </td>
                     </tr>
@@ -160,7 +160,7 @@ def send_email(email, analysis, date_key):
         Source='prakash@dalalbytes.com',
         Destination={'ToAddresses': [email]},
         Message={
-            'Subject': {'Data': f'📊 MrktDly - {date_str}'},
+            'Subject': {'Data': f'📊 Daily Market Summary - {date_str}'},
             'Body': {'Html': {'Data': html_body}}
         }
     )
