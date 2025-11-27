@@ -218,11 +218,13 @@ Provide JSON with:
    Focus on: 52w high/low, MAs, recent swing points, breakout levels. NOT just "round numbers".
 
 4. trading_considerations: 3-4 actionable points
-   - Breakout/breakdown levels to watch
-   - Stop loss zones based on technical levels
-   - Price targets with reasoning
-   - Time frame considerations (short/medium term)
-   Be specific with prices and reasoning.
+   - Breakout/breakdown levels to watch (near-term: 5d high/low, MAs)
+   - Stop loss zones: MUST be 3-10% from current price, based on recent support (5d low, nearby MA, recent swing low)
+     Example for {ticker} at ${price}: Stop loss at ${price * 0.95:.2f} (5% below) or ${data['low_5d']} (5d low)
+     DO NOT use 52w low for stop loss - too wide!
+   - Price targets: Near-term (5-10% moves) and medium-term based on technical levels
+   - Time frame: Short-term (days-weeks) or medium-term (weeks-months)
+   Be specific with prices. Stop losses should be practical and tight.
 
 5. risk_assessment: 2-3 current risks
    - Technical risks (overbought, support breaks, etc)
