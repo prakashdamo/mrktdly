@@ -3,7 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MrktDly - Daily Market Analysis</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Daily Market Summary - Free AI-Powered Stock Market Analysis & Technical Levels</title>
+    <meta name="title" content="Daily Market Summary - Free AI-Powered Stock Market Analysis & Technical Levels">
+    <meta name="description" content="Free daily stock market analysis with AI-powered insights, sector performance heatmap, market breadth indicators, and key technical levels for SPY, QQQ, NVDA, and 135+ stocks. Educational content for traders and investors.">
+    <meta name="keywords" content="stock market analysis, daily market summary, technical analysis, SPY levels, QQQ analysis, sector rotation, market breadth, stock trading, AI market analysis, free stock analysis, trading education">
+    <meta name="author" content="Daily Market Summary">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://marketdly.com/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://marketdly.com/">
+    <meta property="og:title" content="Daily Market Summary - Free AI-Powered Stock Market Analysis">
+    <meta property="og:description" content="Free daily stock market analysis with AI insights, sector performance, market breadth, and technical levels for 135+ stocks. Educational content for traders.">
+    <meta property="og:image" content="https://marketdly.com/og-image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://marketdly.com/">
+    <meta property="twitter:title" content="Daily Market Summary - Free AI-Powered Stock Market Analysis">
+    <meta property="twitter:description" content="Free daily stock market analysis with AI insights, sector performance, market breadth, and technical levels for 135+ stocks.">
+    <meta property="twitter:image" content="https://marketdly.com/og-image.png">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Daily Market Summary",
+      "url": "https://marketdly.com",
+      "description": "Free daily stock market analysis with AI-powered insights",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://marketdly.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "name": "Daily Market Summary",
+      "description": "Free AI-powered daily stock market analysis and technical levels",
+      "url": "https://marketdly.com",
+      "areaServed": "Worldwide",
+      "serviceType": "Financial Market Analysis"
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
@@ -84,42 +135,42 @@
         </div>
 
         <!-- Content -->
-        <div id="content" class="hidden space-y-6">
+        <main id="content" class="hidden space-y-6">
             <!-- Sector Heatmap -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Sector Performance</h2>
                 <div id="sectorHeatmap" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-            </section>
+            </article>
 
             <!-- Market Breadth -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📈 Market Breadth</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="marketBreadth"></div>
-            </section>
+            </article>
 
             <!-- Market Overview -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📊 Market Overview</h2>
                 <p class="text-gray-300 leading-relaxed" id="marketOverview"></p>
-            </section>
+            </article>
 
             <!-- Market Insights -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">💡 Market Insights</h2>
                 <ul class="space-y-3 text-gray-300" id="marketInsights"></ul>
-            </section>
+            </article>
 
             <!-- Levels to Watch -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🎯 Levels to Watch</h2>
                 <div class="space-y-3" id="levelsToWatch"></div>
-            </section>
+            </article>
 
             <!-- Unusual Activity -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6" id="unusualSection">
+            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6" id="unusualSection">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Unusual Activity</h2>
                 <div class="space-y-3" id="unusualActivity"></div>
-            </section>
+            </article>
 
             <!-- Disclaimer -->
             <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
@@ -129,13 +180,52 @@
                     research and consult with a licensed financial advisor before making investment decisions.
                 </p>
             </div>
-        </div>
+        </main>
 
         <!-- Error State -->
         <div id="error" class="hidden text-center py-20">
             <p class="text-red-400 text-xl">Failed to load today's analysis</p>
             <p class="text-gray-400 mt-2">Please try again later</p>
         </div>
+
+        <!-- SEO Footer -->
+        <footer class="mt-16 border-t border-white/10 pt-8 pb-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-blue-400">About</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Daily Market Summary provides free AI-powered stock market analysis covering 135+ stocks including SPY, QQQ, NVDA, AAPL, and more. Get daily insights on sector rotation, market breadth, and key technical levels.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-blue-400">Coverage</h3>
+                        <ul class="text-gray-400 text-sm space-y-2">
+                            <li>• Major Indices: SPY, QQQ, DIA, IWM</li>
+                            <li>• Tech & AI: NVDA, AMD, AAPL, MSFT</li>
+                            <li>• Sectors: Finance, Healthcare, Energy</li>
+                            <li>• Crypto: BTC, ETH, COIN, MSTR</li>
+                            <li>• Market Breadth & Technical Analysis</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-blue-400">Features</h3>
+                        <ul class="text-gray-400 text-sm space-y-2">
+                            <li>• Daily AI Market Analysis</li>
+                            <li>• Sector Performance Heatmap</li>
+                            <li>• Market Breadth Indicators</li>
+                            <li>• Key Technical Levels</li>
+                            <li>• Historical Archive</li>
+                            <li>• Individual Ticker Analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center text-gray-500 text-sm">
+                    <p>&copy; 2025 Daily Market Summary. Free educational stock market analysis and technical levels.</p>
+                    <p class="mt-2">Stock Market Analysis | Technical Analysis | Trading Education | Market Insights</p>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script>
