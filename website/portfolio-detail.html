@@ -201,47 +201,47 @@
                 `${h.ticker}: ${h.allocation_pct.toFixed(1)}% allocation, Entry: $${h.entry_price}, Current: $${h.current_price}, Return: ${h.return_pct >= 0 ? '+' : ''}${h.return_pct.toFixed(2)}%`
             ).join('\n');
 
-            const prompt = `You are an expert financial analyst. Analyze this investment portfolio and provide actionable insights FOR EDUCATIONAL PURPOSES ONLY.
+            const prompt = `Analyze this portfolio. Be CONCISE and DIRECT. Use bullet points only. No fluff.
 
 PORTFOLIO: ${portfolio.portfolio_name}
-Created: ${new Date(portfolio.created_at).toLocaleDateString()}
-Total Return: ${portfolio.total_return_pct >= 0 ? '+' : ''}${portfolio.total_return_pct.toFixed(2)}%
-Current Value: $${portfolio.current_value.toLocaleString()}
-Starting Value: $${portfolio.starting_value.toLocaleString()}
+Return: ${portfolio.total_return_pct >= 0 ? '+' : ''}${portfolio.total_return_pct.toFixed(2)}%
+Value: $${portfolio.current_value.toLocaleString()} (from $${portfolio.starting_value.toLocaleString()})
 
 HOLDINGS:
 ${holdings}
 
-Please provide a comprehensive analysis covering:
+Provide SHORT analysis in this EXACT format:
 
-1. PORTFOLIO COMPOSITION ANALYSIS
-   - Sector diversification assessment
-   - Concentration risk evaluation
-   - Asset allocation quality
+**COMPOSITION**
+• [One line on diversification]
+• [One line on concentration risk]
 
-2. PERFORMANCE ANALYSIS
-   - Individual holding performance breakdown
-   - Best and worst performers
-   - Risk-adjusted return assessment
+**PERFORMANCE**
+• Best: [ticker] (+X%)
+• Worst: [ticker] (+/-X%)
+• [One line overall assessment]
 
-3. RISK ASSESSMENT
-   - Volatility and correlation risks
-   - Sector concentration risks
-   - Market exposure analysis
+**RISKS**
+• [Top risk in one line]
+• [Second risk in one line]
 
-4. STRATEGIC RECOMMENDATIONS (Educational - Not Financial Advice)
-   - Rebalancing considerations
-   - Potential portfolio adjustments to consider
-   - Risk mitigation strategies to learn about
+**RECOMMENDATIONS** (Educational only - not financial advice)
+• [Action 1 in one line]
+• [Action 2 in one line]
+• [Action 3 in one line]
 
-5. MARKET OUTLOOK
-   - Current market conditions impact
-   - Sector-specific trends affecting holdings
-   - Educational insights on market dynamics
+**OUTLOOK**
+• [Market view in one line]
+• [Sector trend in one line]
 
-IMPORTANT: Frame all recommendations as educational information only. Include a disclaimer that this is not personalized financial advice and users should consult with licensed financial advisors before making investment decisions.
+RULES:
+- Maximum 2-3 bullets per section
+- Each bullet = ONE line only
+- No paragraphs, no explanations
+- Be specific with numbers
+- Total response under 200 words
 
-Keep the analysis concise, actionable, and data-driven. Use bullet points for clarity.`;
+DISCLAIMER: Add at end: "Educational purposes only. Consult a licensed financial advisor before investing."`;
 
             return prompt;
         }
