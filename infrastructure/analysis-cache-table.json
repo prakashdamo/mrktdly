@@ -1,0 +1,16 @@
+{
+  "TableName": "mrktdly-analysis-cache",
+  "KeySchema": [
+    {
+      "AttributeName": "cache_key",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "cache_key",
+      "AttributeType": "S"
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

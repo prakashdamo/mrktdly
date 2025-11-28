@@ -431,7 +431,7 @@ End with: "Educational only. Not financial advice."`;
                 const response = await fetch(`${API_URL}/ai-analysis`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({prompt: prompt})
+                    body: JSON.stringify({prompt: prompt, portfolio_id: portfolioId})
                 });
 
                 const data = await response.json();
