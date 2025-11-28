@@ -85,29 +85,176 @@
                 <span class="text-gray-400 text-sm" id="navDate"></span>
                 <button id="nextDay" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm">Next →</button>
             </div>
+            
+            <!-- Auth Status -->
+            <div id="authStatus" class="mt-4 text-center">
+                <button id="loginBtn" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition text-sm font-semibold">Login</button>
+                <button id="signupBtn" class="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 rounded-lg transition text-sm font-semibold ml-2">Sign Up Free</button>
+            </div>
+            <div id="userInfo" class="mt-4 text-center hidden">
+                <span class="text-gray-400">Welcome, <span id="userEmail" class="text-blue-400"></span></span>
+                <button id="logoutBtn" class="ml-4 px-4 py-1 bg-white/10 hover:bg-white/20 rounded text-sm">Logout</button>
+            </div>
         </header>
 
-        <!-- Waitlist CTA -->
-        <div class="bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/30 rounded-xl p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-3 text-center">Get Daily Analysis in Your Inbox</h2>
-            <p class="text-gray-300 text-center mb-4">Join the waitlist to receive this analysis via email every morning at 8 AM ET</p>
-            <form id="waitlistForm" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Enter your email"
-                    required
-                    class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                    type="submit"
-                    id="submitBtn"
-                    class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
-                >
-                    Join Free
-                </button>
-            </form>
-            <p id="message" class="mt-3 text-sm text-center"></p>
+        <!-- Signup Modal -->
+        <div id="signupModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-gradient-to-br from-[#1a1f2e] to-[#0a0f19] border border-blue-500/30 rounded-2xl max-w-md w-full p-8 relative">
+                <button id="closeSignup" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">Join 1,000+ Traders</h2>
+                    <p class="text-gray-400">Get instant access to premium features</p>
+                </div>
+
+                <!-- Benefits -->
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-start gap-3">
+                        <div class="text-green-400 text-xl">✓</div>
+                        <div>
+                            <div class="font-semibold text-white">Unlimited Ticker Analysis</div>
+                            <div class="text-sm text-gray-400">Analyze any stock with AI-powered insights</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="text-green-400 text-xl">✓</div>
+                        <div>
+                            <div class="font-semibold text-white">Save Your Watchlist</div>
+                            <div class="text-sm text-gray-400">Track your favorite stocks in one place</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="text-green-400 text-xl">✓</div>
+                        <div>
+                            <div class="font-semibold text-white">Full Historical Access</div>
+                            <div class="text-sm text-gray-400">Browse 30+ days of market analysis</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="text-green-400 text-xl">✓</div>
+                        <div>
+                            <div class="font-semibold text-white">100% Free Forever</div>
+                            <div class="text-sm text-gray-400">No credit card required</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signup Form -->
+                <form id="signupForm" class="space-y-4">
+                    <input type="text" id="honeypot" class="hidden" tabindex="-1" autocomplete="off">
+                    <div>
+                        <input
+                            type="email"
+                            id="signupEmail"
+                            placeholder="Email address"
+                            required
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="password"
+                            id="signupPassword"
+                            placeholder="Password (min 8 characters)"
+                            required
+                            minlength="8"
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        id="signupSubmitBtn"
+                        class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                    >
+                        Create Free Account
+                    </button>
+                    <p id="signupMessage" class="text-sm text-center"></p>
+                </form>
+
+                <p class="text-xs text-gray-500 text-center mt-4">
+                    By signing up, you agree to our Terms of Service and Privacy Policy
+                </p>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-gradient-to-br from-[#1a1f2e] to-[#0a0f19] border border-blue-500/30 rounded-2xl max-w-md w-full p-8 relative">
+                <button id="closeLogin" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">Welcome Back</h2>
+                    <p class="text-gray-400">Login to access your account</p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="Email address"
+                            required
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            placeholder="Password"
+                            required
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        id="loginSubmitBtn"
+                        class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                    >
+                        Login
+                    </button>
+                    <p id="loginMessage" class="text-sm text-center"></p>
+                </form>
+
+                <p class="text-sm text-gray-400 text-center mt-4">
+                    Don't have an account? <button id="switchToSignup" class="text-blue-400 hover:text-blue-300">Sign up free</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Verification Modal -->
+        <div id="verifyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-gradient-to-br from-[#1a1f2e] to-[#0a0f19] border border-blue-500/30 rounded-2xl max-w-md w-full p-8 relative">
+                <div class="text-center mb-6">
+                    <div class="text-6xl mb-4">📧</div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Verify Your Email</h2>
+                    <p class="text-gray-400">We sent a verification code to <span id="verifyEmailDisplay" class="text-blue-400"></span></p>
+                </div>
+
+                <form id="verifyForm" class="space-y-4">
+                    <div>
+                        <input
+                            type="text"
+                            id="verifyCode"
+                            placeholder="Enter 6-digit code"
+                            required
+                            maxlength="6"
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        id="verifySubmitBtn"
+                        class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                    >
+                        Verify Email
+                    </button>
+                    <p id="verifyMessage" class="text-sm text-center"></p>
+                </form>
+
+                <button id="resendCode" class="text-sm text-blue-400 hover:text-blue-300 mt-4 w-full text-center">Resend code</button>
+            </div>
         </div>
 
         <!-- Ticker Analysis Tool -->
@@ -233,41 +380,227 @@
         </footer>
     </div>
 
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    
     <script>
-        // Waitlist form
-        document.getElementById('waitlistForm').addEventListener('submit', async (e) => {
+        // Cognito Configuration
+        const poolData = {
+            UserPoolId: 'us-east-1_N5yuAGHc3',
+            ClientId: '3ras51lrq716j8mij5887uug17'
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        let currentUser = null;
+        let pendingEmail = null;
+
+        // Check auth status on load
+        function checkAuthStatus() {
+            currentUser = userPool.getCurrentUser();
+            if (currentUser) {
+                currentUser.getSession((err, session) => {
+                    if (err || !session.isValid()) {
+                        showAuthButtons();
+                        return;
+                    }
+                    currentUser.getUserAttributes((err, attributes) => {
+                        if (!err) {
+                            const email = attributes.find(attr => attr.Name === 'email')?.Value;
+                            showUserInfo(email);
+                        }
+                    });
+                });
+            } else {
+                showAuthButtons();
+            }
+        }
+
+        function showAuthButtons() {
+            document.getElementById('authStatus').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+        }
+
+        function showUserInfo(email) {
+            document.getElementById('authStatus').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = email;
+        }
+
+        // Modal controls
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            document.getElementById('signupModal').classList.remove('hidden');
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeSignup').addEventListener('click', () => {
+            document.getElementById('signupModal').classList.add('hidden');
+        });
+
+        document.getElementById('closeLogin').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.add('hidden');
+        });
+
+        document.getElementById('switchToSignup').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('signupModal').classList.remove('hidden');
+        });
+
+        // Signup
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('message');
+            // Bot protection: honeypot
+            if (document.getElementById('honeypot').value) {
+                return; // Bot detected
+            }
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const btn = document.getElementById('signupSubmitBtn');
+            const msg = document.getElementById('signupMessage');
             
             btn.disabled = true;
-            btn.textContent = 'Joining...';
+            btn.textContent = 'Creating account...';
             msg.textContent = '';
             
-            try {
-                const response = await fetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/waitlist', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                
-                if (response.ok) {
-                    msg.className = 'mt-3 text-sm text-center text-green-400';
-                    msg.textContent = '✓ You\'re on the list! We\'ll email you daily at 8 AM ET.';
-                    document.getElementById('email').value = '';
-                } else {
-                    throw new Error('Failed');
-                }
-            } catch (error) {
-                msg.className = 'mt-3 text-sm text-center text-red-400';
-                msg.textContent = 'Something went wrong. Please try again.';
-            } finally {
+            const attributeList = [
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'email', Value: email })
+            ];
+            
+            userPool.signUp(email, password, attributeList, null, (err, result) => {
                 btn.disabled = false;
-                btn.textContent = 'Join Free';
+                btn.textContent = 'Create Free Account';
+                
+                if (err) {
+                    msg.className = 'text-sm text-center text-red-400';
+                    msg.textContent = err.message || 'Signup failed';
+                    return;
+                }
+                
+                pendingEmail = email;
+                document.getElementById('signupModal').classList.add('hidden');
+                document.getElementById('verifyModal').classList.remove('hidden');
+                document.getElementById('verifyEmailDisplay').textContent = email;
+            });
+        });
+
+        // Verify email
+        document.getElementById('verifyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const code = document.getElementById('verifyCode').value;
+            const btn = document.getElementById('verifySubmitBtn');
+            const msg = document.getElementById('verifyMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            msg.textContent = '';
+            
+            const userData = {
+                Username: pendingEmail,
+                Pool: userPool
+            };
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            cognitoUser.confirmRegistration(code, true, (err, result) => {
+                btn.disabled = false;
+                btn.textContent = 'Verify Email';
+                
+                if (err) {
+                    msg.className = 'text-sm text-center text-red-400';
+                    msg.textContent = err.message || 'Verification failed';
+                    return;
+                }
+                
+                msg.className = 'text-sm text-center text-green-400';
+                msg.textContent = '✓ Email verified! Logging you in...';
+                
+                setTimeout(() => {
+                    document.getElementById('verifyModal').classList.add('hidden');
+                    document.getElementById('loginModal').classList.remove('hidden');
+                    document.getElementById('loginEmail').value = pendingEmail;
+                }, 1500);
+            });
+        });
+
+        // Resend code
+        document.getElementById('resendCode').addEventListener('click', () => {
+            const userData = {
+                Username: pendingEmail,
+                Pool: userPool
+            };
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            cognitoUser.resendConfirmationCode((err, result) => {
+                const msg = document.getElementById('verifyMessage');
+                if (err) {
+                    msg.className = 'text-sm text-center text-red-400';
+                    msg.textContent = err.message;
+                } else {
+                    msg.className = 'text-sm text-center text-green-400';
+                    msg.textContent = '✓ Code resent!';
+                }
+            });
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginSubmitBtn');
+            const msg = document.getElementById('loginMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+            msg.textContent = '';
+            
+            const authenticationData = {
+                Username: email,
+                Password: password
+            };
+            const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+            
+            const userData = {
+                Username: email,
+                Pool: userPool
+            };
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: (result) => {
+                    msg.className = 'text-sm text-center text-green-400';
+                    msg.textContent = '✓ Login successful!';
+                    
+                    setTimeout(() => {
+                        document.getElementById('loginModal').classList.add('hidden');
+                        showUserInfo(email);
+                        currentUser = cognitoUser;
+                    }, 1000);
+                },
+                onFailure: (err) => {
+                    btn.disabled = false;
+                    btn.textContent = 'Login';
+                    msg.className = 'text-sm text-center text-red-400';
+                    msg.textContent = err.message || 'Login failed';
+                }
+            });
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (currentUser) {
+                currentUser.signOut();
+                currentUser = null;
+                showAuthButtons();
             }
         });
+
+        // Initialize
+        checkAuthStatus();
 
         // Ticker analysis form
         document.getElementById('tickerForm').addEventListener('submit', async (e) => {
