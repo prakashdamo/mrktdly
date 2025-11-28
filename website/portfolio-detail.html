@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Details - MarketDly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+    <!-- Navigation -->
+    <nav class="bg-slate-800/50 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="text-xl font-bold">📊 MarketDly</a>
+                <div class="flex items-center gap-4">
+                    <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">← Back to Portfolios</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+        <div id="loading" class="text-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-400">Loading portfolio...</p>
+        </div>
+
+        <div id="portfolioContent" class="hidden">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 id="portfolioName" class="text-4xl font-bold mb-2"></h1>
+                <p id="portfolioMeta" class="text-gray-400"></p>
+            </div>
+
+            <!-- Performance Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Total Return</div>
+                    <div id="totalReturn" class="text-3xl font-bold"></div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Current Value</div>
+                    <div id="currentValue" class="text-3xl font-bold"></div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Starting Value</div>
+                    <div id="startingValue" class="text-3xl font-bold">$10,000</div>
+                </div>
+            </div>
+
+            <!-- Holdings -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                <h2 class="text-2xl font-bold mb-6">Holdings</h2>
+                <div id="holdingsTable" class="overflow-x-auto"></div>
+            </div>
+        </div>
+
+        <div id="error" class="hidden text-center py-12">
+            <div class="text-6xl mb-4">❌</div>
+            <h2 class="text-2xl font-bold mb-2">Portfolio Not Found</h2>
+            <p class="text-gray-400 mb-6">This portfolio may have been deleted or doesn't exist.</p>
+            <a href="/portfolio.html" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition inline-block">
+                Back to Portfolios
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
+        const urlParams = new URLSearchParams(window.location.search);
+        const portfolioId = urlParams.get('id');
+
+        if (!portfolioId) {
+            showError();
+        } else {
+            loadPortfolio();
+        }
+
+        async function loadPortfolio() {
+            try {
+                const response = await fetch(`${API_URL}/portfolio?portfolio_id=${portfolioId}`);
+                
+                if (!response.ok) {
+                    showError();
+                    return;
+                }
+
+                const portfolio = await response.json();
+
+                document.getElementById('portfolioName').textContent = portfolio.portfolio_name;
+                document.getElementById('portfolioMeta').textContent = `Created ${new Date(portfolio.created_at).toLocaleDateString()} • ${portfolio.is_public ? 'Public' : 'Private'}`;
+
+                const returnPct = portfolio.total_return_pct;
+                document.getElementById('totalReturn').textContent = `${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(2)}%`;
+                document.getElementById('totalReturn').className = `text-3xl font-bold ${returnPct >= 0 ? 'text-green-400' : 'text-red-400'}`;
+
+                document.getElementById('currentValue').textContent = `$${portfolio.current_value.toLocaleString()}`;
+
+                const table = `
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-700">
+                                <th class="text-left py-3 px-4">Ticker</th>
+                                <th class="text-right py-3 px-4">Allocation</th>
+                                <th class="text-right py-3 px-4">Entry Price</th>
+                                <th class="text-right py-3 px-4">Current Price</th>
+                                <th class="text-right py-3 px-4">Entry Value</th>
+                                <th class="text-right py-3 px-4">Current Value</th>
+                                <th class="text-right py-3 px-4">Return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${portfolio.holdings.map(h => `
+                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
+                                    <td class="py-3 px-4 font-bold">${h.ticker}</td>
+                                    <td class="text-right py-3 px-4">${h.allocation_pct.toFixed(1)}%</td>
+                                    <td class="text-right py-3 px-4">$${h.entry_price.toFixed(2)}</td>
+                                    <td class="text-right py-3 px-4">$${h.current_price.toFixed(2)}</td>
+                                    <td class="text-right py-3 px-4">$${h.entry_value.toLocaleString()}</td>
+                                    <td class="text-right py-3 px-4">$${h.current_value.toLocaleString()}</td>
+                                    <td class="text-right py-3 px-4 font-bold ${h.return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                        ${h.return_pct >= 0 ? '+' : ''}${h.return_pct.toFixed(2)}%
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('holdingsTable').innerHTML = table;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('portfolioContent').classList.remove('hidden');
+            } catch (error) {
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
