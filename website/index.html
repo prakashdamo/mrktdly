@@ -96,7 +96,7 @@
 
     <div class="container mx-auto px-6 py-12 max-w-7xl">
         <!-- Hero Section -->
-        <header class="text-center mb-16 max-w-4xl mx-auto">
+        <header id="heroSection" class="text-center mb-16 max-w-4xl mx-auto">
             <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
                 AI-Powered Market Intelligence<br/>
                 <span class="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">for Smart Traders</span>
@@ -397,7 +397,6 @@
                 <p class="text-gray-400 text-lg font-medium mb-4" id="dateDisplay">Loading...</p>
                 <div class="flex items-center justify-center gap-4">
                     <button id="prevDay" class="btn-secondary">← Previous Day</button>
-                    <span class="text-gray-500 text-sm font-medium" id="navDate"></span>
                     <button id="nextDay" class="btn-secondary">Next Day →</button>
                 </div>
             </div>
@@ -530,9 +529,7 @@
 
         function showAuthButtons() {
             // Hero section
-            document.getElementById('heroAuth')?.classList.remove('hidden');
-            document.getElementById('heroUserWelcome')?.classList.add('hidden');
-            document.getElementById('trustIndicators')?.classList.remove('hidden');
+            document.getElementById('heroSection')?.classList.remove('hidden');
             // Navigation
             document.getElementById('navAuth')?.classList.remove('hidden');
             document.getElementById('navUserInfo')?.classList.add('hidden');
@@ -540,28 +537,21 @@
             document.getElementById('tickerLoginPrompt')?.classList.remove('hidden');
             document.getElementById('tickerAnalysisForm')?.classList.add('hidden');
             document.getElementById('tickerAnalysisSection')?.classList.remove('hidden');
+            // Top ticker form
+            document.getElementById('topTickerAnalysis')?.classList.add('hidden');
         }
 
         function showUserInfo(email) {
-            // Hero section
-            document.getElementById('heroAuth')?.classList.add('hidden');
-            document.getElementById('heroUserWelcome')?.classList.remove('hidden');
-            document.getElementById('heroUserEmail').textContent = email;
-            document.getElementById('trustIndicators')?.classList.add('hidden');
+            // Hide entire hero section after login
+            document.getElementById('heroSection')?.classList.add('hidden');
             // Navigation
             document.getElementById('navAuth')?.classList.add('hidden');
             document.getElementById('navUserInfo')?.classList.remove('hidden');
             document.getElementById('navUserEmail').textContent = email;
-            // Ticker section - hide entire section, show top form instead
+            // Hide bottom ticker section, show top form
             document.getElementById('tickerAnalysisSection')?.classList.add('hidden');
             document.getElementById('topTickerAnalysis')?.classList.remove('hidden');
         }
-
-        // Quick analyze button
-        document.getElementById('quickAnalyze')?.addEventListener('click', () => {
-            document.getElementById('topTickerAnalysis')?.scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('topTicker')?.focus();
-        });
 
         // Signup button in ticker section
         document.getElementById('signupForTicker').addEventListener('click', () => {
@@ -869,7 +859,6 @@
                 month: 'long',
                 day: 'numeric'
             });
-            document.getElementById('navDate').textContent = currentDate;
             
             // Enable/disable next button
             const today = new Date().toISOString().split('T')[0];
