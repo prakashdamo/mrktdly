@@ -21,15 +21,16 @@ def lambda_handler(event, context):
     if 'leaderboard' in path:
         return get_leaderboard(params.get('period', 'all-time'))
     
+    # Portfolio detail view doesn't require user_email
+    if http_method == 'GET' and params.get('portfolio_id'):
+        return get_portfolio_detail(params.get('portfolio_id'))
+    
     if not user_email:
         return response(400, {'error': 'user_email required'})
     
     if http_method == 'POST':
         return create_portfolio(user_email, body)
     elif http_method == 'GET':
-        portfolio_id = params.get('portfolio_id')
-        if portfolio_id:
-            return get_portfolio_detail(portfolio_id)
         return get_user_portfolios(user_email)
     elif http_method == 'DELETE':
         return delete_portfolio(body.get('portfolio_id'), user_email)
