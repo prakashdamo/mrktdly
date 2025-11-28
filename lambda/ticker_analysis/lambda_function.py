@@ -103,12 +103,22 @@ def get_cached_analysis(ticker):
 def cache_analysis(ticker, result):
     """Cache analysis result"""
     try:
+        # Convert floats to Decimals for DynamoDB
+        def convert_to_decimal(obj):
+            if isinstance(obj, dict):
+                return {k: convert_to_decimal(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_to_decimal(item) for item in obj]
+            elif isinstance(obj, float):
+                return Decimal(str(obj))
+            return obj
+        
         cache_table.put_item(Item={
             'ticker': ticker,
-            'data': result['data'],
-            'analysis': result['analysis'],
+            'data': convert_to_decimal(result['data']),
+            'analysis': result['analysis'],  # Already strings
             'timestamp': datetime.utcnow().isoformat(),
-            'ttl': int((datetime.utcnow() + timedelta(minutes=5)).timestamp())
+            'ttl': int((datetime.utcnow() + timedelta(minutes=15)).timestamp())  # Increased to 15 min
         })
     except Exception as e:
         print(f'Cache write error: {e}')
