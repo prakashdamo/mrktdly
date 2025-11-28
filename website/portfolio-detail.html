@@ -53,9 +53,22 @@
             </div>
 
             <!-- Holdings -->
-            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                <h2 class="text-2xl font-bold mb-6">Holdings</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Holdings</h2>
+                    <button onclick="runBacktest()" id="backtestBtn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition">
+                        🔮 Backtest (1, 3, 5 years)
+                    </button>
+                </div>
                 <div id="holdingsTable" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- Backtest Results -->
+            <div id="backtestResults" class="hidden bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/50 rounded-xl p-6">
+                <h2 class="text-2xl font-bold mb-4">🔮 Backtest Results</h2>
+                <p class="text-gray-400 mb-6">How would this portfolio have performed if started earlier?</p>
+                
+                <div id="backtestContent" class="space-y-6"></div>
             </div>
         </div>
 
@@ -142,6 +155,98 @@
         function showError() {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('error').classList.remove('hidden');
+        }
+
+        async function runBacktest() {
+            const btn = document.getElementById('backtestBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Running backtest...';
+
+            try {
+                const response = await fetch(`${API_URL}/backtest?portfolio_id=${portfolioId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                displayBacktestResults(data);
+                document.getElementById('backtestResults').classList.remove('hidden');
+                btn.textContent = '✓ Backtest Complete';
+            } catch (error) {
+                alert('Error running backtest: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '🔮 Backtest (1, 3, 5 years)';
+            }
+        }
+
+        function displayBacktestResults(data) {
+            const content = document.getElementById('backtestContent');
+            
+            const actualReturn = data.actual_return_pct;
+            const actualDate = new Date(data.actual_created).toLocaleDateString();
+
+            let html = `
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
+                    <div class="text-sm text-gray-400 mb-1">Your Actual Performance</div>
+                    <div class="text-2xl font-bold ${actualReturn >= 0 ? 'text-green-400' : 'text-red-400'}">
+                        ${actualReturn >= 0 ? '+' : ''}${actualReturn.toFixed(2)}%
+                    </div>
+                    <div class="text-sm text-gray-400">Started: ${actualDate}</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            `;
+
+            data.backtests.forEach(bt => {
+                const diff = bt.total_return_pct - actualReturn;
+                const diffColor = diff >= 0 ? 'text-green-400' : 'text-red-400';
+                
+                html += `
+                    <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                        <div class="text-sm text-gray-400 mb-2">${bt.years} Year${bt.years > 1 ? 's' : ''} Ago</div>
+                        <div class="text-2xl font-bold ${bt.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'} mb-2">
+                            ${bt.total_return_pct >= 0 ? '+' : ''}${bt.total_return_pct.toFixed(2)}%
+                        </div>
+                        <div class="text-xs text-gray-500 mb-3">${bt.backtest_date}</div>
+                        <div class="text-sm ${diffColor}">
+                            ${diff >= 0 ? '📈' : '📉'} ${diff >= 0 ? '+' : ''}${diff.toFixed(2)}% vs actual
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-700">
+                            <details class="text-sm">
+                                <summary class="cursor-pointer text-gray-400 hover:text-white">Holdings breakdown</summary>
+                                <div class="mt-2 space-y-1">
+                                    ${bt.holdings.map(h => `
+                                        <div class="flex justify-between text-xs">
+                                            <span>${h.ticker}</span>
+                                            <span class="${h.return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                                ${h.return_pct >= 0 ? '+' : ''}${h.return_pct.toFixed(1)}%
+                                            </span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // Find best backtest
+            const best = data.backtests.reduce((max, bt) => bt.total_return_pct > max.total_return_pct ? bt : max);
+            
+            html += `
+                <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <div class="text-sm font-medium text-blue-400 mb-1">💡 Insight</div>
+                    <div class="text-sm text-gray-300">
+                        Best entry would have been <strong>${best.years} year${best.years > 1 ? 's' : ''} ago</strong> 
+                        (${best.backtest_date}) with a return of <strong class="text-green-400">+${best.total_return_pct.toFixed(2)}%</strong>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
         }
     </script>
 </body>

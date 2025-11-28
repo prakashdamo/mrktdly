@@ -21,6 +21,10 @@ def lambda_handler(event, context):
     if 'leaderboard' in path:
         return get_leaderboard(params.get('period', 'all-time'))
     
+    # Backtest endpoint
+    if 'backtest' in path and params.get('portfolio_id'):
+        return backtest_portfolio(params.get('portfolio_id'))
+    
     # Portfolio detail view doesn't require user_email
     if http_method == 'GET' and params.get('portfolio_id'):
         return get_portfolio_detail(params.get('portfolio_id'))
@@ -244,6 +248,108 @@ def fetch_current_price(ticker):
             return data['chart']['result'][0]['meta']['regularMarketPrice']
     except Exception:
         return 0.0
+
+def fetch_historical_price(ticker, date_str):
+    """Fetch historical closing price for a specific date"""
+    try:
+        from datetime import datetime as dt, timedelta
+        target_date = dt.strptime(date_str, '%Y-%m-%d')
+        
+        # Get data for a week range to handle weekends/holidays
+        start_date = target_date - timedelta(days=7)
+        end_date = target_date + timedelta(days=1)
+        
+        start_unix = int(start_date.timestamp())
+        end_unix = int(end_date.timestamp())
+        
+        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&period1={start_unix}&period2={end_unix}'
+        if not url.startswith('https://'):
+            raise ValueError('Only HTTPS URLs are allowed')
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
+            data = json.loads(resp.read())
+            result = data['chart']['result'][0]
+            
+            # Get the closest trading day's close price
+            closes = result['indicators']['quote'][0]['close']
+            # Return last available close price (handles weekends/holidays)
+            for price in reversed(closes):
+                if price is not None:
+                    return price
+            return 0.0
+    except Exception:
+        return 0.0
+
+def backtest_portfolio(portfolio_id):
+    """Run backtest for 1, 3, and 5 years back"""
+    try:
+        from datetime import datetime as dt, timedelta
+        
+        result = portfolios_table.get_item(Key={'portfolio_id': portfolio_id})
+        portfolio = result.get('Item')
+        
+        if not portfolio:
+            return response(404, {'error': 'Portfolio not found'})
+        
+        today = dt.utcnow()
+        backtest_periods = [
+            {'years': 1, 'date': (today - timedelta(days=365)).strftime('%Y-%m-%d')},
+            {'years': 3, 'date': (today - timedelta(days=365*3)).strftime('%Y-%m-%d')},
+            {'years': 5, 'date': (today - timedelta(days=365*5)).strftime('%Y-%m-%d')}
+        ]
+        
+        results = []
+        
+        for period in backtest_periods:
+            backtest_date = period['date']
+            holdings_performance = []
+            total_value = 0
+            
+            for holding in portfolio.get('holdings', []):
+                ticker = holding['ticker']
+                allocation_pct = float(holding['allocation_pct'])
+                
+                historical_price = fetch_historical_price(ticker, backtest_date)
+                current_price = fetch_current_price(ticker)
+                
+                if historical_price == 0:
+                    continue
+                
+                entry_value = 10000 * (allocation_pct / 100)
+                current_value = entry_value * (current_price / historical_price)
+                return_pct = ((current_price - historical_price) / historical_price) * 100
+                
+                holdings_performance.append({
+                    'ticker': ticker,
+                    'allocation_pct': allocation_pct,
+                    'entry_price': round(historical_price, 2),
+                    'current_price': round(current_price, 2),
+                    'return_pct': round(return_pct, 2)
+                })
+                
+                total_value += current_value
+            
+            total_return_pct = ((total_value - 10000) / 10000) * 100
+            
+            results.append({
+                'years': period['years'],
+                'backtest_date': backtest_date,
+                'total_return_pct': round(total_return_pct, 2),
+                'portfolio_value': round(total_value, 2),
+                'holdings': holdings_performance
+            })
+        
+        # Get actual portfolio performance
+        actual_value, actual_return = calculate_portfolio_value(portfolio)
+        
+        return response(200, {
+            'portfolio_name': portfolio['portfolio_name'],
+            'actual_return_pct': float(actual_return),
+            'actual_created': portfolio['created_at'],
+            'backtests': results
+        })
+    except Exception as e:
+        return response(500, {'error': str(e)})
 
 def response(status_code, body):
     """Return API Gateway response"""
