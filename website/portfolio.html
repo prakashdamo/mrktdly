@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio - MarketDly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+    <!-- Navigation -->
+    <nav class="bg-slate-800/50 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="text-xl font-bold">📊 MarketDly</a>
+                <div class="flex items-center gap-4">
+                    <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
+                    <span id="userEmail" class="text-sm text-gray-400"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+        <!-- Portfolio Summary -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-6">💼 My Portfolio</h1>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Total Value</div>
+                    <div class="text-2xl font-bold" id="totalValue">$0.00</div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Total Cost</div>
+                    <div class="text-2xl font-bold" id="totalCost">$0.00</div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Total Gain/Loss</div>
+                    <div class="text-2xl font-bold" id="totalGain">$0.00</div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <div class="text-sm text-gray-400 mb-1">Return %</div>
+                    <div class="text-2xl font-bold" id="totalGainPct">0.00%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Holding Form -->
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">➕ Add Holding</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <input type="text" id="ticker" placeholder="Ticker (e.g., AAPL)" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" id="shares" placeholder="Shares" step="0.01" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" id="buyPrice" placeholder="Buy Price" step="0.01" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="date" id="buyDate" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
+                <button onclick="addHolding()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">Add</button>
+            </div>
+            <div id="addMessage" class="mt-2 text-sm"></div>
+        </div>
+
+        <!-- Holdings Table -->
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <h2 class="text-xl font-bold mb-4">📈 Holdings</h2>
+            <div id="holdingsTable" class="overflow-x-auto">
+                <div class="text-center text-gray-400 py-8">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/portfolio';
+        let userEmail = localStorage.getItem('userEmail');
+
+        if (!userEmail) {
+            window.location.href = '/';
+        }
+
+        document.getElementById('userEmail').textContent = userEmail;
+        document.getElementById('buyDate').valueAsDate = new Date();
+
+        async function loadPortfolio() {
+            try {
+                const response = await fetch(`${API_URL}?user_email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+
+                document.getElementById('totalValue').textContent = `$${data.total_value.toLocaleString()}`;
+                document.getElementById('totalCost').textContent = `$${data.total_cost.toLocaleString()}`;
+                document.getElementById('totalGain').textContent = `$${data.total_gain.toLocaleString()}`;
+                document.getElementById('totalGain').className = `text-2xl font-bold ${data.total_gain >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('totalGainPct').textContent = `${data.total_gain_pct.toFixed(2)}%`;
+                document.getElementById('totalGainPct').className = `text-2xl font-bold ${data.total_gain_pct >= 0 ? 'text-green-400' : 'text-red-400'}`;
+
+                if (data.holdings.length === 0) {
+                    document.getElementById('holdingsTable').innerHTML = '<div class="text-center text-gray-400 py-8">No holdings yet. Add your first stock above!</div>';
+                    return;
+                }
+
+                const table = `
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-700">
+                                <th class="text-left py-3 px-4">Ticker</th>
+                                <th class="text-right py-3 px-4">Shares</th>
+                                <th class="text-right py-3 px-4">Buy Price</th>
+                                <th class="text-right py-3 px-4">Current Price</th>
+                                <th class="text-right py-3 px-4">Value</th>
+                                <th class="text-right py-3 px-4">Gain/Loss</th>
+                                <th class="text-right py-3 px-4">Return %</th>
+                                <th class="text-center py-3 px-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.holdings.map(h => `
+                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
+                                    <td class="py-3 px-4 font-bold">${h.ticker}</td>
+                                    <td class="text-right py-3 px-4">${h.shares.toFixed(2)}</td>
+                                    <td class="text-right py-3 px-4">$${h.buy_price.toFixed(2)}</td>
+                                    <td class="text-right py-3 px-4">$${h.current_price.toFixed(2)}</td>
+                                    <td class="text-right py-3 px-4">$${h.current_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td class="text-right py-3 px-4 ${h.gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                        ${h.gain_loss >= 0 ? '+' : ''}$${h.gain_loss.toFixed(2)}
+                                    </td>
+                                    <td class="text-right py-3 px-4 ${h.gain_loss_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                        ${h.gain_loss_pct >= 0 ? '+' : ''}${h.gain_loss_pct.toFixed(2)}%
+                                    </td>
+                                    <td class="text-center py-3 px-4">
+                                        <button onclick="deleteHolding('${h.holding_id}')" class="text-red-400 hover:text-red-300">🗑️</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('holdingsTable').innerHTML = table;
+            } catch (error) {
+                document.getElementById('holdingsTable').innerHTML = '<div class="text-center text-red-400 py-8">Error loading portfolio</div>';
+            }
+        }
+
+        async function addHolding() {
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const shares = parseFloat(document.getElementById('shares').value);
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+            const buyDate = document.getElementById('buyDate').value;
+            const msg = document.getElementById('addMessage');
+
+            if (!ticker || !shares || !buyPrice) {
+                msg.className = 'mt-2 text-sm text-red-400';
+                msg.textContent = 'Please fill all fields';
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_email: userEmail, ticker, shares, buy_price: buyPrice, buy_date: buyDate})
+                });
+
+                if (response.ok) {
+                    msg.className = 'mt-2 text-sm text-green-400';
+                    msg.textContent = '✓ Holding added!';
+                    document.getElementById('ticker').value = '';
+                    document.getElementById('shares').value = '';
+                    document.getElementById('buyPrice').value = '';
+                    loadPortfolio();
+                    setTimeout(() => msg.textContent = '', 3000);
+                } else {
+                    throw new Error('Failed to add holding');
+                }
+            } catch (error) {
+                msg.className = 'mt-2 text-sm text-red-400';
+                msg.textContent = 'Error adding holding';
+            }
+        }
+
+        async function deleteHolding(holdingId) {
+            if (!confirm('Delete this holding?')) return;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_email: userEmail, holding_id: holdingId})
+                });
+
+                if (response.ok) {
+                    loadPortfolio();
+                }
+            } catch (error) {
+                alert('Error deleting holding');
+            }
+        }
+
+        loadPortfolio();
+        setInterval(loadPortfolio, 60000); // Refresh every minute
+    </script>
+</body>
+</html>
