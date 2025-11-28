@@ -56,11 +56,22 @@
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold">Holdings</h2>
-                    <button onclick="runBacktest()" id="backtestBtn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition">
-                        🔮 Backtest (1, 3, 5 years)
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="runAIAnalysis()" id="aiAnalysisBtn" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-medium transition">
+                            🤖 AI Analysis
+                        </button>
+                        <button onclick="runBacktest()" id="backtestBtn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition">
+                            🔮 Backtest (1, 3, 5 years)
+                        </button>
+                    </div>
                 </div>
                 <div id="holdingsTable" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- AI Analysis Results -->
+            <div id="aiAnalysisResults" class="hidden bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4">🤖 AI Portfolio Analysis</h2>
+                <div id="aiAnalysisContent" class="prose prose-invert max-w-none"></div>
             </div>
 
             <!-- Backtest Results -->
@@ -155,6 +166,101 @@
         function showError() {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('error').classList.remove('hidden');
+        }
+
+        async function runAIAnalysis() {
+            const btn = document.getElementById('aiAnalysisBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Analyzing...';
+
+            try {
+                const response = await fetch(`${API_URL}/portfolio?portfolio_id=${portfolioId}`);
+                const portfolio = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(portfolio.error);
+                }
+
+                // Build the AI prompt
+                const prompt = buildAIPrompt(portfolio);
+                
+                // Display the prompt for now (you'll integrate with Bedrock later)
+                displayAIPrompt(prompt, portfolio);
+                
+                document.getElementById('aiAnalysisResults').classList.remove('hidden');
+                btn.textContent = '✓ Analysis Complete';
+            } catch (error) {
+                alert('Error running AI analysis: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '🤖 AI Analysis';
+            }
+        }
+
+        function buildAIPrompt(portfolio) {
+            const holdings = portfolio.holdings.map(h => 
+                `${h.ticker}: ${h.allocation_pct.toFixed(1)}% allocation, Entry: $${h.entry_price}, Current: $${h.current_price}, Return: ${h.return_pct >= 0 ? '+' : ''}${h.return_pct.toFixed(2)}%`
+            ).join('\n');
+
+            const prompt = `You are an expert financial analyst. Analyze this investment portfolio and provide actionable insights.
+
+PORTFOLIO: ${portfolio.portfolio_name}
+Created: ${new Date(portfolio.created_at).toLocaleDateString()}
+Total Return: ${portfolio.total_return_pct >= 0 ? '+' : ''}${portfolio.total_return_pct.toFixed(2)}%
+Current Value: $${portfolio.current_value.toLocaleString()}
+Starting Value: $${portfolio.starting_value.toLocaleString()}
+
+HOLDINGS:
+${holdings}
+
+Please provide a comprehensive analysis covering:
+
+1. PORTFOLIO COMPOSITION ANALYSIS
+   - Sector diversification assessment
+   - Concentration risk evaluation
+   - Asset allocation quality
+
+2. PERFORMANCE ANALYSIS
+   - Individual holding performance breakdown
+   - Best and worst performers
+   - Risk-adjusted return assessment
+
+3. RISK ASSESSMENT
+   - Volatility and correlation risks
+   - Sector concentration risks
+   - Market exposure analysis
+
+4. STRATEGIC RECOMMENDATIONS
+   - Rebalancing suggestions (if needed)
+   - Potential additions or removals
+   - Risk mitigation strategies
+
+5. MARKET OUTLOOK
+   - Current market conditions impact
+   - Sector-specific trends affecting holdings
+   - Short-term and long-term outlook
+
+Keep the analysis concise, actionable, and data-driven. Use bullet points for clarity.`;
+
+            return prompt;
+        }
+
+        function displayAIPrompt(prompt, portfolio) {
+            const content = document.getElementById('aiAnalysisContent');
+            
+            // For now, display the prompt and portfolio data
+            // You'll replace this with actual Bedrock API call
+            content.innerHTML = `
+                <div class="bg-slate-800/50 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-bold mb-2">📋 Analysis Prompt</h3>
+                    <pre class="text-sm text-gray-300 whitespace-pre-wrap">${prompt}</pre>
+                </div>
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <p class="text-sm text-blue-300">
+                        💡 <strong>Next Step:</strong> Integrate this prompt with AWS Bedrock (Claude) to get AI-powered analysis.
+                        The prompt is optimized for comprehensive portfolio insights.
+                    </p>
+                </div>
+            `;
         }
 
         async function runBacktest() {
