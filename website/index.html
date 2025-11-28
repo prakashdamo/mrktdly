@@ -86,11 +86,11 @@
                     <button id="navLoginBtn" class="px-5 py-2 text-gray-300 hover:text-white font-medium transition">Login</button>
                     <button id="navSignupBtn" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition hover:scale-105">Sign Up Free</button>
                 </div>
-                <div id="navUserInfo" class="hidden flex items-center gap-3">
-                    <a href="/portfolio.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">💼 My Portfolios</a>
-                    <a href="/challenge.html" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition">🏆 Challenge</a>
-                    <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
-                    <button id="navLogoutBtn" class="px-4 py-2 text-gray-400 hover:text-white transition">Logout</button>
+                <div id="navUserInfo" class="hidden">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
+                        <button id="navLogoutBtn" class="px-4 py-2 text-gray-400 hover:text-white transition">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -395,24 +395,28 @@
         <main id="content" class="hidden space-y-8">
             <!-- Ticker Analysis (Logged In Users Only) -->
             <div id="topTickerAnalysis" class="card hidden">
-                <h2 class="text-2xl font-bold mb-6">🔍 Analyze Any Ticker</h2>
+                <h2 class="text-2xl font-bold mb-2">🔍 Analyze Any Ticker</h2>
                 <p class="text-gray-400 mb-6">Get comprehensive AI-powered analysis for any stock</p>
-                <form id="topTickerForm" class="flex flex-col sm:flex-row gap-4 max-w-2xl">
-                    <input
-                        type="text"
-                        id="topTicker"
-                        placeholder="Enter ticker (e.g., AAPL)"
-                        required
-                        class="flex-1 px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                    />
-                    <button
-                        type="submit"
-                        id="topAnalyzeBtn"
-                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
-                    >
-                        Analyze
-                    </button>
-                </form>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <form id="topTickerForm" class="flex flex-col sm:flex-row gap-3 flex-1">
+                        <input
+                            type="text"
+                            id="topTicker"
+                            placeholder="Enter ticker (e.g., AAPL)"
+                            required
+                            class="flex-1 px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                        />
+                        <button
+                            type="submit"
+                            id="topAnalyzeBtn"
+                            class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition disabled:opacity-50 whitespace-nowrap"
+                        >
+                            Analyze
+                        </button>
+                    </form>
+                    <a href="/portfolio.html" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition whitespace-nowrap text-center">💼 My Portfolios</a>
+                    <a href="/challenge.html" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition whitespace-nowrap text-center">🏆 Challenge</a>
+                </div>
                 <p id="topTickerMessage" class="mt-3 text-sm text-center"></p>
             </div>
 
