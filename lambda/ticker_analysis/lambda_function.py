@@ -84,13 +84,13 @@ def lambda_handler(event, context):
         }
 
 def get_cached_analysis(ticker):
-    """Get cached analysis if less than 5 minutes old"""
+    """Get cached analysis if less than 2 hours old"""
     try:
         response = cache_table.get_item(Key={'ticker': ticker})
         if 'Item' in response:
             item = response['Item']
             cached_time = datetime.fromisoformat(item['timestamp'])
-            if datetime.utcnow() - cached_time < timedelta(minutes=5):
+            if datetime.utcnow() - cached_time < timedelta(hours=2):
                 return {
                     'ticker': item['ticker'],
                     'data': item['data'],
@@ -118,7 +118,7 @@ def cache_analysis(ticker, result):
             'data': convert_to_decimal(result['data']),
             'analysis': result['analysis'],  # Already strings
             'timestamp': datetime.utcnow().isoformat(),
-            'ttl': int((datetime.utcnow() + timedelta(minutes=15)).timestamp())  # Increased to 15 min
+            'ttl': int((datetime.utcnow() + timedelta(hours=2)).timestamp())  # 2 hour cache
         })
     except Exception as e:
         print(f'Cache write error: {e}')
