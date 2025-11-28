@@ -1,0 +1,42 @@
+{
+  "TableName": "mrktdly-portfolios",
+  "KeySchema": [
+    {
+      "AttributeName": "portfolio_id",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "portfolio_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "user_email",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "created_at",
+      "AttributeType": "S"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "user-index",
+      "KeySchema": [
+        {
+          "AttributeName": "user_email",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "created_at",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      }
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

@@ -1,0 +1,24 @@
+{
+  "TableName": "mrktdly-performance",
+  "KeySchema": [
+    {
+      "AttributeName": "portfolio_id",
+      "KeyType": "HASH"
+    },
+    {
+      "AttributeName": "snapshot_date",
+      "KeyType": "RANGE"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "portfolio_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "snapshot_date",
+      "AttributeType": "S"
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

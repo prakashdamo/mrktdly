@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Portfolio - MarketDly</title>
+    <title>Portfolio Challenge - MarketDly</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -18,60 +18,85 @@
                 <a href="/" class="text-xl font-bold">📊 MarketDly</a>
                 <div class="flex items-center gap-4">
                     <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
+                    <a href="#leaderboard" class="text-gray-400 hover:text-white transition">🏆 Leaderboard</a>
                     <span id="userEmail" class="text-sm text-gray-400"></span>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-6 py-8 max-w-6xl">
-        <!-- Portfolio Summary -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold mb-6">💼 My Portfolio</h1>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <div class="text-sm text-gray-400 mb-1">Total Value</div>
-                    <div class="text-2xl font-bold" id="totalValue">$0.00</div>
-                </div>
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <div class="text-sm text-gray-400 mb-1">Total Cost</div>
-                    <div class="text-2xl font-bold" id="totalCost">$0.00</div>
-                </div>
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <div class="text-sm text-gray-400 mb-1">Total Gain/Loss</div>
-                    <div class="text-2xl font-bold" id="totalGain">$0.00</div>
-                </div>
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <div class="text-sm text-gray-400 mb-1">Return %</div>
-                    <div class="text-2xl font-bold" id="totalGainPct">0.00%</div>
-                </div>
+    <div class="container mx-auto px-6 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">💼 Portfolio Challenge</h1>
+            <p class="text-gray-400 text-lg">Build your portfolio, compete with others, climb the leaderboard</p>
+        </div>
+
+        <!-- My Portfolios -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">My Portfolios</h2>
+                <button onclick="showCreateModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
+                    ➕ Create Portfolio
+                </button>
+            </div>
+            <div id="myPortfolios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center text-gray-400 py-12">Loading...</div>
             </div>
         </div>
 
-        <!-- Add Holding Form -->
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4">➕ Add Holding</h2>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <input type="text" id="ticker" placeholder="Ticker (e.g., AAPL)" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" id="shares" placeholder="Shares" step="0.01" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" id="buyPrice" placeholder="Buy Price" step="0.01" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="date" id="buyDate" class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
-                <button onclick="addHolding()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">Add</button>
-            </div>
-            <div id="addMessage" class="mt-2 text-sm"></div>
-        </div>
-
-        <!-- Holdings Table -->
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h2 class="text-xl font-bold mb-4">📈 Holdings</h2>
-            <div id="holdingsTable" class="overflow-x-auto">
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <h2 class="text-2xl font-bold mb-6">🏆 All-Time Leaderboard</h2>
+            <div id="leaderboardTable">
                 <div class="text-center text-gray-400 py-8">Loading...</div>
             </div>
         </div>
     </div>
 
+    <!-- Create Portfolio Modal -->
+    <div id="createModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
+            <h2 class="text-2xl font-bold mb-6">Create Your Portfolio</h2>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Portfolio Name</label>
+                <input type="text" id="portfolioName" placeholder="My Winning Portfolio" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium">Holdings (3-10 stocks)</label>
+                    <span class="text-sm text-gray-400">Total: <span id="totalAllocation">0</span>%</span>
+                </div>
+                <div id="holdingsInputs" class="space-y-3">
+                    <!-- Holdings will be added here -->
+                </div>
+                <button onclick="addHoldingInput()" class="mt-3 text-sm text-blue-400 hover:text-blue-300">+ Add Stock</button>
+            </div>
+
+            <div class="mb-6">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="isPublic" checked class="w-4 h-4">
+                    <span class="text-sm">Make public (visible on leaderboard)</span>
+                </label>
+            </div>
+
+            <div id="createMessage" class="mb-4 text-sm"></div>
+
+            <div class="flex gap-3">
+                <button onclick="createPortfolio()" class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
+                    🚀 Lock & Launch
+                </button>
+                <button onclick="closeCreateModal()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/portfolio';
+        const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
         let userEmail = localStorage.getItem('userEmail');
 
         if (!userEmail) {
@@ -79,124 +104,208 @@
         }
 
         document.getElementById('userEmail').textContent = userEmail;
-        document.getElementById('buyDate').valueAsDate = new Date();
 
-        async function loadPortfolio() {
+        let holdingCount = 0;
+
+        function addHoldingInput() {
+            if (holdingCount >= 10) {
+                alert('Maximum 10 holdings allowed');
+                return;
+            }
+            
+            holdingCount++;
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.id = `holding-${holdingCount}`;
+            div.innerHTML = `
+                <input type="text" placeholder="Ticker (e.g., AAPL)" class="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg ticker-input" onchange="updateTotal()">
+                <input type="number" placeholder="%" step="0.1" min="0" max="100" class="w-24 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg allocation-input" onchange="updateTotal()">
+                <button onclick="removeHolding(${holdingCount})" class="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30">✕</button>
+            `;
+            document.getElementById('holdingsInputs').appendChild(div);
+        }
+
+        function removeHolding(id) {
+            document.getElementById(`holding-${id}`).remove();
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const allocations = document.querySelectorAll('.allocation-input');
+            let total = 0;
+            allocations.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('totalAllocation').textContent = total.toFixed(1);
+            document.getElementById('totalAllocation').className = Math.abs(total - 100) < 0.1 ? 'text-green-400' : 'text-red-400';
+        }
+
+        function showCreateModal() {
+            document.getElementById('createModal').classList.remove('hidden');
+            document.getElementById('holdingsInputs').innerHTML = '';
+            holdingCount = 0;
+            for (let i = 0; i < 3; i++) addHoldingInput();
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
+        }
+
+        async function createPortfolio() {
+            const name = document.getElementById('portfolioName').value.trim();
+            const isPublic = document.getElementById('isPublic').checked;
+            const msg = document.getElementById('createMessage');
+
+            const holdings = [];
+            const tickers = document.querySelectorAll('.ticker-input');
+            const allocations = document.querySelectorAll('.allocation-input');
+
+            for (let i = 0; i < tickers.length; i++) {
+                const ticker = tickers[i].value.trim().toUpperCase();
+                const allocation = parseFloat(allocations[i].value);
+                if (ticker && allocation > 0) {
+                    holdings.push({ticker, allocation_pct: allocation});
+                }
+            }
+
+            if (!name) {
+                msg.className = 'mb-4 text-sm text-red-400';
+                msg.textContent = 'Please enter a portfolio name';
+                return;
+            }
+
+            if (holdings.length < 3) {
+                msg.className = 'mb-4 text-sm text-red-400';
+                msg.textContent = 'Minimum 3 holdings required';
+                return;
+            }
+
+            const total = holdings.reduce((sum, h) => sum + h.allocation_pct, 0);
+            if (Math.abs(total - 100) > 0.1) {
+                msg.className = 'mb-4 text-sm text-red-400';
+                msg.textContent = `Allocations must total 100% (currently ${total.toFixed(1)}%)`;
+                return;
+            }
+
             try {
-                const response = await fetch(`${API_URL}?user_email=${encodeURIComponent(userEmail)}`);
+                msg.className = 'mb-4 text-sm text-gray-400';
+                msg.textContent = 'Creating portfolio...';
+
+                const response = await fetch(`${API_URL}/portfolio`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_email: userEmail, portfolio_name: name, holdings, is_public: isPublic})
+                });
+
                 const data = await response.json();
 
-                document.getElementById('totalValue').textContent = `$${data.total_value.toLocaleString()}`;
-                document.getElementById('totalCost').textContent = `$${data.total_cost.toLocaleString()}`;
-                document.getElementById('totalGain').textContent = `$${data.total_gain.toLocaleString()}`;
-                document.getElementById('totalGain').className = `text-2xl font-bold ${data.total_gain >= 0 ? 'text-green-400' : 'text-red-400'}`;
-                document.getElementById('totalGainPct').textContent = `${data.total_gain_pct.toFixed(2)}%`;
-                document.getElementById('totalGainPct').className = `text-2xl font-bold ${data.total_gain_pct >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                if (response.ok) {
+                    msg.className = 'mb-4 text-sm text-green-400';
+                    msg.textContent = '✓ Portfolio created! Prices locked.';
+                    setTimeout(() => {
+                        closeCreateModal();
+                        loadMyPortfolios();
+                        loadLeaderboard();
+                    }, 1500);
+                } else {
+                    msg.className = 'mb-4 text-sm text-red-400';
+                    msg.textContent = data.error || 'Failed to create portfolio';
+                }
+            } catch (error) {
+                msg.className = 'mb-4 text-sm text-red-400';
+                msg.textContent = 'Error creating portfolio';
+            }
+        }
 
-                if (data.holdings.length === 0) {
-                    document.getElementById('holdingsTable').innerHTML = '<div class="text-center text-gray-400 py-8">No holdings yet. Add your first stock above!</div>';
+        async function loadMyPortfolios() {
+            try {
+                const response = await fetch(`${API_URL}/portfolio?user_email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+
+                const container = document.getElementById('myPortfolios');
+
+                if (!data.portfolios || data.portfolios.length === 0) {
+                    container.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12">No portfolios yet. Create your first one!</div>';
                     return;
                 }
 
-                const table = `
+                container.innerHTML = data.portfolios.map(p => `
+                    <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition">
+                        <h3 class="text-lg font-bold mb-2">${p.portfolio_name}</h3>
+                        <div class="text-3xl font-bold mb-4 ${p.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                            ${p.total_return_pct >= 0 ? '+' : ''}${p.total_return_pct.toFixed(2)}%
+                        </div>
+                        <div class="text-sm text-gray-400 mb-4">
+                            <div>Value: $${p.current_value.toLocaleString()}</div>
+                            <div>Started: ${new Date(p.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewPortfolio('${p.portfolio_id}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('myPortfolios').innerHTML = '<div class="col-span-full text-center text-red-400 py-12">Error loading portfolios</div>';
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch(`${API_URL}/leaderboard`);
+                const data = await response.json();
+
+                const table = document.getElementById('leaderboardTable');
+
+                if (!data.leaderboard || data.leaderboard.length === 0) {
+                    table.innerHTML = '<div class="text-center text-gray-400 py-8">No portfolios yet. Be the first!</div>';
+                    return;
+                }
+
+                table.innerHTML = `
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-slate-700">
-                                <th class="text-left py-3 px-4">Ticker</th>
-                                <th class="text-right py-3 px-4">Shares</th>
-                                <th class="text-right py-3 px-4">Buy Price</th>
-                                <th class="text-right py-3 px-4">Current Price</th>
+                                <th class="text-left py-3 px-4">Rank</th>
+                                <th class="text-left py-3 px-4">Portfolio</th>
+                                <th class="text-left py-3 px-4">User</th>
+                                <th class="text-right py-3 px-4">Return</th>
                                 <th class="text-right py-3 px-4">Value</th>
-                                <th class="text-right py-3 px-4">Gain/Loss</th>
-                                <th class="text-right py-3 px-4">Return %</th>
-                                <th class="text-center py-3 px-4">Action</th>
+                                <th class="text-right py-3 px-4">Created</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${data.holdings.map(h => `
-                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
-                                    <td class="py-3 px-4 font-bold">${h.ticker}</td>
-                                    <td class="text-right py-3 px-4">${h.shares.toFixed(2)}</td>
-                                    <td class="text-right py-3 px-4">$${h.buy_price.toFixed(2)}</td>
-                                    <td class="text-right py-3 px-4">$${h.current_price.toFixed(2)}</td>
-                                    <td class="text-right py-3 px-4">$${h.current_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td class="text-right py-3 px-4 ${h.gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}">
-                                        ${h.gain_loss >= 0 ? '+' : ''}$${h.gain_loss.toFixed(2)}
+                            ${data.leaderboard.map((p, i) => `
+                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 ${i < 3 ? 'bg-yellow-500/5' : ''}">
+                                    <td class="py-3 px-4 font-bold">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+                                    <td class="py-3 px-4">${p.portfolio_name}</td>
+                                    <td class="py-3 px-4 text-gray-400">${p.user_email}</td>
+                                    <td class="text-right py-3 px-4 font-bold ${p.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                        ${p.total_return_pct >= 0 ? '+' : ''}${p.total_return_pct.toFixed(2)}%
                                     </td>
-                                    <td class="text-right py-3 px-4 ${h.gain_loss_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
-                                        ${h.gain_loss_pct >= 0 ? '+' : ''}${h.gain_loss_pct.toFixed(2)}%
-                                    </td>
-                                    <td class="text-center py-3 px-4">
-                                        <button onclick="deleteHolding('${h.holding_id}')" class="text-red-400 hover:text-red-300">🗑️</button>
-                                    </td>
+                                    <td class="text-right py-3 px-4">$${p.current_value.toLocaleString()}</td>
+                                    <td class="text-right py-3 px-4 text-sm text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                 `;
-                document.getElementById('holdingsTable').innerHTML = table;
             } catch (error) {
-                document.getElementById('holdingsTable').innerHTML = '<div class="text-center text-red-400 py-8">Error loading portfolio</div>';
+                document.getElementById('leaderboardTable').innerHTML = '<div class="text-center text-red-400 py-8">Error loading leaderboard</div>';
             }
         }
 
-        async function addHolding() {
-            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
-            const shares = parseFloat(document.getElementById('shares').value);
-            const buyPrice = parseFloat(document.getElementById('buyPrice').value);
-            const buyDate = document.getElementById('buyDate').value;
-            const msg = document.getElementById('addMessage');
-
-            if (!ticker || !shares || !buyPrice) {
-                msg.className = 'mt-2 text-sm text-red-400';
-                msg.textContent = 'Please fill all fields';
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({user_email: userEmail, ticker, shares, buy_price: buyPrice, buy_date: buyDate})
-                });
-
-                if (response.ok) {
-                    msg.className = 'mt-2 text-sm text-green-400';
-                    msg.textContent = '✓ Holding added!';
-                    document.getElementById('ticker').value = '';
-                    document.getElementById('shares').value = '';
-                    document.getElementById('buyPrice').value = '';
-                    loadPortfolio();
-                    setTimeout(() => msg.textContent = '', 3000);
-                } else {
-                    throw new Error('Failed to add holding');
-                }
-            } catch (error) {
-                msg.className = 'mt-2 text-sm text-red-400';
-                msg.textContent = 'Error adding holding';
-            }
+        function viewPortfolio(portfolioId) {
+            window.location.href = `/portfolio-detail.html?id=${portfolioId}`;
         }
 
-        async function deleteHolding(holdingId) {
-            if (!confirm('Delete this holding?')) return;
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'DELETE',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({user_email: userEmail, holding_id: holdingId})
-                });
-
-                if (response.ok) {
-                    loadPortfolio();
-                }
-            } catch (error) {
-                alert('Error deleting holding');
-            }
-        }
-
-        loadPortfolio();
-        setInterval(loadPortfolio, 60000); // Refresh every minute
+        loadMyPortfolios();
+        loadLeaderboard();
+        setInterval(() => {
+            loadMyPortfolios();
+            loadLeaderboard();
+        }, 60000);
     </script>
 </body>
 </html>
