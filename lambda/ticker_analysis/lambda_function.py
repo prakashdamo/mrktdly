@@ -127,9 +127,11 @@ def fetch_ticker_data(symbol):
     """Fetch comprehensive data for a single ticker"""
     try:
         url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=3mo'
+        if not url.startswith('https://'):
+            raise ValueError('Only HTTPS URLs are allowed')
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:  # nosec B310
             result = json.loads(response.read())
             quote = result['chart']['result'][0]
             meta = quote['meta']
