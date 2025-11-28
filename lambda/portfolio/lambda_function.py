@@ -169,7 +169,7 @@ def get_portfolio_detail(portfolio_id):
         return response(500, {'error': str(e)})
 
 def delete_portfolio(portfolio_id, user_email):
-    """Archive a portfolio (soft delete)"""
+    """Archive a portfolio (soft delete) and remove from challenge"""
     try:
         result = portfolios_table.get_item(Key={'portfolio_id': portfolio_id})
         portfolio = result.get('Item')
@@ -179,12 +179,12 @@ def delete_portfolio(portfolio_id, user_email):
         
         portfolios_table.update_item(
             Key={'portfolio_id': portfolio_id},
-            UpdateExpression='SET #status = :status',
+            UpdateExpression='SET #status = :status, submitted_to_challenge = :submitted',
             ExpressionAttributeNames={'#status': 'status'},
-            ExpressionAttributeValues={':status': 'archived'}
+            ExpressionAttributeValues={':status': 'archived', ':submitted': False}
         )
         
-        return response(200, {'message': 'Portfolio archived'})
+        return response(200, {'message': 'Portfolio deleted'})
     except Exception as e:
         return response(500, {'error': str(e)})
 
