@@ -91,6 +91,12 @@
                 <div id="sectorHeatmap" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
             </section>
 
+            <!-- Market Breadth -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📈 Market Breadth</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="marketBreadth"></div>
+            </section>
+
             <!-- Market Overview -->
             <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📊 Market Overview</h2>
@@ -259,6 +265,9 @@
             // Sector Heatmap
             displaySectorHeatmap(data.market_data);
 
+            // Market Breadth
+            displayMarketBreadth(data.market_data);
+
             // Market Overview
             document.getElementById('marketOverview').textContent = analysis.market_overview;
 
@@ -346,6 +355,57 @@
                     <div class="text-2xl font-bold">${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}%</div>
                 `;
                 heatmapDiv.appendChild(div);
+            });
+        }
+
+        function displayMarketBreadth(marketData) {
+            // Filter out futures and crypto for cleaner breadth metrics
+            const stocks = Object.entries(marketData).filter(([symbol]) => 
+                !symbol.includes('=F') && !symbol.includes('-USD')
+            );
+
+            // Advance/Decline
+            const advancing = stocks.filter(([_, data]) => parseFloat(data.change_percent || 0) > 0).length;
+            const declining = stocks.filter(([_, data]) => parseFloat(data.change_percent || 0) < 0).length;
+            const unchanged = stocks.length - advancing - declining;
+            const adRatio = declining > 0 ? (advancing / declining).toFixed(2) : advancing;
+
+            // New Highs/Lows (at 5-day high/low)
+            const newHighs = stocks.filter(([_, data]) => {
+                const price = parseFloat(data.price || 0);
+                const high5d = parseFloat(data.high_5d || 0);
+                return price > 0 && Math.abs(price - high5d) < 0.01;
+            }).length;
+
+            const newLows = stocks.filter(([_, data]) => {
+                const price = parseFloat(data.price || 0);
+                const low5d = parseFloat(data.low_5d || 0);
+                return price > 0 && Math.abs(price - low5d) < 0.01;
+            }).length;
+
+            // Strong movers
+            const strongUp = stocks.filter(([_, data]) => parseFloat(data.change_percent || 0) > 3).length;
+            const strongDown = stocks.filter(([_, data]) => parseFloat(data.change_percent || 0) < -3).length;
+
+            const breadthDiv = document.getElementById('marketBreadth');
+            breadthDiv.innerHTML = '';
+
+            const metrics = [
+                { label: 'Adv/Dec Ratio', value: adRatio, subtext: `${advancing}↑ ${declining}↓`, color: adRatio > 1 ? 'text-green-400' : 'text-red-400' },
+                { label: '5D Highs/Lows', value: `${newHighs}/${newLows}`, subtext: 'New extremes', color: newHighs > newLows ? 'text-green-400' : 'text-red-400' },
+                { label: 'Strong Moves', value: `${strongUp}↑ ${strongDown}↓`, subtext: '>3% change', color: strongUp > strongDown ? 'text-green-400' : 'text-red-400' },
+                { label: 'Total Stocks', value: stocks.length, subtext: 'Tracked', color: 'text-blue-400' }
+            ];
+
+            metrics.forEach(metric => {
+                const div = document.createElement('div');
+                div.className = 'bg-[#252a3a] rounded-lg p-4 text-center';
+                div.innerHTML = `
+                    <div class="text-gray-400 text-xs mb-1">${metric.label}</div>
+                    <div class="${metric.color} text-2xl font-bold mb-1">${metric.value}</div>
+                    <div class="text-gray-500 text-xs">${metric.subtext}</div>
+                `;
+                breadthDiv.appendChild(div);
             });
         }
 
