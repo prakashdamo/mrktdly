@@ -239,14 +239,9 @@
                             <div>Value: $${p.current_value.toLocaleString()}</div>
                             <div>Started: ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="viewPortfolio('${p.portfolio_id}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition">
-                                View Details
-                            </button>
-                            <button onclick="viewPortfolio('${p.portfolio_id}', true)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition" title="Backtest">
-                                🔮
-                            </button>
-                        </div>
+                        <button onclick="viewPortfolio('${p.portfolio_id}')" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition">
+                            View Details
+                        </button>
                     </div>
                 `).join('');
             } catch (error) {
@@ -299,9 +294,8 @@
             }
         }
 
-        function viewPortfolio(portfolioId, autoBacktest = false) {
-            const url = `/portfolio-detail.html?id=${portfolioId}${autoBacktest ? '&backtest=true' : ''}`;
-            window.location.href = url;
+        function viewPortfolio(portfolioId) {
+            window.location.href = `/portfolio-detail.html?id=${portfolioId}`;
         }
 
         loadMyPortfolios();
