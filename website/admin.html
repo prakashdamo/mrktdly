@@ -150,48 +150,29 @@
         </div>
     </div>
 
-    <!-- Cognito SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity-js.min.js"></script>
-    
     <script>
         const ADMIN_EMAIL = 'prakash@dalalbytes.com';
-        const poolData = {
-            UserPoolId: 'us-east-1_N5yuAGHc3',
-            ClientId: '3ras51lrq716j8mij5887uug17'
-        };
-        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
         // Check admin access
         function checkAdminAccess() {
-            const currentUser = userPool.getCurrentUser();
+            // Check localStorage for user email (set during login)
+            const userEmail = localStorage.getItem('userEmail');
             
-            if (!currentUser) {
+            if (!userEmail) {
+                console.log('No user email in localStorage');
                 showAccessDenied();
                 return;
             }
 
-            currentUser.getSession((err, session) => {
-                if (err || !session.isValid()) {
-                    showAccessDenied();
-                    return;
-                }
-
-                currentUser.getUserAttributes((err, attributes) => {
-                    if (err) {
-                        showAccessDenied();
-                        return;
-                    }
-
-                    const email = attributes.find(attr => attr.Name === 'email')?.Value;
-                    
-                    if (email === ADMIN_EMAIL) {
-                        showAdminDashboard(email);
-                        loadMetrics();
-                    } else {
-                        showAccessDenied();
-                    }
-                });
-            });
+            console.log('User email from localStorage:', userEmail);
+            
+            if (userEmail === ADMIN_EMAIL) {
+                showAdminDashboard(userEmail);
+                loadMetrics();
+            } else {
+                console.log('Email does not match admin email');
+                showAccessDenied();
+            }
         }
 
         function showAccessDenied() {

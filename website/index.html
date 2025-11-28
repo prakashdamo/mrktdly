@@ -518,6 +518,7 @@
                     currentUser.getUserAttributes((err, attributes) => {
                         if (!err) {
                             const email = attributes.find(attr => attr.Name === 'email')?.Value;
+                            localStorage.setItem('userEmail', email);
                             showUserInfo(email);
                         }
                     });
@@ -714,6 +715,8 @@
                 onSuccess: (result) => {
                     msg.className = 'text-sm text-center text-green-400';
                     msg.textContent = '✓ Login successful!';
+                    
+                    localStorage.setItem('userEmail', email);
                     
                     setTimeout(() => {
                         document.getElementById('loginModal').classList.add('hidden');
