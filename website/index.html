@@ -132,16 +132,6 @@
                     <span>100% Free</span>
                 </div>
             </div>
-
-            <!-- Date Info & Navigation -->
-            <div class="mt-12 pt-8 border-t border-slate-800">
-                <p class="text-gray-500 text-sm mb-4" id="dateDisplay">Loading...</p>
-                <div class="flex items-center justify-center gap-3">
-                    <button id="prevDay" class="btn-secondary text-sm">← Previous Day</button>
-                    <span class="text-gray-400 text-sm font-medium" id="navDate"></span>
-                    <button id="nextDay" class="btn-secondary text-sm">Next Day →</button>
-                </div>
-            </div>
         </header>
 
         <!-- Signup Modal -->
@@ -369,6 +359,16 @@
 
         <!-- Content -->
         <main id="content" class="hidden space-y-8">
+            <!-- Date Info & Navigation -->
+            <div class="text-center py-8 border-y border-slate-800">
+                <p class="text-gray-400 text-lg font-medium mb-4" id="dateDisplay">Loading...</p>
+                <div class="flex items-center justify-center gap-4">
+                    <button id="prevDay" class="btn-secondary">← Previous Day</button>
+                    <span class="text-gray-500 text-sm font-medium" id="navDate"></span>
+                    <button id="nextDay" class="btn-secondary">Next Day →</button>
+                </div>
+            </div>
+
             <!-- Sector Heatmap -->
             <article class="card">
                 <h2 class="text-2xl font-bold mb-6">🔥 Sector Performance</h2>
