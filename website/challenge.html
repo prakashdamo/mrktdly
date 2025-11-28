@@ -71,6 +71,7 @@
                                 <th class="text-right py-3 px-4">Return</th>
                                 <th class="text-right py-3 px-4">Value</th>
                                 <th class="text-right py-3 px-4">Created</th>
+                                <th class="text-center py-3 px-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,6 +85,11 @@
                                     </td>
                                     <td class="text-right py-3 px-4">$${p.current_value.toLocaleString()}</td>
                                     <td class="text-right py-3 px-4 text-sm text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
+                                    <td class="text-center py-3 px-4">
+                                        <button onclick="viewPortfolio('${p.portfolio_id}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition">
+                                            View
+                                        </button>
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
