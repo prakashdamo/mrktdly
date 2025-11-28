@@ -17,8 +17,8 @@
             <div class="flex items-center justify-between">
                 <a href="/" class="text-xl font-bold">📊 MarketDly</a>
                 <div class="flex items-center gap-4">
+                    <a href="/challenge.html" class="text-gray-400 hover:text-white transition">🏆 Challenge</a>
                     <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
-                    <a href="#leaderboard" class="text-gray-400 hover:text-white transition">🏆 Leaderboard</a>
                     <span id="userEmail" class="text-sm text-gray-400"></span>
                 </div>
             </div>
@@ -28,8 +28,8 @@
     <div class="container mx-auto px-6 py-8 max-w-7xl">
         <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold mb-4">💼 Portfolio Challenge</h1>
-            <p class="text-gray-400 text-lg">Build your portfolio, compete with others, climb the leaderboard</p>
+            <h1 class="text-4xl font-bold mb-4">💼 My Portfolios</h1>
+            <p class="text-gray-400 text-lg">Manage your portfolios and submit to the challenge</p>
         </div>
 
         <!-- My Portfolios -->
@@ -42,14 +42,6 @@
             </div>
             <div id="myPortfolios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="text-center text-gray-400 py-12">Loading...</div>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div id="leaderboard" class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h2 class="text-2xl font-bold mb-6">🏆 All-Time Leaderboard</h2>
-            <div id="leaderboardTable">
-                <div class="text-center text-gray-400 py-8">Loading...</div>
             </div>
         </div>
     </div>
@@ -205,7 +197,6 @@
                     setTimeout(() => {
                         closeCreateModal();
                         loadMyPortfolios();
-                        loadLeaderboard();
                     }, 1500);
                 } else {
                     msg.className = 'mb-4 text-sm text-red-400';
@@ -231,7 +222,10 @@
 
                 container.innerHTML = data.portfolios.map(p => `
                     <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition">
-                        <h3 class="text-lg font-bold mb-2">${p.portfolio_name}</h3>
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="text-lg font-bold">${p.portfolio_name}</h3>
+                            ${p.submitted_to_challenge ? '<span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">IN CHALLENGE</span>' : ''}
+                        </div>
                         <div class="text-3xl font-bold mb-4 ${p.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
                             ${p.total_return_pct >= 0 ? '+' : ''}${p.total_return_pct.toFixed(2)}%
                         </div>
@@ -239,9 +233,16 @@
                             <div>Value: $${p.current_value.toLocaleString()}</div>
                             <div>Started: ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
-                        <button onclick="viewPortfolio('${p.portfolio_id}')" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition">
-                            View Details
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="viewPortfolio('${p.portfolio_id}')" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition">
+                                View Details
+                            </button>
+                            ${!p.submitted_to_challenge ? `
+                                <button onclick="submitToChallenge('${p.portfolio_id}')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition">
+                                    🏆 Submit
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `).join('');
             } catch (error) {
@@ -249,61 +250,37 @@
             }
         }
 
-        async function loadLeaderboard() {
-            try {
-                const response = await fetch(`${API_URL}/leaderboard`);
-                const data = await response.json();
-
-                const table = document.getElementById('leaderboardTable');
-
-                if (!data.leaderboard || data.leaderboard.length === 0) {
-                    table.innerHTML = '<div class="text-center text-gray-400 py-8">No portfolios yet. Be the first!</div>';
-                    return;
-                }
-
-                table.innerHTML = `
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b border-slate-700">
-                                <th class="text-left py-3 px-4">Rank</th>
-                                <th class="text-left py-3 px-4">Portfolio</th>
-                                <th class="text-left py-3 px-4">User</th>
-                                <th class="text-right py-3 px-4">Return</th>
-                                <th class="text-right py-3 px-4">Value</th>
-                                <th class="text-right py-3 px-4">Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.leaderboard.map((p, i) => `
-                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 ${i < 3 ? 'bg-yellow-500/5' : ''}">
-                                    <td class="py-3 px-4 font-bold">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
-                                    <td class="py-3 px-4">${p.portfolio_name}</td>
-                                    <td class="py-3 px-4 text-gray-400">${p.user_email}</td>
-                                    <td class="text-right py-3 px-4 font-bold ${p.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
-                                        ${p.total_return_pct >= 0 ? '+' : ''}${p.total_return_pct.toFixed(2)}%
-                                    </td>
-                                    <td class="text-right py-3 px-4">$${p.current_value.toLocaleString()}</td>
-                                    <td class="text-right py-3 px-4 text-sm text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (error) {
-                document.getElementById('leaderboardTable').innerHTML = '<div class="text-center text-red-400 py-8">Error loading leaderboard</div>';
-            }
-        }
-
         function viewPortfolio(portfolioId) {
             window.location.href = `/portfolio-detail.html?id=${portfolioId}`;
         }
 
+        async function submitToChallenge(portfolioId) {
+            if (!confirm('Submit this portfolio to the public challenge? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/submit-challenge`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({portfolio_id: portfolioId, user_email: userEmail})
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('✓ Portfolio submitted to challenge!');
+                    loadMyPortfolios();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to submit'));
+                }
+            } catch (error) {
+                alert('Error submitting to challenge');
+            }
+        }
+
         loadMyPortfolios();
-        loadLeaderboard();
-        setInterval(() => {
-            loadMyPortfolios();
-            loadLeaderboard();
-        }, 60000);
+        setInterval(loadMyPortfolios, 60000);
     </script>
 </body>
 </html>

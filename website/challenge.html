@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Challenge - MarketDly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+    <!-- Navigation -->
+    <nav class="bg-slate-800/50 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="text-xl font-bold">📊 MarketDly</a>
+                <div class="flex items-center gap-4">
+                    <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">💼 My Portfolios</a>
+                    <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
+                    <span id="userEmail" class="text-sm text-gray-400"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">🏆 Portfolio Challenge</h1>
+            <p class="text-gray-400 text-lg">Compete with traders worldwide - Top performers ranked by returns</p>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <h2 class="text-2xl font-bold mb-6">🏆 All-Time Leaderboard</h2>
+            <div id="leaderboardTable">
+                <div class="text-center text-gray-400 py-8">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
+        let userEmail = localStorage.getItem('userEmail');
+
+        if (userEmail) {
+            document.getElementById('userEmail').textContent = userEmail;
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch(`${API_URL}/leaderboard`);
+                const data = await response.json();
+
+                const table = document.getElementById('leaderboardTable');
+
+                if (!data.leaderboard || data.leaderboard.length === 0) {
+                    table.innerHTML = '<div class="text-center text-gray-400 py-8">No portfolios yet. Be the first!</div>';
+                    return;
+                }
+
+                table.innerHTML = `
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-700">
+                                <th class="text-left py-3 px-4">Rank</th>
+                                <th class="text-left py-3 px-4">Portfolio</th>
+                                <th class="text-left py-3 px-4">User</th>
+                                <th class="text-right py-3 px-4">Return</th>
+                                <th class="text-right py-3 px-4">Value</th>
+                                <th class="text-right py-3 px-4">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.leaderboard.map((p, i) => `
+                                <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 ${i < 3 ? 'bg-yellow-500/5' : ''}">
+                                    <td class="py-3 px-4 font-bold">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+                                    <td class="py-3 px-4">${p.portfolio_name}</td>
+                                    <td class="py-3 px-4 text-gray-400">${p.user_email}</td>
+                                    <td class="text-right py-3 px-4 font-bold ${p.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                        ${p.total_return_pct >= 0 ? '+' : ''}${p.total_return_pct.toFixed(2)}%
+                                    </td>
+                                    <td class="text-right py-3 px-4">$${p.current_value.toLocaleString()}</td>
+                                    <td class="text-right py-3 px-4 text-sm text-gray-400">${new Date(p.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById('leaderboardTable').innerHTML = '<div class="text-center text-red-400 py-8">Error loading leaderboard</div>';
+            }
+        }
+
+        function viewPortfolio(portfolioId) {
+            window.location.href = `/portfolio-detail.html?id=${portfolioId}`;
+        }
+
+        loadLeaderboard();
+        setInterval(loadLeaderboard, 60000);
+    </script>
+</body>
+</html>

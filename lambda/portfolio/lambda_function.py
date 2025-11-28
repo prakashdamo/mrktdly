@@ -21,6 +21,10 @@ def lambda_handler(event, context):
     if 'leaderboard' in path:
         return get_leaderboard(params.get('period', 'all-time'))
     
+    # Submit to challenge
+    if 'submit-challenge' in path and http_method == 'POST':
+        return submit_to_challenge(body.get('portfolio_id'), user_email)
+    
     # Backtest endpoint
     if 'backtest' in path and params.get('portfolio_id'):
         return backtest_portfolio(params.get('portfolio_id'))
@@ -76,6 +80,7 @@ def create_portfolio(user_email, data):
             'portfolio_name': data.get('portfolio_name', 'My Portfolio'),
             'created_at': created_at,
             'is_public': data.get('is_public', True),
+            'submitted_to_challenge': False,
             'status': 'active',
             'holdings': enriched_holdings,
             'starting_value': Decimal('10000')
@@ -184,12 +189,12 @@ def delete_portfolio(portfolio_id, user_email):
         return response(500, {'error': str(e)})
 
 def get_leaderboard(period='all-time'):
-    """Get top performing portfolios"""
+    """Get top performing portfolios submitted to challenge"""
     try:
         result = portfolios_table.scan(
-            FilterExpression='#status = :status AND is_public = :public',
+            FilterExpression='#status = :status AND submitted_to_challenge = :submitted',
             ExpressionAttributeNames={'#status': 'status'},
-            ExpressionAttributeValues={':status': 'active', ':public': True}
+            ExpressionAttributeValues={':status': 'active', ':submitted': True}
         )
         
         portfolios = result.get('Items', [])
@@ -205,13 +210,45 @@ def get_leaderboard(period='all-time'):
                 'user_email': portfolio['user_email'].split('@')[0] + '***',  # Anonymize
                 'total_return_pct': float(total_return),
                 'current_value': float(current_value),
-                'created_at': portfolio['created_at']
+                'created_at': portfolio['created_at'],
+                'submitted_at': portfolio.get('submitted_at', portfolio['created_at'])
             })
         
         # Sort by return
         leaderboard.sort(key=lambda x: x['total_return_pct'], reverse=True)
         
         return response(200, {'leaderboard': leaderboard[:50]})  # Top 50
+    except Exception as e:
+        return response(500, {'error': str(e)})
+
+def submit_to_challenge(portfolio_id, user_email):
+    """Submit portfolio to public challenge"""
+    try:
+        from datetime import datetime as dt
+        
+        result = portfolios_table.get_item(Key={'portfolio_id': portfolio_id})
+        portfolio = result.get('Item')
+        
+        if not portfolio:
+            return response(404, {'error': 'Portfolio not found'})
+        
+        if portfolio.get('user_email') != user_email:
+            return response(403, {'error': 'Unauthorized'})
+        
+        if portfolio.get('submitted_to_challenge'):
+            return response(400, {'error': 'Portfolio already submitted to challenge'})
+        
+        # Submit to challenge
+        portfolios_table.update_item(
+            Key={'portfolio_id': portfolio_id},
+            UpdateExpression='SET submitted_to_challenge = :submitted, submitted_at = :timestamp',
+            ExpressionAttributeValues={
+                ':submitted': True,
+                ':timestamp': dt.utcnow().isoformat()
+            }
+        )
+        
+        return response(200, {'message': 'Portfolio submitted to challenge!'})
     except Exception as e:
         return response(500, {'error': str(e)})
 
