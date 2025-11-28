@@ -59,41 +59,88 @@
     <link rel="preconnect" href="https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com">
     <link rel="dns-prefetch" href="https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com">
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .btn-primary { @apply px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl; }
+        .btn-secondary { @apply px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg transition-all duration-200; }
+        .card { @apply bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition-all duration-200; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
-    <div class="container mx-auto px-6 py-8 max-w-5xl">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">
-                Daily Market Summary
-            </h1>
-            <p class="text-gray-400" id="dateDisplay">Loading...</p>
-            <div class="flex items-center justify-center gap-4 mt-4">
+<body class="bg-slate-900 text-white antialiased">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-gray-400 text-sm">Educational Content Only</span>
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center font-bold text-lg">
+                        DMS
+                    </div>
+                    <span class="text-xl font-bold">Daily Market Summary</span>
                 </div>
-                <div class="text-gray-600">•</div>
-                <div class="text-gray-400 text-sm">Free Daily Analysis</div>
+                <div id="navAuth" class="flex items-center gap-3">
+                    <button id="navLoginBtn" class="px-5 py-2 text-gray-300 hover:text-white font-medium transition">Login</button>
+                    <button id="navSignupBtn" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition hover:scale-105">Sign Up Free</button>
+                </div>
+                <div id="navUserInfo" class="hidden flex items-center gap-3">
+                    <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
+                    <button id="navLogoutBtn" class="px-4 py-2 text-gray-400 hover:text-white transition">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-7xl">
+        <!-- Hero Section -->
+        <header class="text-center mb-16 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                AI-Powered Market Intelligence<br/>
+                <span class="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">for Smart Traders</span>
+            </h1>
+            <p class="text-xl text-gray-400 mb-8 leading-relaxed">
+                Get instant analysis of 135+ stocks with technical levels, sector rotation insights, and market breadth indicators. Updated daily.
+            </p>
+            
+            <div id="heroAuth" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+                <button id="heroSignupBtn" class="btn-primary w-full sm:w-auto">
+                    Start Free Analysis →
+                </button>
+                <button id="heroLoginBtn" class="btn-secondary w-full sm:w-auto">
+                    Login
+                </button>
             </div>
             
-            <!-- Date Navigation -->
-            <div class="flex items-center justify-center gap-3 mt-6">
-                <button id="prevDay" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm">← Previous</button>
-                <span class="text-gray-400 text-sm" id="navDate"></span>
-                <button id="nextDay" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm">Next →</button>
+            <div id="heroUserWelcome" class="hidden mb-8">
+                <p class="text-lg text-gray-300">Welcome back, <span id="heroUserEmail" class="text-blue-400 font-semibold"></span>! 👋</p>
             </div>
-            
-            <!-- Auth Status -->
-            <div id="authStatus" class="mt-4 text-center">
-                <button id="loginBtn" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition text-sm font-semibold">Login</button>
-                <button id="signupBtn" class="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 rounded-lg transition text-sm font-semibold ml-2">Sign Up Free</button>
+
+            <div class="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>No credit card required</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>2-minute setup</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span>100% Free</span>
+                </div>
             </div>
-            <div id="userInfo" class="mt-4 text-center hidden">
-                <span class="text-gray-400">Welcome, <span id="userEmail" class="text-blue-400"></span></span>
-                <button id="logoutBtn" class="ml-4 px-4 py-1 bg-white/10 hover:bg-white/20 rounded text-sm">Logout</button>
+
+            <!-- Date Info & Navigation -->
+            <div class="mt-12 pt-8 border-t border-slate-800">
+                <p class="text-gray-500 text-sm mb-4" id="dateDisplay">Loading...</p>
+                <div class="flex items-center justify-center gap-3">
+                    <button id="prevDay" class="btn-secondary text-sm">← Previous Day</button>
+                    <span class="text-gray-400 text-sm font-medium" id="navDate"></span>
+                    <button id="nextDay" class="btn-secondary text-sm">Next Day →</button>
+                </div>
             </div>
         </header>
 
@@ -258,22 +305,22 @@
         </div>
 
         <!-- Ticker Analysis Tool -->
-        <div id="tickerAnalysisSection" class="bg-gradient-to-r from-purple-500/10 to-pink-600/10 border border-purple-500/30 rounded-xl p-6 mb-8">
+        <div id="tickerAnalysisSection" class="card mb-12">
             <!-- Logged Out View -->
-            <div id="tickerLoginPrompt" class="text-center py-8">
-                <div class="text-5xl mb-4">🔒</div>
-                <h2 class="text-2xl font-semibold mb-3">Unlock Ticker Analysis</h2>
-                <p class="text-gray-300 mb-6">Sign up free to analyze any stock with AI-powered insights</p>
-                <button id="signupForTicker" class="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-lg hover:opacity-90 transition text-lg">
-                    Sign Up Free
+            <div id="tickerLoginPrompt" class="text-center py-12">
+                <div class="text-6xl mb-6">🔒</div>
+                <h2 class="text-3xl font-bold mb-4">Unlock Ticker Analysis</h2>
+                <p class="text-gray-400 text-lg mb-8 max-w-md mx-auto">Sign up free to analyze any stock with AI-powered insights and technical levels</p>
+                <button id="signupForTicker" class="btn-primary">
+                    Sign Up Free →
                 </button>
             </div>
             
             <!-- Logged In View -->
             <div id="tickerAnalysisForm" class="hidden">
-                <h2 class="text-2xl font-semibold mb-3 text-center">Analyze Any Ticker</h2>
-                <p class="text-gray-300 text-center mb-4">Get comprehensive AI-powered analysis for any stock</p>
-                <form id="tickerForm" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-6">🔍 Analyze Any Ticker</h2>
+                <p class="text-gray-400 mb-6">Get comprehensive AI-powered analysis for any stock</p>
+                <form id="tickerForm" class="flex flex-col sm:flex-row gap-4 max-w-2xl">
                 <input
                     type="text"
                     id="ticker"
@@ -300,41 +347,41 @@
         </div>
 
         <!-- Content -->
-        <main id="content" class="hidden space-y-6">
+        <main id="content" class="hidden space-y-8">
             <!-- Sector Heatmap -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Sector Performance</h2>
-                <div id="sectorHeatmap" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+            <article class="card">
+                <h2 class="text-2xl font-bold mb-6">🔥 Sector Performance</h2>
+                <div id="sectorHeatmap" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
             </article>
 
             <!-- Market Breadth -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📈 Market Breadth</h2>
+            <article class="card">
+                <h2 class="text-2xl font-bold mb-6">📈 Market Breadth</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="marketBreadth"></div>
             </article>
 
             <!-- Market Overview -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📊 Market Overview</h2>
-                <p class="text-gray-300 leading-relaxed" id="marketOverview"></p>
+            <article class="card">
+                <h2 class="text-2xl font-bold mb-6">📊 Market Overview</h2>
+                <p class="text-gray-300 leading-relaxed text-lg" id="marketOverview"></p>
             </article>
 
             <!-- Market Insights -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">💡 Market Insights</h2>
-                <ul class="space-y-3 text-gray-300" id="marketInsights"></ul>
+            <article class="card">
+                <h2 class="text-2xl font-bold mb-6">💡 Market Insights</h2>
+                <ul class="space-y-4 text-gray-300" id="marketInsights"></ul>
             </article>
 
             <!-- Levels to Watch -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🎯 Levels to Watch</h2>
-                <div class="space-y-3" id="levelsToWatch"></div>
+            <article class="card">
+                <h2 class="text-2xl font-bold mb-6">🎯 Levels to Watch</h2>
+                <div class="space-y-4" id="levelsToWatch"></div>
             </article>
 
             <!-- Unusual Activity -->
-            <article class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6" id="unusualSection">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Unusual Activity</h2>
-                <div class="space-y-3" id="unusualActivity"></div>
+            <article class="card" id="unusualSection">
+                <h2 class="text-2xl font-bold mb-6">⚡ Unusual Activity</h2>
+                <div class="space-y-4" id="unusualActivity"></div>
             </article>
 
             <!-- Disclaimer -->
@@ -428,18 +475,29 @@
         }
 
         function showAuthButtons() {
-            document.getElementById('authStatus').classList.remove('hidden');
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('tickerLoginPrompt').classList.remove('hidden');
-            document.getElementById('tickerAnalysisForm').classList.add('hidden');
+            // Hero section
+            document.getElementById('heroAuth')?.classList.remove('hidden');
+            document.getElementById('heroUserWelcome')?.classList.add('hidden');
+            // Navigation
+            document.getElementById('navAuth')?.classList.remove('hidden');
+            document.getElementById('navUserInfo')?.classList.add('hidden');
+            // Ticker section
+            document.getElementById('tickerLoginPrompt')?.classList.remove('hidden');
+            document.getElementById('tickerAnalysisForm')?.classList.add('hidden');
         }
 
         function showUserInfo(email) {
-            document.getElementById('authStatus').classList.add('hidden');
-            document.getElementById('userInfo').classList.remove('hidden');
-            document.getElementById('userEmail').textContent = email;
-            document.getElementById('tickerLoginPrompt').classList.add('hidden');
-            document.getElementById('tickerAnalysisForm').classList.remove('hidden');
+            // Hero section
+            document.getElementById('heroAuth')?.classList.add('hidden');
+            document.getElementById('heroUserWelcome')?.classList.remove('hidden');
+            document.getElementById('heroUserEmail').textContent = email;
+            // Navigation
+            document.getElementById('navAuth')?.classList.add('hidden');
+            document.getElementById('navUserInfo')?.classList.remove('hidden');
+            document.getElementById('navUserEmail').textContent = email;
+            // Ticker section
+            document.getElementById('tickerLoginPrompt')?.classList.add('hidden');
+            document.getElementById('tickerAnalysisForm')?.classList.remove('hidden');
         }
 
         // Signup button in ticker section
@@ -447,12 +505,19 @@
             document.getElementById('signupModal').classList.remove('hidden');
         });
 
-        // Modal controls
-        document.getElementById('signupBtn').addEventListener('click', () => {
+        // Modal controls - Hero buttons
+        document.getElementById('heroSignupBtn').addEventListener('click', () => {
             document.getElementById('signupModal').classList.remove('hidden');
         });
+        document.getElementById('heroLoginBtn').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.remove('hidden');
+        });
 
-        document.getElementById('loginBtn').addEventListener('click', () => {
+        // Modal controls - Nav buttons
+        document.getElementById('navSignupBtn').addEventListener('click', () => {
+            document.getElementById('signupModal').classList.remove('hidden');
+        });
+        document.getElementById('navLoginBtn').addEventListener('click', () => {
             document.getElementById('loginModal').classList.remove('hidden');
         });
 
@@ -613,7 +678,7 @@
         });
 
         // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('navLogoutBtn').addEventListener('click', () => {
             if (currentUser) {
                 currentUser.signOut();
                 currentUser = null;
