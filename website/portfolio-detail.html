@@ -207,33 +207,70 @@
             const returnPct = portfolio.total_return_pct;
             const holdings = portfolio.holdings;
             
+            // Sector mapping (simplified)
+            const sectorMap = {
+                'AAPL': 'Tech', 'MSFT': 'Tech', 'GOOGL': 'Tech', 'META': 'Tech', 'NVDA': 'Tech', 'AMD': 'Tech', 'INTC': 'Tech', 'TSLA': 'Auto', 'NFLX': 'Tech',
+                'AMZN': 'Consumer', 'WMT': 'Consumer', 'TGT': 'Consumer', 'COST': 'Consumer', 'HD': 'Consumer', 'NKE': 'Consumer',
+                'JPM': 'Finance', 'BAC': 'Finance', 'GS': 'Finance', 'MS': 'Finance', 'V': 'Finance', 'MA': 'Finance',
+                'JNJ': 'Healthcare', 'PFE': 'Healthcare', 'UNH': 'Healthcare', 'ABBV': 'Healthcare',
+                'XOM': 'Energy', 'CVX': 'Energy', 'COP': 'Energy',
+                'DIS': 'Media', 'CMCSA': 'Media',
+                'BA': 'Industrial', 'CAT': 'Industrial', 'GE': 'Industrial'
+            };
+            
+            // Calculate sector allocation
+            const sectorAllocation = {};
+            holdings.forEach(h => {
+                const sector = sectorMap[h.ticker] || 'Other';
+                sectorAllocation[sector] = (sectorAllocation[sector] || 0) + h.allocation_pct;
+            });
+            
+            const sectors = Object.keys(sectorAllocation);
+            const numSectors = sectors.length;
+            const maxSectorAllocation = Math.max(...Object.values(sectorAllocation));
+            
             // 1. Portfolio Score (0-100)
-            let score = 50; // Base score
+            let score = 0;
             
-            // Performance component (max 30 points)
-            if (returnPct > 20) score += 30;
-            else if (returnPct > 10) score += 20;
-            else if (returnPct > 0) score += 10;
-            else if (returnPct > -10) score += 5;
+            // Performance component (0-35 points)
+            if (returnPct >= 30) score += 35;
+            else if (returnPct >= 20) score += 30;
+            else if (returnPct >= 15) score += 25;
+            else if (returnPct >= 10) score += 20;
+            else if (returnPct >= 5) score += 15;
+            else if (returnPct >= 0) score += 10;
+            else if (returnPct >= -5) score += 5;
             
-            // Diversification component (max 20 points)
+            // Sector diversification (0-25 points)
+            if (numSectors >= 5 && maxSectorAllocation < 40) score += 25;
+            else if (numSectors >= 4 && maxSectorAllocation < 50) score += 20;
+            else if (numSectors >= 3 && maxSectorAllocation < 60) score += 15;
+            else if (numSectors >= 2) score += 10;
+            else score += 5;
+            
+            // Holdings count (0-15 points)
             const numHoldings = holdings.length;
-            if (numHoldings >= 8) score += 20;
-            else if (numHoldings >= 5) score += 15;
-            else if (numHoldings >= 3) score += 10;
+            if (numHoldings >= 10) score += 15;
+            else if (numHoldings >= 7) score += 12;
+            else if (numHoldings >= 5) score += 10;
+            else if (numHoldings >= 3) score += 7;
             
-            // Balance component (max 20 points)
+            // Balance/concentration (0-15 points)
             const maxAllocation = Math.max(...holdings.map(h => h.allocation_pct));
-            if (maxAllocation < 25) score += 20;
-            else if (maxAllocation < 35) score += 15;
-            else if (maxAllocation < 50) score += 10;
+            if (maxAllocation < 20) score += 15;
+            else if (maxAllocation < 30) score += 12;
+            else if (maxAllocation < 40) score += 8;
+            else if (maxAllocation < 50) score += 4;
             
-            // Risk component (max 10 points)
-            const avgReturn = holdings.reduce((sum, h) => sum + Math.abs(h.return_pct), 0) / holdings.length;
-            if (avgReturn < 15) score += 10;
-            else if (avgReturn < 25) score += 5;
+            // Consistency (0-10 points) - all holdings positive
+            const allPositive = holdings.every(h => h.return_pct >= 0);
+            const mostPositive = holdings.filter(h => h.return_pct >= 0).length / holdings.length;
+            if (allPositive) score += 10;
+            else if (mostPositive >= 0.8) score += 7;
+            else if (mostPositive >= 0.6) score += 5;
+            else if (mostPositive >= 0.4) score += 3;
             
-            score = Math.min(100, Math.max(0, score));
+            score = Math.min(100, Math.max(0, Math.round(score)));
             
             // Grade
             let grade = 'F';
@@ -246,32 +283,53 @@
             else if (score >= 60) grade = 'C+';
             else if (score >= 55) grade = 'C';
             else if (score >= 50) grade = 'C-';
-            else if (score >= 45) grade = 'D';
+            else if (score >= 40) grade = 'D';
             
-            // 2. Benchmark comparison (assume S&P 500 YTD ~15%)
-            const spReturn = 15.0;
+            // 2. Benchmark comparison (S&P 500 YTD ~26% in 2024)
+            const spReturn = 26.0;
             const diff = returnPct - spReturn;
             const beating = diff > 0;
             
-            // 3. Volatility (based on return spread)
+            // 3. Volatility (based on individual stock return spread)
             const returns = holdings.map(h => h.return_pct);
-            const avgRet = returns.reduce((a, b) => a + b, 0) / returns.length;
-            const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgRet, 2), 0) / returns.length;
-            const volatility = Math.sqrt(variance);
+            const maxReturn = Math.max(...returns);
+            const minReturn = Math.min(...returns);
+            const returnSpread = maxReturn - minReturn;
             
             let volLevel = 'Low';
-            let volRisk = 3;
-            if (volatility > 30) { volLevel = 'Very High'; volRisk = 9; }
-            else if (volatility > 20) { volLevel = 'High'; volRisk = 7; }
-            else if (volatility > 10) { volLevel = 'Medium'; volRisk = 5; }
+            let volRisk = 2;
+            if (returnSpread > 100) { volLevel = 'Very High'; volRisk = 9; }
+            else if (returnSpread > 60) { volLevel = 'High'; volRisk = 7; }
+            else if (returnSpread > 30) { volLevel = 'Medium'; volRisk = 5; }
+            else if (returnSpread > 15) { volLevel = 'Low-Med'; volRisk = 3; }
             
-            // 4. Diversification score
-            const divScore = Math.min(10, Math.round((numHoldings / 10) * 10));
-            const concentration = maxAllocation;
+            // 4. Diversification score (sector-based)
+            let divScore = 0;
+            
+            // Sector count (0-5 points)
+            if (numSectors >= 5) divScore += 5;
+            else if (numSectors >= 4) divScore += 4;
+            else if (numSectors >= 3) divScore += 3;
+            else if (numSectors >= 2) divScore += 2;
+            else divScore += 1;
+            
+            // Sector balance (0-5 points)
+            if (maxSectorAllocation < 30) divScore += 5;
+            else if (maxSectorAllocation < 40) divScore += 4;
+            else if (maxSectorAllocation < 50) divScore += 3;
+            else if (maxSectorAllocation < 60) divScore += 2;
+            else divScore += 1;
+            
+            divScore = Math.min(10, divScore);
+            
             let divLevel = 'Poor';
-            if (divScore >= 8 && concentration < 30) divLevel = 'Excellent';
-            else if (divScore >= 6 && concentration < 40) divLevel = 'Good';
-            else if (divScore >= 4) divLevel = 'Fair';
+            if (divScore >= 9) divLevel = 'Excellent';
+            else if (divScore >= 7) divLevel = 'Good';
+            else if (divScore >= 5) divLevel = 'Fair';
+            
+            const sectorBreakdown = Object.entries(sectorAllocation)
+                .map(([sector, pct]) => `${sector}: ${pct.toFixed(0)}%`)
+                .join(', ');
             
             // Update Dashboard Cards (Option A)
             document.getElementById('portfolioScore').textContent = score;
@@ -284,13 +342,13 @@
             document.getElementById('volatilityDesc').textContent = `Risk: ${volRisk}/10`;
             
             document.getElementById('diversificationScore').textContent = `${divScore}/10`;
-            document.getElementById('diversificationDesc').textContent = divLevel;
+            document.getElementById('diversificationDesc').textContent = `${numSectors} sectors`;
             
             // Update Inline Metrics (Option B)
             document.getElementById('scoreInline').innerHTML = `Score: <span class="text-blue-400 font-bold">${grade}</span> (${score}/100)`;
             document.getElementById('benchmarkInline').innerHTML = `vs S&P: <span class="${beating ? 'text-green-400' : 'text-red-400'} font-bold">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%</span> ${beating ? '✓' : '✗'}`;
             document.getElementById('volatilityInline').innerHTML = `Volatility: <span class="text-yellow-400 font-bold">${volLevel}</span>`;
-            document.getElementById('diversificationInline').innerHTML = `Diversification: <span class="text-purple-400 font-bold">${divScore}/10</span>`;
+            document.getElementById('diversificationInline').innerHTML = `Diversification: <span class="text-purple-400 font-bold">${divScore}/10</span> (${numSectors} sectors)`;
         }
 
         function showError() {
