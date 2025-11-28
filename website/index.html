@@ -22,6 +22,13 @@
                 <div class="text-gray-600">•</div>
                 <div class="text-gray-400 text-sm">Free Daily Analysis</div>
             </div>
+            
+            <!-- Date Navigation -->
+            <div class="flex items-center justify-center gap-3 mt-6">
+                <button id="prevDay" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm">← Previous</button>
+                <span class="text-gray-400 text-sm" id="navDate"></span>
+                <button id="nextDay" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm">Next →</button>
+            </div>
         </header>
 
         <!-- Waitlist CTA -->
@@ -78,6 +85,12 @@
 
         <!-- Content -->
         <div id="content" class="hidden space-y-6">
+            <!-- Sector Heatmap -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">🔥 Sector Performance</h2>
+                <div id="sectorHeatmap" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+            </section>
+
             <!-- Market Overview -->
             <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-blue-500 pb-2">📊 Market Overview</h2>
@@ -191,19 +204,34 @@
             }
         });
 
+        // State
+        let currentDate = null;
+        let currentData = null;
+
+        // Date navigation
+        document.getElementById('prevDay').addEventListener('click', () => navigateDate(-1));
+        document.getElementById('nextDay').addEventListener('click', () => navigateDate(1));
+
+        function navigateDate(days) {
+            const date = new Date(currentDate);
+            date.setDate(date.getDate() + days);
+            loadAnalysis(date.toISOString().split('T')[0]);
+        }
+
         // Load analysis
-        async function loadAnalysis() {
+        async function loadAnalysis(date = null) {
             try {
-                const today = new Date().toISOString().split('T')[0];
+                const url = date 
+                    ? `https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/analysis?date=${date}`
+                    : 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/analysis';
                 
-                // For now, fetch from DynamoDB via a simple API endpoint
-                // You'll need to create this endpoint or use the data directly
-                const response = await fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/analysis?date=${today}`);
-                
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('No data');
                 
                 const data = await response.json();
-                displayAnalysis(data.analysis);
+                currentDate = data.date;
+                currentData = data;
+                displayAnalysis(data);
             } catch (error) {
                 console.error('Error loading analysis:', error);
                 document.getElementById('loading').classList.add('hidden');
@@ -211,20 +239,32 @@
             }
         }
 
-        function displayAnalysis(analysis) {
+        function displayAnalysis(data) {
+            const analysis = data.analysis;
+            const displayDate = new Date(currentDate + 'T12:00:00');
+            
             // Date
-            document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', {
+            document.getElementById('dateDisplay').textContent = displayDate.toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
+            document.getElementById('navDate').textContent = currentDate;
+            
+            // Enable/disable next button
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('nextDay').disabled = currentDate >= today;
+            
+            // Sector Heatmap
+            displaySectorHeatmap(data.market_data);
 
             // Market Overview
             document.getElementById('marketOverview').textContent = analysis.market_overview;
 
             // Market Insights
             const insightsList = document.getElementById('marketInsights');
+            insightsList.innerHTML = '';
             analysis.market_insights.forEach(insight => {
                 const li = document.createElement('li');
                 li.className = 'flex items-start';
@@ -234,6 +274,7 @@
 
             // Levels to Watch
             const levelsDiv = document.getElementById('levelsToWatch');
+            levelsDiv.innerHTML = '';
             analysis.levels_to_watch.forEach(level => {
                 const div = document.createElement('div');
                 div.className = 'bg-[#252a3a] rounded-lg p-4';
@@ -246,6 +287,7 @@
 
             // Unusual Activity
             const unusualDiv = document.getElementById('unusualActivity');
+            unusualDiv.innerHTML = '';
             if (analysis.unusual_activity && analysis.unusual_activity.length > 0) {
                 analysis.unusual_activity.forEach(item => {
                     const div = document.createElement('div');
@@ -267,6 +309,44 @@
             // Show content
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
+        }
+
+        function displaySectorHeatmap(marketData) {
+            const sectors = {
+                'Tech': ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC'],
+                'Finance': ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C'],
+                'Healthcare': ['UNH', 'JNJ', 'LLY', 'ABBV', 'MRK', 'PFE'],
+                'Energy': ['XOM', 'CVX', 'COP', 'SLB', 'OXY'],
+                'Consumer': ['AMZN', 'TSLA', 'HD', 'NKE', 'SBUX', 'MCD'],
+                'Industrial': ['BA', 'CAT', 'GE', 'DE', 'UPS'],
+                'Crypto': ['BTC-USD', 'ETH-USD', 'COIN', 'MSTR', 'HOOD'],
+                'Indices': ['SPY', 'QQQ', 'DIA', 'IWM']
+            };
+
+            const heatmapDiv = document.getElementById('sectorHeatmap');
+            heatmapDiv.innerHTML = '';
+
+            Object.entries(sectors).forEach(([sector, tickers]) => {
+                const changes = tickers
+                    .map(t => marketData[t]?.change_percent)
+                    .filter(c => c != null)
+                    .map(c => parseFloat(c));
+                
+                if (changes.length === 0) return;
+                
+                const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
+                const color = avgChange > 1 ? 'bg-green-600' : 
+                             avgChange > 0 ? 'bg-green-700' : 
+                             avgChange > -1 ? 'bg-red-700' : 'bg-red-600';
+                
+                const div = document.createElement('div');
+                div.className = `${color} rounded-lg p-4 text-center transition hover:scale-105`;
+                div.innerHTML = `
+                    <div class="font-semibold text-sm mb-1">${sector}</div>
+                    <div class="text-2xl font-bold">${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}%</div>
+                `;
+                heatmapDiv.appendChild(div);
+            });
         }
 
         // Load on page load
