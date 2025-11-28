@@ -86,6 +86,7 @@
         const API_URL = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
         const urlParams = new URLSearchParams(window.location.search);
         const portfolioId = urlParams.get('id');
+        const autoBacktest = urlParams.get('backtest') === 'true';
 
         if (!portfolioId) {
             showError();
@@ -147,6 +148,11 @@
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('portfolioContent').classList.remove('hidden');
+                
+                // Auto-run backtest if requested
+                if (autoBacktest) {
+                    setTimeout(() => runBacktest(), 500);
+                }
             } catch (error) {
                 showError();
             }
