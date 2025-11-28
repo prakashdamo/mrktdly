@@ -52,6 +52,43 @@
                 </div>
             </div>
 
+            <!-- Option B: Inline Metrics -->
+            <div id="inlineMetrics" class="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4 mb-8 text-sm">
+                <div class="flex flex-wrap items-center gap-4 text-gray-300">
+                    <span id="scoreInline" class="font-medium"></span>
+                    <span class="text-gray-600">|</span>
+                    <span id="benchmarkInline"></span>
+                    <span class="text-gray-600">|</span>
+                    <span id="volatilityInline"></span>
+                    <span class="text-gray-600">|</span>
+                    <span id="diversificationInline"></span>
+                </div>
+            </div>
+
+            <!-- Option A: Dashboard Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-700/50 rounded-xl p-4">
+                    <div class="text-xs text-blue-300 mb-1">Portfolio Score</div>
+                    <div id="portfolioScore" class="text-2xl font-bold text-blue-400"></div>
+                    <div id="scoreGrade" class="text-xs text-gray-400 mt-1"></div>
+                </div>
+                <div class="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-700/50 rounded-xl p-4">
+                    <div class="text-xs text-green-300 mb-1">vs S&P 500</div>
+                    <div id="benchmarkDiff" class="text-2xl font-bold text-green-400"></div>
+                    <div id="benchmarkStatus" class="text-xs text-gray-400 mt-1"></div>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-700/50 rounded-xl p-4">
+                    <div class="text-xs text-yellow-300 mb-1">Volatility</div>
+                    <div id="volatilityLevel" class="text-2xl font-bold text-yellow-400"></div>
+                    <div id="volatilityDesc" class="text-xs text-gray-400 mt-1"></div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-700/50 rounded-xl p-4">
+                    <div class="text-xs text-purple-300 mb-1">Diversification</div>
+                    <div id="diversificationScore" class="text-2xl font-bold text-purple-400"></div>
+                    <div id="diversificationDesc" class="text-xs text-gray-400 mt-1"></div>
+                </div>
+            </div>
+
             <!-- Holdings -->
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
                 <div class="flex items-center justify-between mb-6">
@@ -156,11 +193,104 @@
                 `;
                 document.getElementById('holdingsTable').innerHTML = table;
 
+                // Calculate and display metrics
+                calculateMetrics(portfolio);
+
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('portfolioContent').classList.remove('hidden');
             } catch (error) {
                 showError();
             }
+        }
+
+        function calculateMetrics(portfolio) {
+            const returnPct = portfolio.total_return_pct;
+            const holdings = portfolio.holdings;
+            
+            // 1. Portfolio Score (0-100)
+            let score = 50; // Base score
+            
+            // Performance component (max 30 points)
+            if (returnPct > 20) score += 30;
+            else if (returnPct > 10) score += 20;
+            else if (returnPct > 0) score += 10;
+            else if (returnPct > -10) score += 5;
+            
+            // Diversification component (max 20 points)
+            const numHoldings = holdings.length;
+            if (numHoldings >= 8) score += 20;
+            else if (numHoldings >= 5) score += 15;
+            else if (numHoldings >= 3) score += 10;
+            
+            // Balance component (max 20 points)
+            const maxAllocation = Math.max(...holdings.map(h => h.allocation_pct));
+            if (maxAllocation < 25) score += 20;
+            else if (maxAllocation < 35) score += 15;
+            else if (maxAllocation < 50) score += 10;
+            
+            // Risk component (max 10 points)
+            const avgReturn = holdings.reduce((sum, h) => sum + Math.abs(h.return_pct), 0) / holdings.length;
+            if (avgReturn < 15) score += 10;
+            else if (avgReturn < 25) score += 5;
+            
+            score = Math.min(100, Math.max(0, score));
+            
+            // Grade
+            let grade = 'F';
+            if (score >= 90) grade = 'A+';
+            else if (score >= 85) grade = 'A';
+            else if (score >= 80) grade = 'A-';
+            else if (score >= 75) grade = 'B+';
+            else if (score >= 70) grade = 'B';
+            else if (score >= 65) grade = 'B-';
+            else if (score >= 60) grade = 'C+';
+            else if (score >= 55) grade = 'C';
+            else if (score >= 50) grade = 'C-';
+            else if (score >= 45) grade = 'D';
+            
+            // 2. Benchmark comparison (assume S&P 500 YTD ~15%)
+            const spReturn = 15.0;
+            const diff = returnPct - spReturn;
+            const beating = diff > 0;
+            
+            // 3. Volatility (based on return spread)
+            const returns = holdings.map(h => h.return_pct);
+            const avgRet = returns.reduce((a, b) => a + b, 0) / returns.length;
+            const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgRet, 2), 0) / returns.length;
+            const volatility = Math.sqrt(variance);
+            
+            let volLevel = 'Low';
+            let volRisk = 3;
+            if (volatility > 30) { volLevel = 'Very High'; volRisk = 9; }
+            else if (volatility > 20) { volLevel = 'High'; volRisk = 7; }
+            else if (volatility > 10) { volLevel = 'Medium'; volRisk = 5; }
+            
+            // 4. Diversification score
+            const divScore = Math.min(10, Math.round((numHoldings / 10) * 10));
+            const concentration = maxAllocation;
+            let divLevel = 'Poor';
+            if (divScore >= 8 && concentration < 30) divLevel = 'Excellent';
+            else if (divScore >= 6 && concentration < 40) divLevel = 'Good';
+            else if (divScore >= 4) divLevel = 'Fair';
+            
+            // Update Dashboard Cards (Option A)
+            document.getElementById('portfolioScore').textContent = score;
+            document.getElementById('scoreGrade').textContent = `Grade: ${grade}`;
+            
+            document.getElementById('benchmarkDiff').textContent = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%`;
+            document.getElementById('benchmarkStatus').textContent = beating ? '✓ Beating market' : '✗ Underperforming';
+            
+            document.getElementById('volatilityLevel').textContent = volLevel;
+            document.getElementById('volatilityDesc').textContent = `Risk: ${volRisk}/10`;
+            
+            document.getElementById('diversificationScore').textContent = `${divScore}/10`;
+            document.getElementById('diversificationDesc').textContent = divLevel;
+            
+            // Update Inline Metrics (Option B)
+            document.getElementById('scoreInline').innerHTML = `Score: <span class="text-blue-400 font-bold">${grade}</span> (${score}/100)`;
+            document.getElementById('benchmarkInline').innerHTML = `vs S&P: <span class="${beating ? 'text-green-400' : 'text-red-400'} font-bold">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%</span> ${beating ? '✓' : '✗'}`;
+            document.getElementById('volatilityInline').innerHTML = `Volatility: <span class="text-yellow-400 font-bold">${volLevel}</span>`;
+            document.getElementById('diversificationInline').innerHTML = `Diversification: <span class="text-purple-400 font-bold">${divScore}/10</span>`;
         }
 
         function showError() {
