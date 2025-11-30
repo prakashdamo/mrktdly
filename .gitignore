@@ -1,1 +1,29 @@
+# Python
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Lambda deployment packages
+lambda.zip
+function.zip
+sklearn-layer.zip
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Output files
+output.json
+*.log
+backtest_results.txt
+training_data.csv
+
+# HTML previews
+email_preview.html
+
+# Backups
+*.backup
+*.dark-backup
