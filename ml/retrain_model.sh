@@ -110,18 +110,22 @@ aws s3 cp s3://mrktdly-models/stock_predictor.pkl "$WORK_DIR/current_model.pkl" 
 
 if [ -f "$WORK_DIR/current_model.pkl" ]; then
     # Get current model accuracy (stored in S3)
-    CURRENT_ACC=$(aws s3 cp s3://mrktdly-models/model_metrics.txt - 2>/dev/null | grep accuracy | cut -d= -f2 || echo "0")
+    CURRENT_ACC=$(aws s3 cp s3://mrktdly-models/model_metrics.txt - 2>/dev/null | grep accuracy | cut -d= -f2)
     NEW_ACC=$(grep accuracy "$WORK_DIR/model_metrics.txt" | cut -d= -f2)
     
-    echo "Current model accuracy: $(echo "$CURRENT_ACC * 100" | bc)%"
-    echo "New model accuracy:     $(echo "$NEW_ACC * 100" | bc)%"
+    # Default to 0 if no metrics found
+    CURRENT_ACC=${CURRENT_ACC:-0}
     
-    if (( $(echo "$NEW_ACC > $CURRENT_ACC" | bc -l) )); then
+    echo "Current model accuracy: $(python3 -c "print(f'{float('$CURRENT_ACC')*100:.1f}%')")"
+    echo "New model accuracy:     $(python3 -c "print(f'{float('$NEW_ACC')*100:.1f}%')")"
+    
+    # Compare using python
+    DEPLOY=$(python3 -c "print('true' if float('$NEW_ACC') > float('$CURRENT_ACC') else 'false')")
+    
+    if [ "$DEPLOY" = "true" ]; then
         echo "✓ New model is better, deploying..."
-        DEPLOY=true
     else
         echo "✗ Current model is better, keeping it"
-        DEPLOY=false
     fi
 else
     echo "No current model, deploying new model..."
