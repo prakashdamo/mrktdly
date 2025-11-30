@@ -1,12 +1,13 @@
 import json
 import boto3
-import urllib.request
 from decimal import Decimal
 from datetime import datetime, timedelta
+from boto3.dynamodb.conditions import Key
 
 bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb')
 cache_table = dynamodb.Table('mrktdly-ticker-cache')
+price_history_table = dynamodb.Table('mrktdly-price-history')
 
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
@@ -124,53 +125,131 @@ def cache_analysis(ticker, result):
         print(f'Cache write error: {e}')
 
 def fetch_ticker_data(symbol):
-    """Fetch comprehensive data for a single ticker"""
+    """Fetch comprehensive data for a single ticker from DynamoDB"""
     try:
-        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=3mo'
-        if not url.startswith('https://'):
-            raise ValueError('Only HTTPS URLs are allowed')
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        # Get last 90 days of price history from DynamoDB
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=90)
         
-        with urllib.request.urlopen(req, timeout=10) as response:  # nosec B310
-            result = json.loads(response.read())
-            quote = result['chart']['result'][0]
-            meta = quote['meta']
-            
-            closes = [c for c in quote['indicators']['quote'][0].get('close', []) if c]
-            highs = [h for h in quote['indicators']['quote'][0].get('high', []) if h]
-            lows = [l for l in quote['indicators']['quote'][0].get('low', []) if l]
-            volumes = [v for v in quote['indicators']['quote'][0].get('volume', []) if v]
-            
-            current_price = closes[-1]
-            prev_close = closes[-2] if len(closes) > 1 else current_price
-            
-            # Calculate moving averages
-            ma_20 = sum(closes[-20:]) / 20 if len(closes) >= 20 else current_price
-            ma_50 = sum(closes[-50:]) / 50 if len(closes) >= 50 else current_price
-            
-            # Get 52-week high/low from metadata (actual values from Yahoo)
-            high_52w = meta.get('fiftyTwoWeekHigh', max(highs))
-            low_52w = meta.get('fiftyTwoWeekLow', min(lows))
-            
-            return {
-                'price': round(current_price, 2),
-                'prev_close': round(prev_close, 2),
-                'change': round(current_price - prev_close, 2),
-                'change_percent': round((current_price - prev_close) / prev_close * 100, 2),
-                'high': round(highs[-1], 2),
-                'low': round(lows[-1], 2),
-                'volume': int(volumes[-1]),
-                'avg_volume': int(sum(volumes[-20:]) / 20) if len(volumes) >= 20 else int(volumes[-1]),
-                'high_52w': round(high_52w, 2),
-                'low_52w': round(low_52w, 2),
-                'ma_20': round(ma_20, 2),
-                'ma_50': round(ma_50, 2),
-                'high_5d': round(max(highs[-5:]), 2),
-                'low_5d': round(min(lows[-5:]), 2)
+        response = price_history_table.query(
+            KeyConditionExpression=Key('ticker').eq(symbol) & Key('date').between(
+                start_date.strftime('%Y-%m-%d'),
+                end_date.strftime('%Y-%m-%d')
+            ),
+            ScanIndexForward=True
+        )
+        
+        history = response['Items']
+        
+        if not history:
+            return {'error': f'No data found for {symbol}'}
+        
+        # Extract data
+        closes = [float(d['close']) for d in history]
+        highs = [float(d['high']) for d in history]
+        lows = [float(d['low']) for d in history]
+        volumes = [float(d['volume']) for d in history]
+        
+        current_price = closes[-1]
+        prev_close = closes[-2] if len(closes) > 1 else current_price
+        
+        # Calculate moving averages
+        ma_20 = sum(closes[-20:]) / 20 if len(closes) >= 20 else current_price
+        ma_50 = sum(closes[-50:]) / 50 if len(closes) >= 50 else current_price
+        
+        # 52-week high/low
+        high_52w = max(highs)
+        low_52w = min(lows)
+        
+        # Calculate Fibonacci retracement levels
+        swing_high = max(highs[-30:]) if len(highs) >= 30 else max(highs)
+        swing_low = min(lows[-30:]) if len(lows) >= 30 else min(lows)
+        fib_levels = calculate_fibonacci(swing_high, swing_low)
+        
+        # Determine trend
+        trend = determine_trend(closes, ma_20, ma_50, current_price)
+        
+        return {
+            'price': round(current_price, 2),
+            'prev_close': round(prev_close, 2),
+            'change': round(current_price - prev_close, 2),
+            'change_percent': round((current_price - prev_close) / prev_close * 100, 2),
+            'high': round(highs[-1], 2),
+            'low': round(lows[-1], 2),
+            'volume': int(volumes[-1]),
+            'avg_volume': int(sum(volumes[-20:]) / 20) if len(volumes) >= 20 else int(volumes[-1]),
+            'high_52w': round(high_52w, 2),
+            'low_52w': round(low_52w, 2),
+            'ma_20': round(ma_20, 2),
+            'ma_50': round(ma_50, 2),
+            'high_5d': round(max(highs[-5:]), 2),
+            'low_5d': round(min(lows[-5:]), 2),
+            'fibonacci': fib_levels,
+            'trend': trend
             }
     except Exception as e:
         print(f'Error fetching {symbol}: {e}')
         return None
+
+def calculate_fibonacci(high, low):
+    """Calculate Fibonacci retracement levels"""
+    diff = high - low
+    return {
+        'level_0': round(high, 2),
+        'level_236': round(high - (diff * 0.236), 2),
+        'level_382': round(high - (diff * 0.382), 2),
+        'level_500': round(high - (diff * 0.500), 2),
+        'level_618': round(high - (diff * 0.618), 2),
+        'level_786': round(high - (diff * 0.786), 2),
+        'level_100': round(low, 2),
+        'swing_high': round(high, 2),
+        'swing_low': round(low, 2)
+    }
+
+def determine_trend(closes, ma_20, ma_50, current_price):
+    """Determine current trend based on price action and MAs"""
+    if len(closes) < 20:
+        return {'direction': 'Insufficient Data', 'strength': 'N/A', 'description': 'Need more data'}
+    
+    # Price vs MAs
+    above_ma20 = current_price > ma_20
+    above_ma50 = current_price > ma_50
+    ma20_above_ma50 = ma_20 > ma_50
+    
+    # Recent momentum (last 5 vs previous 5 days)
+    recent_avg = sum(closes[-5:]) / 5
+    prev_avg = sum(closes[-10:-5]) / 5
+    momentum = 'Increasing' if recent_avg > prev_avg else 'Decreasing'
+    
+    # Determine trend
+    if above_ma20 and above_ma50 and ma20_above_ma50:
+        direction = 'Strong Uptrend'
+        strength = 'Strong'
+        description = 'Price above both MAs, bullish alignment'
+    elif above_ma20 and above_ma50:
+        direction = 'Uptrend'
+        strength = 'Moderate'
+        description = 'Price above MAs, watch for MA crossover'
+    elif not above_ma20 and not above_ma50 and not ma20_above_ma50:
+        direction = 'Strong Downtrend'
+        strength = 'Strong'
+        description = 'Price below both MAs, bearish alignment'
+    elif not above_ma20 and not above_ma50:
+        direction = 'Downtrend'
+        strength = 'Moderate'
+        description = 'Price below MAs, watch for support'
+    else:
+        direction = 'Sideways'
+        strength = 'Weak'
+        description = 'Mixed signals, consolidating'
+    
+    return {
+        'direction': direction,
+        'strength': strength,
+        'momentum': momentum,
+        'description': description
+    }
+
 
 def generate_ticker_analysis(ticker, data):
     """Generate comprehensive analysis using Bedrock"""

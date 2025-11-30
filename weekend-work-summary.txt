@@ -1,0 +1,326 @@
+# Building a Stock Market Analysis Platform: A Weekend Sprint
+
+*How I built a full-stack serverless application with AI-powered insights, portfolio tracking, and competitive challenges in one weekend*
+
+---
+
+## The Vision
+
+I wanted to create **Daily Market Summary** (marketdly.com) - a free platform that provides AI-powered stock market analysis with a twist: a competitive portfolio challenge where users can test their stock-picking skills against others.
+
+The goal was simple: make market analysis accessible, educational, and engaging. No paywalls, no credit cards, just pure value.
+
+---
+
+## The Tech Stack
+
+I went full serverless on AWS to keep costs low and scalability high:
+
+- **Frontend**: Vanilla JavaScript + Tailwind CSS (hosted on S3 + CloudFront)
+- **Backend**: AWS Lambda (Python 3.11)
+- **API**: API Gateway (REST)
+- **Database**: DynamoDB (6 tables)
+- **AI**: AWS Bedrock (Claude 3 Sonnet)
+- **Auth**: AWS Cognito
+- **Data Source**: Yahoo Finance API
+
+No frameworks, no containers, no servers to manage. Just pure serverless architecture.
+
+---
+
+## What I Built
+
+### 1. Daily Market Analysis (The Core)
+
+Every day at 6 PM ET, a Lambda function wakes up and:
+- Fetches prices for 135+ stocks (SPY, QQQ, NVDA, AAPL, TSLA, etc.)
+- Calculates sector performance across 8 sectors
+- Analyzes market breadth indicators
+- Sends everything to Claude AI for a concise summary
+
+The AI generates:
+- **Market Overview**: 2-3 sentence summary of the day
+- **Key Insights**: 5-7 bullet points on what moved and why
+- **Sector Heatmap**: Visual grid showing which sectors won/lost
+- **Key Technical Levels**: Support/resistance for major tickers
+
+All cached in DynamoDB and served instantly via API Gateway.
+
+---
+
+### 2. Individual Ticker Analysis
+
+Users can analyze any stock and get:
+
+**Technical Data**:
+- Current price, volume, 52-week high/low
+- 20-day and 50-day moving averages
+- **Fibonacci Retracement Levels** (7 key levels based on recent swing)
+- **Trend Analysis** (Strong Uptrend, Uptrend, Sideways, Downtrend, Strong Downtrend)
+
+**AI Analysis**:
+- Price action summary
+- Technical analysis bullets
+- Key levels to watch
+- Trading considerations
+- Risk assessment
+
+The Fibonacci levels highlight support/resistance zones, and the trend analysis uses MA crossovers and momentum to determine direction and strength.
+
+**Caching**: 2-hour TTL to reduce API calls and Bedrock costs.
+
+---
+
+### 3. Portfolio Challenge (The Game-Changer)
+
+This is where it gets fun. Users can:
+
+**Create Portfolios**:
+- Pick 3-10 stocks
+- Allocate percentages (must total 100%)
+- Start with hypothetical $10,000
+- Prices are **locked at creation** (no gaming the system)
+
+**Track Performance**:
+- Real-time portfolio value
+- Total return percentage
+- Individual holding performance
+- **Portfolio Score** (0-100) based on:
+  - Performance (0-35 pts)
+  - Sector diversification (0-25 pts)
+  - Holdings count (0-15 pts)
+  - Concentration balance (0-15 pts)
+  - Consistency (0-10 pts)
+
+**Compete on Leaderboard**:
+- Submit portfolio to public challenge
+- Ranked by return percentage
+- Top 50 displayed
+- Can't edit after submission (immutable)
+
+**AI Portfolio Analysis**:
+- Claude analyzes your portfolio composition
+- Ultra-concise: 5-8 words per bullet, 10 bullets max
+- Covers: composition, top performer, biggest risk, action items, outlook
+- Educational disclaimer included
+
+**Backtest Feature**:
+- See what your portfolio would be worth if you started 1, 3, or 5 years ago
+- Uses historical prices from Yahoo Finance
+- Helps understand timing impact
+
+**24-Hour Caching**: AI analysis and backtest results cached to save costs ($0.015 per Bedrock call adds up!)
+
+---
+
+## The Architecture
+
+### Data Flow: Creating a Portfolio
+
+1. User fills form → Frontend validates allocations = 100%
+2. `POST /portfolio` → API Gateway → Lambda
+3. Lambda fetches current prices from Yahoo Finance
+4. Locks entry prices for each holding
+5. Generates UUID, writes to DynamoDB
+6. Returns portfolio object
+7. Frontend redirects to detail page
+8. Detail page fetches current prices → Calculates returns
+9. Displays metrics, holdings, performance
+
+### Data Flow: Daily Analysis
+
+1. EventBridge triggers Lambda at 6 PM ET
+2. Lambda fetches 135+ stock prices
+3. Calculates sector performance, market breadth
+4. Sends data to Bedrock AI
+5. AI returns structured JSON
+6. Lambda stores in DynamoDB with date key
+7. Frontend fetches via `GET /analysis?date=YYYY-MM-DD`
+8. Displays market overview, insights, heatmap
+
+---
+
+## Key Technical Decisions
+
+### 1. Percentage Allocations (Not Share Counts)
+
+Instead of "buy 10 shares of AAPL," users allocate percentages:
+- "40% AAPL, 30% NVDA, 30% TSLA"
+- Works for any dollar amount
+- Simpler math, clearer intent
+- More educational (think like a fund manager)
+
+### 2. Immutable Portfolios
+
+Once created, portfolios can't be edited:
+- Prevents gaming the system
+- Locks in entry prices
+- Forces thoughtful decisions
+- Users can create multiple portfolios to experiment
+
+### 3. Submit-to-Challenge Workflow
+
+Portfolios are private by default:
+- Users can test ideas without pressure
+- Submit only when confident
+- Reduces anxiety, encourages experimentation
+- Can delete anytime (removes from challenge)
+
+### 4. Ultra-Concise AI Prompts
+
+I engineered prompts with strict word limits:
+- 5-8 words per bullet (not lines, WORDS)
+- Forces brevity, improves scannability
+- Reduces token usage (saves money)
+- Better user experience (no walls of text)
+
+### 5. Sector-Based Diversification
+
+Instead of just counting tickers, I map stocks to 8 sectors:
+- Tech, Finance, Healthcare, Consumer, Energy, Media, Industrial, Auto
+- Scores based on sector count + balance
+- More meaningful risk assessment
+- Teaches diversification principles
+
+### 6. Return Spread for Volatility
+
+Instead of standard deviation (complex), I use return spread:
+- `volatility = max_return - min_return`
+- Simple, intuitive
+- Good proxy for small portfolios
+- Levels: Low (<15%), Medium (15-60%), High (>60%)
+
+---
+
+## Challenges & Solutions
+
+### Challenge 1: Yahoo Finance Rate Limits
+**Problem**: 135+ stocks = 135+ API calls  
+**Solution**: Batch requests, cache for 2 hours, stagger calls
+
+### Challenge 2: Bedrock Costs
+**Problem**: $0.015 per call × 1000 users = $15/day  
+**Solution**: 24-hour caching for AI analysis and backtests
+
+### Challenge 3: Portfolio Metrics Complexity
+**Problem**: How to score portfolios fairly?  
+**Solution**: Multi-factor scoring (performance, diversification, concentration, consistency)
+
+### Challenge 4: Fibonacci Calculation
+**Problem**: Which swing high/low to use?  
+**Solution**: Recent 30-day swing (balances relevance vs noise)
+
+### Challenge 5: Trend Determination
+**Problem**: Too many indicators = confusion  
+**Solution**: Simple MA-based system (price vs MA20/MA50, MA alignment, momentum)
+
+---
+
+## What I Learned
+
+### 1. Serverless is Perfect for MVPs
+- No infrastructure management
+- Pay only for what you use
+- Scales automatically
+- Fast iteration
+
+### 2. AI Prompt Engineering is an Art
+- Word limits > line limits
+- Structured output > free-form
+- Context matters more than instructions
+- Test, iterate, refine
+
+### 3. Caching is Critical
+- Reduces costs by 90%+
+- Improves UX (instant vs 3-5 seconds)
+- DynamoDB TTL = automatic cleanup
+- Cache invalidation is hard (CloudFront)
+
+### 4. User Psychology Matters
+- Private-first reduces anxiety
+- Immutability prevents regret
+- Gamification drives engagement
+- Educational framing builds trust
+
+### 5. Keep It Simple
+- Vanilla JS > React for static sites
+- Percentage allocations > share counts
+- Return spread > standard deviation
+- Fewer features, better execution
+
+---
+
+## The Numbers
+
+**Lines of Code**: ~3,000 (Python + JavaScript)  
+**AWS Resources**: 15 (6 Lambdas, 6 DynamoDB tables, API Gateway, Cognito, S3, CloudFront)  
+**API Endpoints**: 9  
+**Frontend Pages**: 5  
+**Stocks Tracked**: 135+  
+**Development Time**: 2 days  
+**Estimated Monthly Cost**: $5-15 (for <1000 users)  
+
+---
+
+## What's Next
+
+**Short-term**:
+- Price alerts (notify when stock hits target)
+- Watchlist feature (save favorite tickers)
+- Historical portfolio snapshots (daily tracking)
+- More sectors and tickers
+
+**Long-term**:
+- Options analysis
+- Earnings calendar integration
+- Social features (follow other users)
+- Mobile app
+
+---
+
+## Try It Yourself
+
+Visit **marketdly.com** and:
+1. Sign up (free, no credit card)
+2. Check today's market analysis
+3. Analyze any ticker (try NVDA or TSLA)
+4. Create a portfolio and join the challenge
+5. See if you can beat the leaderboard!
+
+---
+
+## Key Takeaways
+
+1. **Serverless enables rapid prototyping** - I built a full-stack app in a weekend
+2. **AI is a feature, not the product** - Use it to enhance, not replace, core value
+3. **Caching is your friend** - Saves money and improves UX
+4. **Gamification drives engagement** - Leaderboards and challenges work
+5. **Keep it simple** - Vanilla tech, clear UX, focused features
+
+---
+
+## The Code
+
+The full stack is built with:
+- **Backend**: Python 3.11, boto3, urllib (no external dependencies)
+- **Frontend**: Vanilla JavaScript, Tailwind CSS, AWS Cognito SDK
+- **Infrastructure**: AWS Lambda, DynamoDB, API Gateway, S3, CloudFront, Bedrock
+
+All deployed via AWS CLI with pre-commit hooks for linting and testing.
+
+---
+
+**Want to build something similar?** The architecture is straightforward:
+1. Static frontend on S3 + CloudFront
+2. API Gateway + Lambda for backend
+3. DynamoDB for data
+4. Bedrock for AI
+5. Cognito for auth
+
+Total setup time: ~4 hours. Total development time: ~2 days.
+
+**The beauty of serverless**: Focus on features, not infrastructure.
+
+---
+
+*Built with ☕ and AWS in one weekend. No frameworks, no servers, no BS.*

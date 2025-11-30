@@ -29,15 +29,35 @@ def lambda_handler(event, context):
     
     date_key = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     
-    # Fetch raw market data
+    # Fetch raw market data - try today first, then fall back to most recent
     try:
         response = table.get_item(Key={'pk': f'DATA#{date_key}', 'sk': 'MARKET'})
         raw_data = response['Item']
-    except Exception as e:
-        return {'statusCode': 404, 'body': json.dumps(f'No data for {date_key}')}
+    except:
+        # Fall back to most recent data by scanning
+        try:
+            response = table.scan(
+                FilterExpression='sk = :sk',
+                ExpressionAttributeValues={':sk': 'MARKET'},
+                Limit=10
+            )
+            if response['Items']:
+                # Get most recent by date
+                items_with_dates = [item for item in response['Items'] if 'date' in item]
+                if items_with_dates:
+                    raw_data = max(items_with_dates, key=lambda x: x['date'])
+                    date_key = raw_data['date']
+                    print(f"Using most recent data from {date_key}")
+                else:
+                    return {'statusCode': 404, 'body': json.dumps('No market data available')}
+            else:
+                return {'statusCode': 404, 'body': json.dumps('No market data available')}
+        except Exception as e:
+            return {'statusCode': 404, 'body': json.dumps(f'Error fetching data: {str(e)}')}
     
-    # Generate analysis
-    analysis = generate_analysis(raw_data['market_data'])
+    # Generate analysis with pre-filtered unusual activity
+    unusual_activity = raw_data.get('unusual_activity', [])
+    analysis = generate_analysis(raw_data['market_data'], unusual_activity)
     
     # Store analysis
     table.put_item(Item={
@@ -50,13 +70,22 @@ def lambda_handler(event, context):
     
     return {'statusCode': 200, 'body': json.dumps('Analysis generated')}
 
-def generate_analysis(market_data):
+def generate_analysis(market_data, unusual_activity):
     """Use Bedrock to create educational market analysis"""
     
-    prompt = f"""You are a senior technical analyst with 15+ years of experience. Analyze today's market data and identify rotation patterns, unusual moves (>5%), and key technical levels.
+    # Format unusual activity for Claude
+    unusual_summary = "\n".join([
+        f"- {item['symbol']}: {item['move']}% ({', '.join(item['reasons'])})"
+        for item in unusual_activity[:15]
+    ])
+    
+    prompt = f"""You are a senior technical analyst with 15+ years of experience. Analyze today's market data and provide context for unusual moves.
 
 Market Data:
 {json.dumps(market_data, indent=2, default=decimal_to_float)}
+
+Pre-filtered Unusual Activity (volume spikes, breakouts, big moves):
+{unusual_summary}
 
 Output JSON with:
 
@@ -73,15 +102,15 @@ Output JSON with:
    Example: "SPY at $679.68. Resistance $688 (Nov 22 ATH, strong selling). Support $672 (20-day MA, prior breakout). Bullish momentum with higher lows. Break above targets $695-700."
    Max 80 words per ticker. Focus on: swing highs/lows, moving averages, breakout levels, volume. Avoid generic "round number" unless it aligns with technical level.
 
-4. unusual_activity: 5-10 stocks with >5% moves or notable patterns
-   Format: {{"symbol": "TICKER", "move": "10.93", "note": "Brief explanation with technical context"}}
-   Include both gainers and losers. If <5 stocks moved >5%, include >3% moves with interesting patterns.
+4. unusual_activity: Explain WHY each pre-filtered move matters (5-10 stocks)
+   Format: {{"symbol": "TICKER", "move": "10.93", "note": "Brief context: earnings, breakout, sector rotation, etc."}}
+   Use the pre-filtered list above. Add context like: earnings, news, technical breakout, sector rotation.
 
 Rules:
 - Resistance MUST be ABOVE current price, support MUST be BELOW
 - Use ONLY actual numbers from data - no estimates
 - One entry per ticker in levels_to_watch
-- Be specific and actionable
+- For unusual_activity, explain WHY it matters (not just that it moved)
 
 Return ONLY valid JSON: {{"market_overview": "", "market_insights": [], "levels_to_watch": [{{"symbol": "", "level": "", "note": ""}}], "unusual_activity": [{{"symbol": "", "move": "", "note": ""}}]}}"""
 

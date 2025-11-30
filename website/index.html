@@ -88,6 +88,8 @@
                 </div>
                 <div id="navUserInfo" class="hidden">
                     <div class="flex items-center gap-3">
+                        <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">Portfolio</a>
+                        <a href="/swing-scanner.html" class="text-gray-400 hover:text-white transition">Swing Scanner</a>
                         <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
                         <button id="navLogoutBtn" class="px-4 py-2 text-gray-400 hover:text-white transition">Logout</button>
                     </div>
@@ -98,63 +100,88 @@
 
     <div class="container mx-auto px-6 py-12 max-w-7xl">
         <!-- Hero Section -->
-        <header id="heroSection" class="text-center mb-16 max-w-4xl mx-auto">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                AI-Powered Market Intelligence
-            </h1>
-            <p class="text-xl text-gray-400 mb-8 leading-relaxed">
-                Get instant analysis of 135+ stocks with technical levels, sector rotation insights, and market breadth indicators. Updated daily.
-            </p>
-            
-            <!-- Premium Features -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-left">
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                    <div class="text-2xl mb-2">📊</div>
-                    <div class="font-semibold mb-1">Daily Market Analysis</div>
-                    <div class="text-sm text-gray-400">135+ stocks analyzed with AI</div>
+        <header id="heroSection" class="text-center mb-16 max-w-5xl mx-auto">
+            <!-- Main Headline -->
+            <div class="mb-8">
+                <h1 class="text-6xl md:text-7xl font-bold mb-4 leading-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Daily Market Analysis
+                </h1>
+                <p class="text-2xl md:text-3xl font-semibold text-white mb-3">
+                    AI-Powered Technical Analysis for 135+ Stocks
+                </p>
+                <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+                    Get actionable insights on price levels, sector rotation, and swing trade opportunities. Updated every market day.
+                </p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex flex-wrap items-center justify-center gap-8 mb-10 text-sm">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-400">135+</div>
+                    <div class="text-gray-400">Stocks Tracked</div>
                 </div>
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                    <div class="text-2xl mb-2">🔍</div>
-                    <div class="font-semibold mb-1">Ticker Deep Dives</div>
-                    <div class="text-sm text-gray-400">Technical levels & predictions</div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-purple-400">Daily</div>
+                    <div class="text-gray-400">AI Analysis</div>
                 </div>
-                <div class="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/50 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="text-2xl">🏆</div>
-                        <span class="text-xs font-bold text-blue-400 bg-blue-500/20 px-2 py-0.5 rounded">NEW</span>
-                    </div>
-                    <div class="font-semibold mb-1">Portfolio Challenge</div>
-                    <div class="text-sm text-gray-400">Compete with traders, climb the leaderboard</div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-400">Free</div>
+                    <div class="text-gray-400">No Credit Card</div>
                 </div>
             </div>
             
-            <div id="heroAuth" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-                <button id="heroSignupBtn" class="btn-primary w-full sm:w-auto">
-                    Start Free Analysis →
+            <!-- CTA Buttons -->
+            <div id="heroAuth" class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+                <button id="heroSignupBtn" class="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-bold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/50 w-full sm:w-auto">
+                    Get Free Access →
                 </button>
-                <button id="heroLoginBtn" class="btn-secondary w-full sm:w-auto">
+                <button id="heroLoginBtn" class="px-10 py-4 bg-slate-800 hover:bg-slate-700 text-white text-lg font-medium rounded-xl transition-all duration-200 border border-slate-700 w-full sm:w-auto">
                     Login
                 </button>
             </div>
+
+            <!-- Feature Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/50 transition">
+                    <div class="text-4xl mb-3">📊</div>
+                    <div class="font-bold text-lg mb-2">Market Overview</div>
+                    <div class="text-gray-400">Sector rotation, unusual moves, key levels to watch</div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/50 transition">
+                    <div class="text-4xl mb-3">🎯</div>
+                    <div class="font-bold text-lg mb-2">Swing Scanner</div>
+                    <div class="text-gray-400">Breakout patterns with entry, stop, and target levels</div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/50 transition">
+                    <div class="text-4xl mb-3">🏆</div>
+                    <div class="font-bold text-lg mb-2">Portfolio Challenge</div>
+                    <div class="text-gray-400">Compete with traders, track performance</div>
+                </div>
+            </div>
             
-            <div id="heroUserWelcome" class="hidden mb-8">
-                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 max-w-3xl mx-auto">
-                    <p class="text-lg text-center mb-4">👋 Welcome back, <span id="heroUserEmail" class="text-blue-400 font-semibold"></span>!</p>
-                    <div class="flex flex-wrap items-center justify-center gap-3">
-                        <button id="quickAnalyze" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">
-                            🔍 Analyze Ticker
-                        </button>
-                        <button class="px-6 py-2 bg-slate-700 text-gray-400 font-medium rounded-lg cursor-not-allowed">
-                            📊 Watchlist <span class="text-xs">(Soon)</span>
-                        </button>
+            <!-- Logged In Welcome -->
+            <div id="heroUserWelcome" class="hidden">
+                <div class="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/30 rounded-xl p-8 max-w-2xl mx-auto">
+                    <p class="text-2xl font-semibold mb-6">👋 Welcome back, <span id="heroUserEmail" class="text-blue-400"></span></p>
+                    <div class="flex flex-wrap items-center justify-center gap-4">
+                        <a href="#ticker-analysis" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                            📊 View Market Analysis
+                        </a>
+                        <a href="/swing-scanner.html" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
+                            🎯 Swing Scanner
+                        </a>
+                        <a href="/portfolio.html" class="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition">
+                            🏆 Portfolio
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div id="trustIndicators" class="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
+            <!-- Trust Indicators -->
+            <div id="trustIndicators" class="flex flex-wrap items-center justify-center gap-6 text-gray-500">
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                    <span>No credit card required</span>
+                    <span>Free Forever</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -328,38 +355,7 @@
         </div>
 
         <!-- Ticker Analysis Tool -->
-        <div id="tickerAnalysisSection" class="card mb-12">
-            <!-- Logged Out View -->
-            <div id="tickerLoginPrompt" class="text-center py-12">
-                <div class="text-6xl mb-6">✨</div>
-                <h2 class="text-3xl font-bold mb-4">Unlock Premium Features</h2>
-                <p class="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">Sign up free to access advanced tools and insights</p>
-                
-                <!-- Premium Features Preview -->
-                <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8 text-left">
-                    <div class="bg-slate-700/30 rounded-lg p-6 border border-slate-600/30">
-                        <div class="text-3xl mb-3">🔍</div>
-                        <h3 class="font-bold text-lg mb-2">Ticker Analysis</h3>
-                        <p class="text-gray-400 text-sm">AI-powered analysis for any stock with technical levels and insights</p>
-                    </div>
-                    <div class="bg-slate-700/30 rounded-lg p-6 border border-slate-600/30">
-                        <div class="text-3xl mb-3">📊</div>
-                        <h3 class="font-bold text-lg mb-2">Custom Watchlist</h3>
-                        <p class="text-gray-400 text-sm"><span class="text-blue-400">Coming Soon:</span> Track your favorite stocks in one place</p>
-                    </div>
-                    <div class="bg-slate-700/30 rounded-lg p-6 border border-slate-600/30">
-                        <div class="text-3xl mb-3">🔔</div>
-                        <h3 class="font-bold text-lg mb-2">Price Alerts</h3>
-                        <p class="text-gray-400 text-sm"><span class="text-blue-400">Coming Soon:</span> Get notified when stocks hit your targets</p>
-                    </div>
-                </div>
-                
-                <button id="signupForTicker" class="btn-primary">
-                    Sign Up Free →
-                </button>
-                <p class="text-gray-500 text-sm mt-4">No credit card required • 100% Free</p>
-            </div>
-            
+        <div id="tickerAnalysisSection" class="card mb-12 hidden">
             <!-- Logged In View -->
             <div id="tickerAnalysisForm" class="hidden">
                 <h2 class="text-2xl font-bold mb-6">🔍 Analyze Any Ticker</h2>
@@ -561,10 +557,8 @@
             // Navigation
             document.getElementById('navAuth')?.classList.remove('hidden');
             document.getElementById('navUserInfo')?.classList.add('hidden');
-            // Ticker section
-            document.getElementById('tickerLoginPrompt')?.classList.remove('hidden');
-            document.getElementById('tickerAnalysisForm')?.classList.add('hidden');
-            document.getElementById('tickerAnalysisSection')?.classList.remove('hidden');
+            // Ticker section - hide completely when logged out
+            document.getElementById('tickerAnalysisSection')?.classList.add('hidden');
             // Top ticker form
             document.getElementById('topTickerAnalysis')?.classList.add('hidden');
         }
@@ -580,11 +574,6 @@
             document.getElementById('tickerAnalysisSection')?.classList.add('hidden');
             document.getElementById('topTickerAnalysis')?.classList.remove('hidden');
         }
-
-        // Signup button in ticker section
-        document.getElementById('signupForTicker').addEventListener('click', () => {
-            document.getElementById('signupModal').classList.remove('hidden');
-        });
 
         // Modal controls - Hero buttons
         document.getElementById('heroSignupBtn').addEventListener('click', () => {

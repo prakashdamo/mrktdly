@@ -1,13 +1,14 @@
 import json
 import boto3
-import urllib.request
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timedelta
+from boto3.dynamodb.conditions import Key
 import uuid
 
 dynamodb = boto3.resource('dynamodb')
 portfolios_table = dynamodb.Table('mrktdly-portfolios')
 performance_table = dynamodb.Table('mrktdly-performance')
+price_history_table = dynamodb.Table('mrktdly-price-history')
 
 def lambda_handler(event, context):
     """Handle portfolio operations"""
@@ -274,46 +275,43 @@ def calculate_portfolio_value(portfolio):
     return Decimal(str(round(current_value, 2))), Decimal(str(round(total_return_pct, 2)))
 
 def fetch_current_price(ticker):
-    """Fetch current price from Yahoo Finance"""
+    """Fetch current price from DynamoDB"""
     try:
-        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1d'
-        if not url.startswith('https://'):
-            raise ValueError('Only HTTPS URLs are allowed')
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
-            data = json.loads(resp.read())
-            return data['chart']['result'][0]['meta']['regularMarketPrice']
+        # Get latest price from price history
+        today = datetime.now().strftime('%Y-%m-%d')
+        yesterday = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        
+        response = price_history_table.query(
+            KeyConditionExpression=Key('ticker').eq(ticker) & Key('date').between(yesterday, today),
+            ScanIndexForward=False,
+            Limit=1
+        )
+        
+        if response['Items']:
+            return float(response['Items'][0]['close'])
+        return 0.0
     except Exception:
         return 0.0
 
 def fetch_historical_price(ticker, date_str):
-    """Fetch historical closing price for a specific date"""
+    """Fetch historical closing price for a specific date from DynamoDB"""
     try:
-        from datetime import datetime as dt, timedelta
-        target_date = dt.strptime(date_str, '%Y-%m-%d')
-
-        # Get data for a week range to handle weekends/holidays
+        # Get price for specific date, or closest previous trading day
+        target_date = datetime.strptime(date_str, '%Y-%m-%d')
         start_date = target_date - timedelta(days=7)
-        end_date = target_date + timedelta(days=1)
-
-        start_unix = int(start_date.timestamp())
-        end_unix = int(end_date.timestamp())
-
-        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&period1={start_unix}&period2={end_unix}'
-        if not url.startswith('https://'):
-            raise ValueError('Only HTTPS URLs are allowed')
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
-            data = json.loads(resp.read())
-            result = data['chart']['result'][0]
-
-            # Get the closest trading day's close price
-            closes = result['indicators']['quote'][0]['close']
-            # Return last available close price (handles weekends/holidays)
-            for price in reversed(closes):
-                if price is not None:
-                    return price
-            return 0.0
+        
+        response = price_history_table.query(
+            KeyConditionExpression=Key('ticker').eq(ticker) & Key('date').between(
+                start_date.strftime('%Y-%m-%d'),
+                date_str
+            ),
+            ScanIndexForward=False,
+            Limit=1
+        )
+        
+        if response['Items']:
+            return float(response['Items'][0]['close'])
+        return 0.0
     except Exception:
         return 0.0
 

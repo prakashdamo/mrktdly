@@ -1,0 +1,116 @@
+🔍 BACKTESTING FULL YEAR 2025
+================================================================================
+
+Scanning 2025-01-05... 0 signals
+Scanning 2025-01-10... 2 signals
+Scanning 2025-01-15... 1 signals
+Scanning 2025-01-20... 0 signals
+Scanning 2025-01-25... 0 signals
+Scanning 2025-01-30... 1 signals
+Scanning 2025-02-04... 0 signals
+Scanning 2025-02-09... 0 signals
+Scanning 2025-02-14... 0 signals
+Scanning 2025-02-19... 1 signals
+Scanning 2025-02-24... 2 signals
+Scanning 2025-03-01... 0 signals
+Scanning 2025-03-06... 0 signals
+Scanning 2025-03-11... 0 signals
+Scanning 2025-03-16... 0 signals
+Scanning 2025-03-21... 2 signals
+Scanning 2025-03-26... 0 signals
+Scanning 2025-03-31... 0 signals
+Scanning 2025-04-05... 0 signals
+Scanning 2025-04-10... 0 signals
+Scanning 2025-04-15... 0 signals
+Scanning 2025-04-20... 0 signals
+Scanning 2025-04-25... 0 signals
+Scanning 2025-04-30... 0 signals
+Scanning 2025-05-05... 0 signals
+Scanning 2025-05-10... 0 signals
+Scanning 2025-05-15... 0 signals
+Scanning 2025-05-20... 0 signals
+Scanning 2025-05-25... 0 signals
+Scanning 2025-05-30... 0 signals
+Scanning 2025-06-04... 3 signals
+Scanning 2025-06-09... 2 signals
+Scanning 2025-06-14... 0 signals
+Scanning 2025-06-19... 0 signals
+Scanning 2025-06-24... 3 signals
+Scanning 2025-06-29... 0 signals
+Scanning 2025-07-04... 0 signals
+Scanning 2025-07-09... 1 signals
+Scanning 2025-07-14... 5 signals
+Scanning 2025-07-19... 0 signals
+Scanning 2025-07-24... 1 signals
+Scanning 2025-07-29... 5 signals
+Scanning 2025-08-03... 0 signals
+Scanning 2025-08-08... 2 signals
+Scanning 2025-08-13... 3 signals
+Scanning 2025-08-18... 2 signals
+Scanning 2025-08-23... 0 signals
+Scanning 2025-08-28... 4 signals
+Scanning 2025-09-02... 3 signals
+Scanning 2025-09-07... 0 signals
+Scanning 2025-09-12... 4 signals
+Scanning 2025-09-17... 3 signals
+Scanning 2025-09-22... 4 signals
+Scanning 2025-09-27... 0 signals
+Scanning 2025-10-02... 2 signals
+Scanning 2025-10-07... 2 signals
+Scanning 2025-10-12... 0 signals
+Scanning 2025-10-17... 0 signals
+Scanning 2025-10-22... 3 signals
+Scanning 2025-10-27... 3 signals
+Scanning 2025-11-01... 0 signals
+Scanning 2025-11-06... 0 signals
+Scanning 2025-11-11... 0 signals
+Scanning 2025-11-16... 0 signals
+Scanning 2025-11-21... 1 signals
+Scanning 2025-11-26... 1 signals
+
+================================================================================
+RESULTS: Found 66 signals across 66 dates
+================================================================================
+
+ASCENDING TRIANGLE
+  Signals: 2
+  Win rate: 50.0%
+  Avg return: +8.1%
+  Avg max gain: 18.9%
+
+CONSOLIDATION BREAKOUT
+  Signals: 4
+  Win rate: 25.0%
+  Avg return: -2.7%
+  Avg max gain: 7.5%
+
+MOMENTUM ALIGNMENT
+  Signals: 60
+  Win rate: 13.3%
+  Avg return: +0.9%
+  Avg max gain: 5.5%
+
+================================================================================
+OVERALL PERFORMANCE
+================================================================================
+Total signals: 66
+Winners: 10 (15.2%)
+Losers: 21 (31.8%)
+Avg return: +0.9%
+Avg max gain: 6.1%
+
+================================================================================
+ALGORITHM RECOMMENDATIONS
+================================================================================
+❌ Win rate too low (<30%)
+   → Tighten entry criteria
+   → Add trend filters
+   → Require stronger momentum
+⚠️  Low average return (<2%)
+   → Optimize R/R ratios
+   → Consider position sizing
+
+PATTERN-SPECIFIC:
+✅ ascending_triangle: Keep as-is (WR: 50.0%, Avg: +8.1%)
+❌ consolidation_breakout: Disable or rework (WR: 25.0%, Avg: -2.7%)
+❌ momentum_alignment: Disable or rework (WR: 13.3%, Avg: +0.9%)

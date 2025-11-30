@@ -25,6 +25,19 @@
 
         <!-- Content -->
         <div id="content" class="hidden space-y-6">
+            <!-- Trend Analysis -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📊 Trend Analysis</h2>
+                <div id="trendAnalysis" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </section>
+
+            <!-- Fibonacci Levels -->
+            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">🎯 Fibonacci Retracement Levels</h2>
+                <div class="text-sm text-gray-400 mb-4">Based on recent swing: ${tickerData.fibonacci?.swing_low} - ${tickerData.fibonacci?.swing_high}</div>
+                <div id="fibonacciLevels" class="space-y-2"></div>
+            </section>
+
             <!-- Price Action -->
             <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
                 <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📊 Price Action Summary</h2>
@@ -96,6 +109,60 @@
                 <span class="text-gray-500">|</span>
                 <span>52W: $${tickerData.low_52w} - $${tickerData.high_52w}</span>
             `;
+
+            // Trend Analysis
+            if (tickerData.trend) {
+                const trendDiv = document.getElementById('trendAnalysis');
+                const trendColor = tickerData.trend.direction.includes('Up') ? 'text-green-400' : 
+                                   tickerData.trend.direction.includes('Down') ? 'text-red-400' : 'text-yellow-400';
+                trendDiv.innerHTML = `
+                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Direction</div>
+                        <div class="${trendColor} text-lg font-bold">${tickerData.trend.direction}</div>
+                    </div>
+                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Strength</div>
+                        <div class="text-white text-lg font-bold">${tickerData.trend.strength}</div>
+                    </div>
+                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Momentum</div>
+                        <div class="text-white text-lg font-bold">${tickerData.trend.momentum}</div>
+                    </div>
+                    <div class="bg-[#252a3a] rounded-lg p-4 col-span-2 md:col-span-1">
+                        <div class="text-gray-400 text-xs mb-1">Analysis</div>
+                        <div class="text-gray-300 text-sm">${tickerData.trend.description}</div>
+                    </div>
+                `;
+            }
+
+            // Fibonacci Levels
+            if (tickerData.fibonacci) {
+                const fibDiv = document.getElementById('fibonacciLevels');
+                const fib = tickerData.fibonacci;
+                const currentPrice = tickerData.price;
+                
+                const levels = [
+                    { name: '0.0% (High)', value: fib.level_0, pct: '0.0%' },
+                    { name: '23.6%', value: fib.level_236, pct: '23.6%' },
+                    { name: '38.2%', value: fib.level_382, pct: '38.2%' },
+                    { name: '50.0%', value: fib.level_500, pct: '50.0%' },
+                    { name: '61.8%', value: fib.level_618, pct: '61.8%' },
+                    { name: '78.6%', value: fib.level_786, pct: '78.6%' },
+                    { name: '100% (Low)', value: fib.level_100, pct: '100%' }
+                ];
+                
+                levels.forEach(level => {
+                    const isNear = Math.abs(currentPrice - level.value) / currentPrice < 0.02; // Within 2%
+                    const div = document.createElement('div');
+                    div.className = `flex justify-between items-center p-3 rounded ${isNear ? 'bg-purple-900/30 border border-purple-500' : 'bg-[#252a3a]'}`;
+                    div.innerHTML = `
+                        <span class="text-gray-300">${level.name}</span>
+                        <span class="font-mono font-bold ${isNear ? 'text-purple-400' : 'text-white'}">$${level.value}</span>
+                        ${isNear ? '<span class="text-xs text-purple-400">← Current</span>' : ''}
+                    `;
+                    fibDiv.appendChild(div);
+                });
+            }
 
             // Price Action
             document.getElementById('priceAction').textContent = analysis.price_action;

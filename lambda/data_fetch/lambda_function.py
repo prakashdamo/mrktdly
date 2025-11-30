@@ -7,11 +7,50 @@ from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('mrktdly-data')
+price_history_table = dynamodb.Table('mrktdly-price-history')
+
+def is_market_open():
+    """Check if market is open (skip weekends and major holidays)"""
+    from datetime import datetime
+    import pytz
+    
+    # Get current time in ET
+    et_tz = pytz.timezone('America/New_York')
+    now_et = datetime.now(et_tz)
+    
+    # Skip weekends (Saturday=5, Sunday=6)
+    if now_et.weekday() >= 5:
+        return False
+    
+    # Major market holidays (approximate dates, market closed)
+    holidays_2025 = [
+        (1, 1),   # New Year's Day
+        (1, 20),  # MLK Day
+        (2, 17),  # Presidents Day
+        (4, 18),  # Good Friday
+        (5, 26),  # Memorial Day
+        (6, 19),  # Juneteenth
+        (7, 4),   # Independence Day
+        (9, 1),   # Labor Day
+        (11, 27), # Thanksgiving
+        (12, 25), # Christmas
+    ]
+    
+    current_date = (now_et.month, now_et.day)
+    if current_date in holidays_2025:
+        return False
+    
+    return True
 
 def lambda_handler(event, context):
     """Fetches market data at 7:00 AM ET"""
     
     date_key = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    
+    # Check if market is open by testing SPY
+    if not is_market_open():
+        print(f"Market closed on {date_key}, skipping data fetch")
+        return {'statusCode': 200, 'body': json.dumps('Market closed')}
     
     # Fetch market data (using free Yahoo Finance API)
     market_data = fetch_market_data()
@@ -29,6 +68,16 @@ def lambda_handler(event, context):
         'timestamp': datetime.now(timezone.utc).isoformat()
     })
     
+    # Store price history for each ticker
+    store_price_history(market_data, date_key)
+    
+    # Trigger unusual-activity lambda
+    lambda_client = boto3.client('lambda')
+    lambda_client.invoke(
+        FunctionName='mrktdly-unusual-activity',
+        InvocationType='Event'
+    )
+    
     return {'statusCode': 200, 'body': json.dumps('Data fetched')}
 
 def fetch_market_data():
@@ -38,28 +87,28 @@ def fetch_market_data():
     futures = ['ES=F', 'NQ=F', 'YM=F', 'RTY=F', 'CL=F', 'GC=F', 'SI=F', 'NG=F']
     
     # Mega cap tech (Magnificent 7 + key tech)
-    mega_tech = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'TSLA', 'AVGO', 'ORCL', 'ADBE', 'CRM', 'NFLX', 'AMD', 'INTC']
+    mega_tech = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL', 'TSLA', 'AVGO', 'ORCL', 'ADBE', 'CRM', 'NFLX', 'AMD', 'INTC', 'CSCO', 'IBM', 'UBER', 'SHOP']
     
     # Semiconductors
     semis = ['TSM', 'ASML', 'QCOM', 'TXN', 'MU', 'AMAT', 'LRCX', 'KLAC', 'MRVL', 'ARM', 'MCHP', 'ON']
     
     # AI/Cloud/Software
-    ai_cloud = ['PLTR', 'SNOW', 'DDOG', 'NET', 'CRWD', 'ZS', 'PANW', 'WDAY', 'NOW', 'TEAM', 'MDB', 'HUBS']
+    ai_cloud = ['PLTR', 'SNOW', 'DDOG', 'NET', 'CRWD', 'ZS', 'PANW', 'WDAY', 'NOW', 'TEAM', 'MDB', 'HUBS', 'AI', 'SOUN']
     
     # Financials
-    financials = ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'BLK', 'SCHW', 'AXP', 'V', 'MA', 'PYPL', 'SQ', 'COIN', 'HOOD']
+    financials = ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'BLK', 'SCHW', 'AXP', 'V', 'MA', 'PYPL', 'SQ', 'COIN', 'HOOD', 'NU', 'SOFI']
     
     # Healthcare/Biotech
-    healthcare = ['UNH', 'JNJ', 'LLY', 'ABBV', 'MRK', 'TMO', 'ABT', 'PFE', 'DHR', 'BMY', 'AMGN', 'GILD', 'VRTX', 'REGN']
+    healthcare = ['UNH', 'JNJ', 'LLY', 'ABBV', 'MRK', 'TMO', 'ABT', 'PFE', 'DHR', 'BMY', 'AMGN', 'GILD', 'VRTX', 'REGN', 'MRNA', 'BNTX']
     
     # Consumer/Retail
-    consumer = ['AMZN', 'WMT', 'COST', 'HD', 'TGT', 'LOW', 'NKE', 'SBUX', 'MCD', 'DIS', 'BKNG', 'ABNB']
+    consumer = ['AMZN', 'WMT', 'COST', 'HD', 'TGT', 'LOW', 'NKE', 'SBUX', 'MCD', 'DIS', 'BKNG', 'ABNB', 'BABA', 'PDD']
     
     # Energy
     energy = ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO', 'OXY', 'HAL']
     
     # Industrials/Aerospace
-    industrials = ['BA', 'CAT', 'GE', 'RTX', 'LMT', 'HON', 'UPS', 'UNP', 'DE', 'MMM']
+    industrials = ['BA', 'CAT', 'GE', 'RTX', 'LMT', 'HON', 'UPS', 'UNP', 'DE', 'MMM', 'NOC', 'GD']
     
     # EV/Auto
     ev_auto = ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI']
@@ -68,16 +117,28 @@ def fetch_market_data():
     crypto = ['COIN', 'MSTR', 'RIOT', 'MARA', 'CLSK', 'HOOD']
     
     # Meme/High volatility
-    meme = ['GME', 'AMC', 'BBBY', 'APE']
+    meme = ['GME', 'AMC', 'BB', 'BBBY', 'APE', 'SNAP']
     
     # Small cap leaders
-    small_caps = ['RKLB', 'IONQ', 'SMCI', 'APP', 'CVNA', 'UPST', 'SOFI', 'AFRM']
+    small_caps = ['RKLB', 'IONQ', 'SMCI', 'APP', 'CVNA', 'UPST', 'SOFI', 'AFRM', 'NBIS', 'HIMS']
+    
+    # Telecom/Communication
+    telecom = ['T', 'VZ', 'TMUS']
+    
+    # Media/Entertainment
+    media = ['DIS', 'NFLX', 'WBD']
+    
+    # Commodities/ETFs
+    commodities = ['GLD', 'SLV', 'USO']
+    
+    # REITs
+    reits = ['O', 'SPG', 'PLD']
     
     # Combine and deduplicate
     all_tickers = list(set(
         symbols + futures + mega_tech + semis + ai_cloud + financials + 
         healthcare + consumer + energy + industrials + ev_auto + crypto + 
-        meme + small_caps
+        meme + small_caps + telecom + media + commodities + reits
     ))
     
     data = {}
@@ -192,3 +253,39 @@ def get_fallback_news():
         {'title': 'Market Analysis: Review technical indicators', 'url': 'https://finance.yahoo.com'},
         {'title': 'Trading Education: Continue learning market fundamentals', 'url': 'https://finance.yahoo.com'}
     ]
+
+def store_price_history(market_data, date_key):
+    """Store daily price data for each ticker in price history table"""
+    stored_count = 0
+    
+    for ticker, data in market_data.items():
+        try:
+            # Skip if no valid price data
+            if data['price'] == 0:
+                continue
+            
+            # Calculate open from previous close + change
+            open_price = float(data['prev_close'])
+            close_price = float(data['price'])
+            high_price = float(data['high'])
+            low_price = float(data['low'])
+            volume = int(data['volume'])
+            
+            price_history_table.put_item(Item={
+                'ticker': ticker,
+                'date': date_key,
+                'open': Decimal(str(round(open_price, 2))),
+                'high': Decimal(str(round(high_price, 2))),
+                'low': Decimal(str(round(low_price, 2))),
+                'close': Decimal(str(round(close_price, 2))),
+                'volume': volume,
+                'adj_close': Decimal(str(round(close_price, 2))),  # Same as close for now
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            })
+            stored_count += 1
+            
+        except Exception as e:
+            print(f'Error storing price history for {ticker}: {e}')
+    
+    print(f'Stored price history for {stored_count} tickers on {date_key}')
+    return stored_count

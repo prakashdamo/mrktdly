@@ -1,0 +1,12 @@
+{
+  "TableName": "mrktdly-features",
+  "KeySchema": [
+    {"AttributeName": "ticker", "KeyType": "HASH"},
+    {"AttributeName": "date", "KeyType": "RANGE"}
+  ],
+  "AttributeDefinitions": [
+    {"AttributeName": "ticker", "AttributeType": "S"},
+    {"AttributeName": "date", "AttributeType": "S"}
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swing Scanner - Daily Market Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <style>
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+            border-radius: 8px;
+            height: 80px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <a href="/index.html" class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center font-bold text-lg">
+                            DMS
+                        </div>
+                        <span class="text-xl font-bold">Daily Market Summary</span>
+                    </a>
+                    <div class="flex gap-4">
+                        <a href="/index.html" class="text-gray-400 hover:text-white transition">Home</a>
+                        <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">Portfolio</a>
+                        <a href="/swing-scanner.html" class="text-white font-medium">Swing Scanner</a>
+                    </div>
+                </div>
+                <div id="navUserInfo">
+                    <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-7xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">🎯 Swing Trade Scanner</h1>
+            <p class="text-gray-400">Breakout patterns with volume confirmation</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm text-gray-400 mb-2">Pattern Type</label>
+                    <select id="patternFilter" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white">
+                        <option value="all">All Patterns</option>
+                        <option value="reversal_after_decline" class="text-yellow-400">⭐ Reversal After Decline (68.9% WR)</option>
+                        <option value="gap_up_hold" class="text-yellow-400">⭐ Gap Up Hold (67.3% WR)</option>
+                        <option value="cup_and_handle" class="text-yellow-400">⭐ Cup and Handle (65% WR)</option>
+                        <option value="double_bottom" class="text-yellow-400">⭐ Double Bottom (62% WR)</option>
+                        <option value="ma20_pullback" class="text-yellow-400">⭐ MA20 Pullback (60.2% WR)</option>
+                        <option value="consolidation_breakout">Consolidation Breakout</option>
+                        <option value="bull_flag">Bull Flag</option>
+                        <option value="ascending_triangle">Ascending Triangle</option>
+                        <option value="momentum_alignment">Momentum Alignment</option>
+                        <option value="volume_breakout">Volume Breakout</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm text-gray-400 mb-2">Min Risk/Reward</label>
+                    <input type="number" id="minRR" value="0" step="0.5" min="0" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white">
+                </div>
+                <button onclick="loadSwingSignals()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
+                    🔍 Scan
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContainer" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">
+                    <span id="signalCount">0</span> Signals Found
+                </h2>
+                <p class="text-gray-400" id="scanDate"></p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-800/50 border-b border-slate-700">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Ticker</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Pattern</th>
+                            <th class="px-4 py-3 text-right text-sm font-medium text-gray-400">Entry</th>
+                            <th class="px-4 py-3 text-right text-sm font-medium text-gray-400">Stop</th>
+                            <th class="px-4 py-3 text-right text-sm font-medium text-gray-400">Target</th>
+                            <th class="px-4 py-3 text-right text-sm font-medium text-gray-400">R/R</th>
+                            <th class="px-4 py-3 text-right text-sm font-medium text-gray-400">Volume</th>
+                            <th class="px-4 py-3 text-center text-sm font-medium text-gray-400">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signalsTable" class="divide-y divide-slate-800">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-12 hidden">
+            <div class="text-6xl mb-4">📊</div>
+            <h3 class="text-xl font-medium mb-2">No signals found</h3>
+            <p class="text-gray-400">Try adjusting your filters or check back later</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
+
+        let currentUser = null;
+
+        // Check auth on load
+        const poolData = {
+            UserPoolId: 'us-east-1_N5yuAGHc3',
+            ClientId: '3ras51lrq716j8mij5887uug17'
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        currentUser = userPool.getCurrentUser();
+
+        // Show skeleton immediately
+        document.getElementById('loadingState').classList.remove('hidden');
+
+        if (currentUser) {
+            currentUser.getSession((err, session) => {
+                if (err || !session.isValid()) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                currentUser.getUserAttributes((err, attributes) => {
+                    if (!err) {
+                        const email = attributes.find(attr => attr.Name === 'email')?.Value;
+                        document.getElementById('navUserEmail').textContent = email;
+                    }
+                });
+                // Auto-load signals
+                loadSwingSignals();
+            });
+        } else {
+            window.location.href = '/index.html';
+        }
+
+        async function loadSwingSignals() {
+            const pattern = document.getElementById('patternFilter').value;
+            const minRR = document.getElementById('minRR').value;
+
+            // Show loading
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('resultsContainer').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                // Try today first, if no signals, try yesterday
+                let response = await fetch(
+                    `${API_BASE}/swing-signals?pattern=${pattern}&min_rr=${minRR}`
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to load signals');
+                }
+
+                let data = await response.json();
+                
+                // If no signals today, try yesterday
+                if (data.count === 0) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+                    
+                    response = await fetch(
+                        `${API_BASE}/swing-signals?date=${yesterdayStr}&pattern=${pattern}&min_rr=${minRR}`
+                    );
+                    data = await response.json();
+                }
+
+                displaySignals(data);
+            } catch (error) {
+                console.error('Error loading signals:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                alert('Failed to load signals. Please try again.');
+            }
+        }
+
+        function displaySignals(data) {
+            document.getElementById('loadingState').classList.add('hidden');
+
+            if (!data.signals || data.signals.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('resultsContainer').classList.remove('hidden');
+            document.getElementById('signalCount').textContent = data.count;
+            document.getElementById('scanDate').textContent = `As of ${data.date}`;
+
+            const tbody = document.getElementById('signalsTable');
+            tbody.innerHTML = data.signals.map(signal => {
+                const entry = parseFloat(signal.entry);
+                const support = parseFloat(signal.support);
+                const target = parseFloat(signal.target);
+                const rr = parseFloat(signal.risk_reward);
+                const volumeSurge = parseFloat(signal.volume_surge);
+
+                return `
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="px-4 py-4">
+                            <a href="/ticker-analysis.html?ticker=${signal.ticker}" class="text-blue-400 hover:text-blue-300 font-medium">
+                                ${signal.ticker}
+                            </a>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-gray-400">
+                            ${signal.pattern.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </td>
+                        <td class="px-4 py-4 text-right font-medium">$${entry.toFixed(2)}</td>
+                        <td class="px-4 py-4 text-right text-red-400">$${support.toFixed(2)}</td>
+                        <td class="px-4 py-4 text-right text-green-400">$${target.toFixed(2)}</td>
+                        <td class="px-4 py-4 text-right">
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-sm font-medium">
+                                ${rr.toFixed(1)}:1
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                            <span class="text-sm ${volumeSurge >= 2 ? 'text-green-400' : 'text-gray-400'}">
+                                ${(volumeSurge * 100).toFixed(0)}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            <button onclick="addToWatchlist('${signal.ticker}')" class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded text-sm transition">
+                                Watch
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function addToWatchlist(ticker) {
+            alert(`Adding ${ticker} to watchlist (feature coming soon)`);
+        }
+    </script>
+</body>
+</html>
