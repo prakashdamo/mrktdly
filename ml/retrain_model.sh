@@ -1,8 +1,13 @@
 #!/bin/bash
 # Weekly model retraining script
-# Run every Sunday: ./retrain_model.sh
+# Run every Sunday from mrktdly/ml directory
 
 set -e
+
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORK_DIR="/tmp/ml_retrain_$$"
+mkdir -p "$WORK_DIR"
 
 echo "=========================================="
 echo "Weekly Model Retraining"
@@ -14,10 +19,11 @@ echo -e "\n[1/5] Exporting training data..."
 aws dynamodb scan \
   --table-name mrktdly-features \
   --region us-east-1 \
-  --output json > /tmp/features_export.json
+  --output json > "$WORK_DIR/features_export.json"
 
 # Step 2: Train model locally
 echo -e "\n[2/5] Training new model..."
+export WORK_DIR
 python3 << 'PYTHON_SCRIPT'
 import json
 import pickle
@@ -25,9 +31,12 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score
+import os
+
+WORK_DIR = os.environ.get('WORK_DIR')
 
 # Load data
-with open('/tmp/features_export.json') as f:
+with open(f'{WORK_DIR}/features_export.json') as f:
     data = json.load(f)
 
 items = data['Items']
@@ -83,26 +92,26 @@ print(f"  Precision: {precision*100:.1f}%")
 print(f"  Recall:    {recall*100:.1f}%")
 
 # Save model
-with open('/tmp/new_model.pkl', 'wb') as f:
+with open(f'{WORK_DIR}/new_model.pkl', 'wb') as f:
     pickle.dump(model, f)
 
 # Save metrics
-with open('/tmp/model_metrics.txt', 'w') as f:
+with open(f'{WORK_DIR}/model_metrics.txt', 'w') as f:
     f.write(f"accuracy={accuracy}\n")
     f.write(f"precision={precision}\n")
     f.write(f"recall={recall}\n")
 
-print("\n✓ Model saved to /tmp/new_model.pkl")
+print(f"\n✓ Model saved to {WORK_DIR}/new_model.pkl")
 PYTHON_SCRIPT
 
 # Step 3: Compare with current model
 echo -e "\n[3/5] Comparing with current model..."
-aws s3 cp s3://mrktdly-models/stock_predictor.pkl /tmp/current_model.pkl 2>/dev/null || echo "No current model found"
+aws s3 cp s3://mrktdly-models/stock_predictor.pkl "$WORK_DIR/current_model.pkl" 2>/dev/null || echo "No current model found"
 
-if [ -f /tmp/current_model.pkl ]; then
+if [ -f "$WORK_DIR/current_model.pkl" ]; then
     # Get current model accuracy (stored in S3)
     CURRENT_ACC=$(aws s3 cp s3://mrktdly-models/model_metrics.txt - 2>/dev/null | grep accuracy | cut -d= -f2 || echo "0")
-    NEW_ACC=$(grep accuracy /tmp/model_metrics.txt | cut -d= -f2)
+    NEW_ACC=$(grep accuracy "$WORK_DIR/model_metrics.txt" | cut -d= -f2)
     
     echo "Current model accuracy: $(echo "$CURRENT_ACC * 100" | bc)%"
     echo "New model accuracy:     $(echo "$NEW_ACC * 100" | bc)%"
@@ -122,8 +131,8 @@ fi
 # Step 4: Deploy if better
 if [ "$DEPLOY" = true ]; then
     echo -e "\n[4/5] Deploying new model to S3..."
-    aws s3 cp /tmp/new_model.pkl s3://mrktdly-models/stock_predictor.pkl --region us-east-1
-    aws s3 cp /tmp/model_metrics.txt s3://mrktdly-models/model_metrics.txt --region us-east-1
+    aws s3 cp "$WORK_DIR/new_model.pkl" s3://mrktdly-models/stock_predictor.pkl --region us-east-1
+    aws s3 cp "$WORK_DIR/model_metrics.txt" s3://mrktdly-models/model_metrics.txt --region us-east-1
     echo "✓ Model deployed"
 else
     echo -e "\n[4/5] Skipping deployment"
@@ -131,7 +140,7 @@ fi
 
 # Step 5: Cleanup
 echo -e "\n[5/5] Cleaning up..."
-rm -f /tmp/features_export.json /tmp/new_model.pkl /tmp/current_model.pkl /tmp/model_metrics.txt
+rm -rf "$WORK_DIR"
 
 echo -e "\n=========================================="
 echo "Retraining complete!"
