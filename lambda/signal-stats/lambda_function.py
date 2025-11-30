@@ -103,6 +103,7 @@ def calculate_stats(signals, ticker):
     # Get recent signals (last 10)
     recent = sorted(signals, key=lambda x: x['signal_date'], reverse=True)[:10]
     recent_signals = [{
+        'ticker': s['ticker'],
         'date': s['signal_date'],
         'action': s['action'],
         'entry': float(s['entry']),
