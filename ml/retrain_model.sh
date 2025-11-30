@@ -15,14 +15,14 @@ echo "Date: $(date)"
 echo "=========================================="
 
 # Step 1: Export training data from DynamoDB
-echo -e "\n[1/6] Exporting training data..."
+echo -e "\n[1/5] Exporting training data..."
 aws dynamodb scan \
   --table-name mrktdly-features \
   --region us-east-1 \
   --output json > "$WORK_DIR/features_export.json"
 
 # Step 2: Train model locally
-echo -e "\n[2/6] Training new model..."
+echo -e "\n[2/5] Training new model..."
 export WORK_DIR
 python3 << 'PYTHON_SCRIPT'
 import json
@@ -105,7 +105,7 @@ print(f"\n✓ Model saved to {WORK_DIR}/new_model.pkl")
 PYTHON_SCRIPT
 
 # Step 3: Compare with current model
-echo -e "\n[3/6] Comparing with current model..."
+echo -e "\n[3/5] Comparing with current model..."
 aws s3 cp s3://mrktdly-models/stock_predictor.pkl "$WORK_DIR/current_model.pkl" 2>/dev/null || echo "No current model found"
 
 if [ -f "$WORK_DIR/current_model.pkl" ]; then
@@ -134,25 +134,19 @@ fi
 
 # Step 4: Deploy if better
 if [ "$DEPLOY" = true ]; then
-    echo -e "\n[4/6] Deploying new model to S3..."
+    echo -e "\n[4/5] Deploying new model to S3..."
     aws s3 cp "$WORK_DIR/new_model.pkl" s3://mrktdly-models/stock_predictor.pkl --region us-east-1
     aws s3 cp "$WORK_DIR/model_metrics.txt" s3://mrktdly-models/model_metrics.txt --region us-east-1
     echo "✓ Model deployed"
 else
-    echo -e "\n[4/6] Skipping deployment"
+    echo -e "\n[4/5] Skipping deployment"
 fi
 
 # Step 5: Cleanup
-echo -e "\n[5/6] Cleaning up..."
+echo -e "\n[5/5] Cleaning up..."
 rm -rf "$WORK_DIR"
-
-# Step 6: Retrain Price Range Predictor
-echo -e "\n[6/6] Retraining price range predictor..."
-export WORK_DIR
-python3 "$SCRIPT_DIR/train_price_range_fast.py" 2>&1 | tail -10
 
 echo -e "\n=========================================="
 echo "Retraining complete!"
 echo "  - Movement predictor: Updated"
-echo "  - Price range predictor: Updated"
 echo "=========================================="
