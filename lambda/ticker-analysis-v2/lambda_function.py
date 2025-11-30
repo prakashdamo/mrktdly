@@ -55,17 +55,25 @@ def lambda_handler(event, context):
     # Record signal for tracking
     if analysis.get('recommendation', {}).get('action') not in ['HOLD', 'AVOID']:
         try:
-            lambda_client.invoke(
+            payload = {
+                'ticker': ticker,
+                'recommendation': analysis['recommendation'],
+                'market_state': analysis.get('market_state', {})
+            }
+            print(f'Recording signal for {ticker}: {json.dumps(payload)}')
+            
+            response = lambda_client.invoke(
                 FunctionName='mrktdly-signal-tracker',
                 InvocationType='Event',
-                Payload=json.dumps({
-                    'ticker': ticker,
-                    'recommendation': analysis['recommendation'],
-                    'market_state': analysis.get('market_state', {})
-                })
+                Payload=json.dumps(payload)
             )
+            
+            if response.get('StatusCode') != 202:
+                print(f'Warning: Signal tracker returned status {response.get("StatusCode")}')
         except Exception as e:
-            print(f'Error recording signal: {e}')
+            # Log but don't fail the analysis
+            print(f'Error recording signal for {ticker}: {e}')
+            print(f'Signal payload: {json.dumps(payload, default=str)}')
     
     return {
         'statusCode': 200,
