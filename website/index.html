@@ -536,6 +536,7 @@
 
         function showAuthButtons() {
             // Hero section
+            document.getElementById('heroSection')?.classList.remove('hidden');
             document.getElementById('heroAuth')?.classList.remove('hidden');
             // Navigation
             document.getElementById('navAuth')?.classList.remove('hidden');
@@ -547,6 +548,8 @@
         }
 
         function showUserInfo(email) {
+            // Hide hero section after login
+            document.getElementById('heroSection')?.classList.add('hidden');
             // Navigation
             document.getElementById('navAuth')?.classList.add('hidden');
             document.getElementById('navUserInfo')?.classList.remove('hidden');
