@@ -160,27 +160,6 @@
                 </div>
             </div>
             
-            <!-- Logged In Welcome -->
-            <div id="heroUserWelcome" class="hidden">
-                <div class="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/30 rounded-xl p-8 max-w-2xl mx-auto">
-                    <p class="text-2xl font-semibold mb-6">👋 Welcome back, <span id="heroUserEmail" class="text-blue-400"></span></p>
-                    <div class="flex flex-wrap items-center justify-center gap-4">
-                        <a href="#ticker-analysis" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
-                            📊 View Market Analysis
-                        </a>
-                        <a href="/performance.html" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
-                            🎯 Model Performance
-                        </a>
-                        <a href="/swing-scanner.html" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
-                            🎯 Swing Scanner
-                        </a>
-                        <a href="/portfolio.html" class="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition">
-                            🏆 Portfolio
-                        </a>
-                    </div>
-                </div>
-            </div>
-
             <!-- Trust Indicators -->
             <div id="trustIndicators" class="flex flex-wrap items-center justify-center gap-6 text-gray-500">
                 <div class="flex items-center gap-2">
@@ -558,7 +537,6 @@
         function showAuthButtons() {
             // Hero section
             document.getElementById('heroAuth')?.classList.remove('hidden');
-            document.getElementById('heroUserWelcome')?.classList.add('hidden');
             // Navigation
             document.getElementById('navAuth')?.classList.remove('hidden');
             document.getElementById('navUserInfo')?.classList.add('hidden');
@@ -569,10 +547,6 @@
         }
 
         function showUserInfo(email) {
-            // Hide auth buttons, show welcome section
-            document.getElementById('heroAuth')?.classList.add('hidden');
-            document.getElementById('heroUserWelcome')?.classList.remove('hidden');
-            document.getElementById('heroUserEmail').textContent = email;
             // Navigation
             document.getElementById('navAuth')?.classList.add('hidden');
             document.getElementById('navUserInfo')?.classList.remove('hidden');
