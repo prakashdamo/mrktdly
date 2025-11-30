@@ -52,18 +52,37 @@ def lambda_handler(event, context):
         # Fetch detailed data for ticker
         ticker_data = fetch_ticker_data(ticker)
         
-        if not ticker_data or ticker_data['price'] == 0:
+        if not ticker_data:
             return {
                 'statusCode': 404,
                 'headers': headers,
                 'body': json.dumps({'error': f'Unable to fetch data for {ticker}'})
             }
         
+        if ticker_data.get('error'):
+            return {
+                'statusCode': 404,
+                'headers': headers,
+                'body': json.dumps({'error': ticker_data['error']})
+            }
+        
+        if ticker_data.get('price', 0) == 0:
+            return {
+                'statusCode': 404,
+                'headers': headers,
+                'body': json.dumps({'error': f'No price data available for {ticker}'})
+            }
+        
         # Get comprehensive model analysis
         comprehensive = get_comprehensive_analysis(ticker)
         
         # Generate AI analysis (with comprehensive data as context)
-        analysis = generate_ticker_analysis(ticker, ticker_data, comprehensive)
+        try:
+            analysis = generate_ticker_analysis(ticker, ticker_data, comprehensive)
+        except Exception as e:
+            print(f'Error generating analysis: {e}')
+            # Fall back to analysis without comprehensive data
+            analysis = generate_ticker_analysis(ticker, ticker_data, None)
         
         result = {
             'ticker': ticker,
@@ -281,10 +300,10 @@ def generate_ticker_analysis(ticker, data, comprehensive=None):
     
     # Add comprehensive model data to prompt if available
     model_insights = ""
-    if comprehensive:
-        state = comprehensive.get('market_state', {})
-        levels = comprehensive.get('price_levels', {})
-        rec = comprehensive.get('recommendation', {})
+    if comprehensive and isinstance(comprehensive, dict):
+        state = comprehensive.get('market_state', {}) or {}
+        levels = comprehensive.get('price_levels', {}) or {}
+        rec = comprehensive.get('recommendation', {}) or {}
         
         model_insights = f"""
 
