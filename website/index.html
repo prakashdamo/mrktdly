@@ -557,6 +557,8 @@
             // Hide bottom ticker section, show top form
             document.getElementById('tickerAnalysisSection')?.classList.add('hidden');
             document.getElementById('topTickerAnalysis')?.classList.remove('hidden');
+            // Load market data
+            loadAnalysis();
         }
 
         // Modal controls - Hero buttons
@@ -1014,8 +1016,8 @@
             });
         }
 
-        // Load on page load
-        loadAnalysis();
+        // Load on page load - only if logged in
+        checkAuthState();
     </script>
 </body>
 </html>
