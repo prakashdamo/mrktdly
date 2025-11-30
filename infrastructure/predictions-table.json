@@ -1,0 +1,12 @@
+{
+  "TableName": "mrktdly-predictions",
+  "KeySchema": [
+    {"AttributeName": "date", "KeyType": "HASH"},
+    {"AttributeName": "ticker", "KeyType": "RANGE"}
+  ],
+  "AttributeDefinitions": [
+    {"AttributeName": "date", "AttributeType": "S"},
+    {"AttributeName": "ticker", "AttributeType": "S"}
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

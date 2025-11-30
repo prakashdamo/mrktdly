@@ -9,6 +9,7 @@ ses = boto3.client('ses', region_name='us-east-1')
 table = dynamodb.Table('mrktdly-data')
 waitlist_table = dynamodb.Table('mrktdly-waitlist')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
+predictions_table = dynamodb.Table('mrktdly-predictions')
 
 def lambda_handler(event, context):
     """Delivers daily analysis via email"""
@@ -82,18 +83,34 @@ def lambda_handler(event, context):
     if not emails:
         return {'statusCode': 200, 'body': json.dumps('No subscribers yet')}
     
+    # Fetch ML predictions (always use current date for predictions)
+    ml_predictions = []
+    current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    try:
+        print(f'Querying predictions for date: {current_date}')
+        pred_response = predictions_table.query(
+            KeyConditionExpression=Key('date').eq(current_date)
+        )
+        ml_predictions = pred_response.get('Items', [])
+        print(f'Query returned {len(ml_predictions)} items')
+        ml_predictions.sort(key=lambda x: float(x.get('probability', 0)), reverse=True)
+        ml_predictions = ml_predictions[:10]  # Top 10
+        print(f"Retrieved {len(ml_predictions)} ML predictions")
+    except Exception as e:
+        print(f"Error fetching predictions: {e}")
+    
     # Send emails
     sent_count = 0
     for email in emails:
         try:
-            send_email(email, analysis, swing_signals, date_key)
+            send_email(email, analysis, swing_signals, ml_predictions, date_key)
             sent_count += 1
         except Exception as e:
             print(f'Failed to send to {email}: {e}')
     
     return {'statusCode': 200, 'body': json.dumps(f'Sent to {sent_count} subscribers')}
 
-def send_email(email, analysis, swing_signals, date_key):
+def send_email(email, analysis, swing_signals, ml_predictions, date_key):
     """Send educational market analysis email"""
     
     date_str = datetime.strptime(date_key, '%Y-%m-%d').strftime('%B %d, %Y')
@@ -148,6 +165,34 @@ def send_email(email, analysis, swing_signals, date_key):
             # Pattern-specific reasoning with historical win rates
             historical_wr = signal.get('historical_win_rate', 0)
             wr_text = f" (Historical: {float(historical_wr):.1f}% win rate)" if historical_wr else ""
+    
+    # Build ML predictions section
+    ml_html = ''
+    if ml_predictions:
+        for pred in ml_predictions:
+            ticker = pred.get('ticker', '')
+            probability = float(pred.get('probability', 0))
+            confidence = pred.get('confidence', 'medium')
+            price = pred.get('price', '0')
+            rsi = pred.get('rsi', '50')
+            return_20d = pred.get('return_20d', '0')
+            
+            # Color based on confidence
+            conf_color = '#10b981' if confidence == 'high' else '#fbbf24'
+            
+            ml_html += (
+                f'<div style="background: #374151; padding: 18px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid {conf_color};">'
+                f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">'
+                f'<div>'
+                f'<strong style="color: #fcd34d; font-size: 18px;">{ticker}</strong> '
+                f'<span style="color: #93c5fd; font-size: 16px;">${price}</span>'
+                f'</div>'
+                f'<span style="color: {conf_color}; font-size: 16px; font-weight: bold;">{probability*100:.0f}% likely</span>'
+                f'</div>'
+                f'<p style="color: #d1d5db; margin: 0; font-size: 14px;">'
+                f'RSI: {rsi} | 20-day return: {return_20d}% | {confidence.upper()} confidence'
+                f'</p></div>'
+            )
             
             if signal.get('pattern') == 'consolidation_breakout':
                 reason = f"Breaking out of 35-day consolidation with {int(volume_surge * 100)}% volume surge{wr_text}"
@@ -252,6 +297,9 @@ def send_email(email, analysis, swing_signals, date_key):
                     
                     <!-- Unusual Activity (if present) -->
                     {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🔥 Unusual Activity</h2>' + unusual_html + '</td></tr>' if unusual_html else ''}
+                    
+                    <!-- ML Predictions (if present) -->
+                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #10b981; padding-bottom: 10px;">🤖 AI Predictions</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Machine learning model predicts stocks likely to move >3% in next 5 days.</p>' + ml_html + '</td></tr>' if ml_html else ''}
                     
                     <!-- Swing Trade Signals (if present) -->
                     {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Swing Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical breakout patterns with defined entry, stop, and target levels.</p>' + swing_html + '</td></tr>' if swing_html else ''}
