@@ -567,8 +567,10 @@
         }
 
         function showUserInfo(email) {
-            // Hide entire hero section after login
-            document.getElementById('heroSection')?.classList.add('hidden');
+            // Hide auth buttons, show welcome section
+            document.getElementById('heroAuth')?.classList.add('hidden');
+            document.getElementById('heroUserWelcome')?.classList.remove('hidden');
+            document.getElementById('heroUserEmail').textContent = email;
             // Navigation
             document.getElementById('navAuth')?.classList.add('hidden');
             document.getElementById('navUserInfo')?.classList.remove('hidden');
