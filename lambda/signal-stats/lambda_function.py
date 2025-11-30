@@ -86,8 +86,8 @@ def calculate_stats(signals, ticker):
         }
     
     closed_signals = [s for s in signals if s['status'] in ['WIN', 'LOSS', 'EXPIRED']]
-    wins = [s for s in closed_signals if s['outcome'] == 'WIN']
-    losses = [s for s in closed_signals if s['outcome'] in ['LOSS', 'EXPIRED']]
+    wins = [s for s in closed_signals if s.get('outcome') == 'WIN' or (s.get('return_pct') and float(s['return_pct']) > 0)]
+    losses = [s for s in closed_signals if s not in wins]
     
     win_count = len(wins)
     loss_count = len(losses)
@@ -113,11 +113,14 @@ def calculate_stats(signals, ticker):
         'outcome': s.get('outcome'),
         'return_pct': float(s['return_pct']) if s.get('return_pct') else None,
         'days_held': s.get('days_held'),
-        'conviction': float(s['conviction'])
+        'conviction': s.get('conviction', 'MEDIUM')
     } for s in recent]
     
-    # Stats by conviction level
-    high_conviction = [s for s in closed_signals if float(s['conviction']) >= 0.8]
+    # Stats by conviction level (skip if conviction is string)
+    try:
+        high_conviction = [s for s in closed_signals if isinstance(s.get('conviction'), (int, float, Decimal)) and float(s['conviction']) >= 0.8]
+    except:
+        high_conviction = []
     high_win_rate = (len([s for s in high_conviction if s['outcome'] == 'WIN']) / len(high_conviction) * 100) if high_conviction else 0
     
     return {

@@ -31,6 +31,20 @@
             </div>
         </section>
 
+        <!-- Last Month Backtest -->
+        <section class="mb-8 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 backdrop-blur-sm border border-blue-500/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-semibold">📊 Last Month Backtest</h2>
+                <span class="text-sm text-gray-400">Historical Performance</span>
+            </div>
+            
+            <div id="backtestStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                    <div class="text-gray-400 text-xs mb-1">Loading...</div>
+                </div>
+            </div>
+        </section>
+
         <!-- Active Signals -->
         <section class="mb-8">
             <div id="activeSignals">
@@ -113,7 +127,42 @@
             }
         }
 
+        async function loadBacktestData() {
+            try {
+                const response = await fetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?days=30&backtest=true');
+                const stats = await response.json();
+                
+                const backtestDiv = document.getElementById('backtestStats');
+                backtestDiv.innerHTML = `
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Signals</div>
+                        <div class="text-2xl font-bold text-white">${stats.total_signals || 0}</div>
+                        <div class="text-xs text-gray-500">${stats.closed_signals || 0} closed</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Win Rate</div>
+                        <div class="text-2xl font-bold ${(stats.win_rate || 0) >= 60 ? 'text-green-400' : 'text-yellow-400'}">${stats.win_rate || 0}%</div>
+                        <div class="text-xs text-gray-500">${stats.win_count || 0}W / ${stats.loss_count || 0}L</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Expectancy</div>
+                        <div class="text-2xl font-bold ${(stats.expectancy || 0) > 0 ? 'text-green-400' : 'text-red-400'}">${(stats.expectancy || 0) > 0 ? '+' : ''}${stats.expectancy || 0}%</div>
+                        <div class="text-xs text-gray-500">per trade</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                        <div class="text-gray-400 text-xs mb-1">Avg Return</div>
+                        <div class="text-lg font-bold text-white">+${stats.avg_win || 0}% / ${stats.avg_loss || 0}%</div>
+                        <div class="text-xs text-gray-500">win / loss</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading backtest data:', error);
+                document.getElementById('backtestStats').innerHTML = '<div class="text-gray-400 text-center col-span-4">Backtest data unavailable</div>';
+            }
+        }
+
         loadModelPerformance();
+        loadBacktestData();
     </script>
 </body>
 </html>
