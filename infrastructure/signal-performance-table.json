@@ -1,0 +1,23 @@
+{
+  "TableName": "mrktdly-signal-performance",
+  "KeySchema": [
+    {"AttributeName": "ticker", "KeyType": "HASH"},
+    {"AttributeName": "signal_date", "KeyType": "RANGE"}
+  ],
+  "AttributeDefinitions": [
+    {"AttributeName": "ticker", "AttributeType": "S"},
+    {"AttributeName": "signal_date", "AttributeType": "S"},
+    {"AttributeName": "status", "AttributeType": "S"}
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "status-index",
+      "KeySchema": [
+        {"AttributeName": "status", "KeyType": "HASH"},
+        {"AttributeName": "signal_date", "KeyType": "RANGE"}
+      ],
+      "Projection": {"ProjectionType": "ALL"}
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST"
+}

@@ -205,10 +205,10 @@ def fetch_ticker_data(symbol):
         high_52w = max(highs)
         low_52w = min(lows)
         
-        # Calculate Fibonacci retracement levels
+        # Calculate Fibonacci retracement levels from 30-day swing
         swing_high = max(highs[-30:]) if len(highs) >= 30 else max(highs)
         swing_low = min(lows[-30:]) if len(lows) >= 30 else min(lows)
-        fib_levels = calculate_fibonacci(swing_high, swing_low)
+        fib_levels = calculate_fibonacci(swing_high, swing_low, swing_high, swing_low)
         
         # Determine trend
         trend = determine_trend(closes, ma_20, ma_50, current_price)
@@ -235,7 +235,7 @@ def fetch_ticker_data(symbol):
         print(f'Error fetching {symbol}: {e}')
         return None
 
-def calculate_fibonacci(high, low):
+def calculate_fibonacci(high, low, swing_high, swing_low):
     """Calculate Fibonacci retracement levels"""
     diff = high - low
     return {
@@ -246,8 +246,8 @@ def calculate_fibonacci(high, low):
         'level_618': round(high - (diff * 0.618), 2),
         'level_786': round(high - (diff * 0.786), 2),
         'level_100': round(low, 2),
-        'swing_high': round(high, 2),
-        'swing_low': round(low, 2)
+        'swing_high': round(swing_high, 2),
+        'swing_low': round(swing_low, 2)
     }
 
 def determine_trend(closes, ma_20, ma_50, current_price):

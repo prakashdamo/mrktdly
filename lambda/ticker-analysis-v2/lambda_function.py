@@ -52,6 +52,21 @@ def lambda_handler(event, context):
         'recommendation': generate_recommendation(movement, state, levels, features)
     }
     
+    # Record signal for tracking
+    if analysis.get('recommendation', {}).get('action') not in ['HOLD', 'AVOID']:
+        try:
+            lambda_client.invoke(
+                FunctionName='mrktdly-signal-tracker',
+                InvocationType='Event',
+                Payload=json.dumps({
+                    'ticker': ticker,
+                    'recommendation': analysis['recommendation'],
+                    'market_state': analysis.get('market_state', {})
+                })
+            )
+        except Exception as e:
+            print(f'Error recording signal: {e}')
+    
     return {
         'statusCode': 200,
         'body': json.dumps(analysis, indent=2)
