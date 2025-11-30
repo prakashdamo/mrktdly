@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         # Extract signal data
         ticker = event['ticker']
         recommendation = event['recommendation']
-        market_state = event.get('market_state', {})
+        market_state = event.get('market_state') or {}
         
         action = recommendation.get('action', 'HOLD')
         if action == 'HOLD':
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
             'conviction': Decimal(str(recommendation.get('conviction_score', 0))),
             'market_state': market_state.get('state', 'UNKNOWN'),
             'state_confidence': Decimal(str(market_state.get('confidence', 0))),
-            'risk_reward': entry_exit.get('risk_reward', 'N/A'),
+            'risk_reward': str(entry_exit.get('risk_reward', 'N/A')),
             'status': 'OPEN',
             'outcome': None,
             'return_pct': None,
