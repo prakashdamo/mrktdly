@@ -5,88 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticker Analysis - Daily Market Summary</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
-<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
-    <div class="container mx-auto px-6 py-8 max-w-5xl">
+<body class="bg-slate-900 text-white antialiased">
+    <div class="container mx-auto px-6 py-8 max-w-7xl">
         <!-- Header -->
-        <header class="mb-8">
-            <a href="/" class="text-blue-400 hover:text-blue-300 mb-4 inline-block">← Back to Daily Summary</a>
-            <div class="flex items-center justify-between">
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-2" id="tickerTitle">
-                    Loading...
-                </h1>
-                <button onclick="showMLPrediction()" class="group relative px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 rounded-xl font-semibold flex items-center gap-3 transition-all duration-300 hover:scale-105 shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70">
-                    <div class="relative">
-                        <div class="absolute inset-0 bg-white/20 rounded-full blur-sm group-hover:blur-md transition-all"></div>
-                        <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
+        <header class="mb-12">
+            <a href="/" class="text-blue-400 hover:text-blue-300 mb-6 inline-flex items-center gap-2 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back to Home
+            </a>
+            
+            <!-- Hero Section -->
+            <div class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/40 mb-8">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-3" id="tickerTitle">
+                            Loading...
+                        </h1>
+                        <div class="flex items-center gap-4 text-gray-400 mb-4" id="tickerStats"></div>
+                        <div id="mlSignal" class="hidden"></div>
                     </div>
-                    <span class="relative z-10">ML Strategy</span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                </button>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="showMLPrediction()" class="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg shadow-purple-500/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            ML Strategy
+                        </button>
+                        <button class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-all duration-300 hover:scale-105">
+                            Add to Watchlist
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-4 text-gray-400" id="tickerStats"></div>
         </header>
 
         <!-- Loading State -->
         <div id="loading" class="text-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p class="text-gray-400 mt-4">Analyzing ticker...</p>
         </div>
 
         <!-- Content -->
-        <div id="content" class="hidden space-y-6">
+        <div id="content" class="hidden space-y-8">
+            <!-- Price Range Visualization -->
+            <section class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/30">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-full"></div>
+                    <h2 class="text-2xl font-bold">52-Week Price Range</h2>
+                </div>
+                
+                <!-- 52-Week Gauge -->
+                <div class="mb-8">
+                    <div id="priceGauge" class="relative h-16 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full overflow-hidden">
+                        <div id="priceMarker" class="absolute top-0 bottom-0 w-1 bg-white shadow-lg" style="left: 50%">
+                            <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-white text-slate-900 px-3 py-1 rounded-lg font-bold text-sm whitespace-nowrap"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-2 text-sm text-gray-400">
+                        <span id="low52w">$0</span>
+                        <span id="percentile" class="font-medium"></span>
+                        <span id="high52w">$0</span>
+                    </div>
+                </div>
+                
+                <!-- Price Distribution Heatmap -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Price Distribution (Past Year)</h3>
+                    <div id="priceHeatmap" style="height: 400px;"></div>
+                </div>
+            </section>
+            
             <!-- Model Performance -->
-            <section class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/50 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">🎯 Model Track Record</h2>
+            <section class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 bg-gradient-to-b from-purple-400 to-pink-600 rounded-full"></div>
+                    <h2 class="text-2xl font-bold">Model Track Record</h2>
+                </div>
                 <div id="modelPerformance">
                     <div class="text-center text-gray-400 py-4">Loading performance data...</div>
                 </div>
             </section>
 
-            <!-- Trend Analysis -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📊 Trend Analysis</h2>
-                <div id="trendAnalysis" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-            </section>
+            <!-- Two Column Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Trend Analysis -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-blue-400 to-cyan-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Trend Analysis</h2>
+                    </div>
+                    <div id="trendAnalysis" class="grid grid-cols-2 gap-4"></div>
+                </section>
 
-            <!-- Fibonacci Levels -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">🎯 Fibonacci Retracement Levels</h2>
-                <div class="text-sm text-gray-400 mb-4">Based on recent swing: ${tickerData.fibonacci?.swing_low} - ${tickerData.fibonacci?.swing_high}</div>
-                <div id="fibonacciLevels" class="space-y-2"></div>
-            </section>
+                <!-- Fibonacci Levels -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Fibonacci Levels</h2>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-4">Based on recent swing</div>
+                    <div id="fibonacciLevels" class="space-y-2"></div>
+                </section>
+            </div>
 
             <!-- Price Action -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📊 Price Action Summary</h2>
+            <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 bg-gradient-to-b from-orange-400 to-red-600 rounded-full"></div>
+                    <h2 class="text-2xl font-bold">Price Action Summary</h2>
+                </div>
                 <p class="text-gray-300 leading-relaxed" id="priceAction"></p>
             </section>
 
-            <!-- Technical Analysis -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">📈 Technical Analysis</h2>
-                <ul class="space-y-3 text-gray-300" id="technicalAnalysis"></ul>
-            </section>
+            <!-- Two Column Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Technical Analysis -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-teal-400 to-cyan-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Technical Analysis</h2>
+                    </div>
+                    <ul class="space-y-3 text-gray-300" id="technicalAnalysis"></ul>
+                </section>
 
-            <!-- Key Levels -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">🎯 Key Levels to Watch</h2>
-                <div class="space-y-3" id="keyLevels"></div>
-            </section>
+                <!-- Key Levels -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-yellow-400 to-orange-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Key Levels</h2>
+                    </div>
+                    <div class="space-y-3" id="keyLevels"></div>
+                </section>
+            </div>
 
-            <!-- Trading Considerations -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">💡 Trading Considerations</h2>
-                <ul class="space-y-3 text-gray-300" id="tradingConsiderations"></ul>
-            </section>
+            <!-- Two Column Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Trading Considerations -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-indigo-400 to-purple-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Trading Considerations</h2>
+                    </div>
+                    <ul class="space-y-3 text-gray-300" id="tradingConsiderations"></ul>
+                </section>
 
-            <!-- Risk Assessment -->
-            <section class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 border-b border-purple-500 pb-2">⚠️ Risk Assessment</h2>
-                <ul class="space-y-3 text-gray-300" id="riskAssessment"></ul>
-            </section>
+                <!-- Risk Assessment -->
+                <section class="bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-gradient-to-b from-red-400 to-rose-600 rounded-full"></div>
+                        <h2 class="text-2xl font-bold">Risk Assessment</h2>
+                    </div>
+                    <ul class="space-y-3 text-gray-300" id="riskAssessment"></ul>
+                </section>
+            </div>
 
             <!-- Disclaimer -->
             <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
@@ -218,6 +294,64 @@
                         <div class="text-gray-300 text-sm">${tickerData.trend.description}</div>
                     </div>
                 `;
+            }
+
+            // Price Range Visualization
+            if (tickerData.price_distribution) {
+                // 52-Week Gauge
+                const percentile = ((tickerData.price - tickerData.low_52w) / (tickerData.high_52w - tickerData.low_52w)) * 100;
+                document.getElementById('low52w').textContent = `$${tickerData.low_52w}`;
+                document.getElementById('high52w').textContent = `$${tickerData.high_52w}`;
+                document.getElementById('percentile').textContent = `${percentile.toFixed(0)}th percentile`;
+                
+                const marker = document.getElementById('priceMarker');
+                marker.style.left = `${percentile}%`;
+                marker.querySelector('div').textContent = `$${tickerData.price}`;
+                
+                // Price Distribution Heatmap
+                const dist = tickerData.price_distribution;
+                const trace = {
+                    x: dist.levels.map(l => l.count),
+                    y: dist.levels.map(l => l.price),
+                    type: 'bar',
+                    orientation: 'h',
+                    marker: {
+                        color: dist.levels.map(l => l.count),
+                        colorscale: [[0, '#1e293b'], [0.5, '#3b82f6'], [1, '#22c55e']],
+                        showscale: false
+                    },
+                    hovertemplate: '$%{y:.2f}<br>%{x} days<extra></extra>'
+                };
+                
+                const layout = {
+                    paper_bgcolor: 'transparent',
+                    plot_bgcolor: 'transparent',
+                    font: { color: '#e2e8f0' },
+                    xaxis: { title: 'Days at Price Level', gridcolor: '#334155' },
+                    yaxis: { title: 'Price', gridcolor: '#334155' },
+                    margin: { l: 60, r: 20, t: 20, b: 60 },
+                    height: 400,
+                    shapes: [{
+                        type: 'line',
+                        y0: tickerData.price,
+                        y1: tickerData.price,
+                        x0: 0,
+                        x1: 1,
+                        xref: 'paper',
+                        line: { color: '#fff', width: 2, dash: 'dash' }
+                    }],
+                    annotations: [{
+                        y: tickerData.price,
+                        x: 1,
+                        xref: 'paper',
+                        text: `Current: $${tickerData.price}`,
+                        showarrow: false,
+                        xanchor: 'left',
+                        font: { color: '#fff', size: 12 }
+                    }]
+                };
+                
+                Plotly.newPlot('priceHeatmap', [trace], layout, {responsive: true});
             }
 
             // Fibonacci Levels

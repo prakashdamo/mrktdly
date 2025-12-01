@@ -210,6 +210,9 @@ def fetch_ticker_data(symbol):
         swing_low = min(lows[-30:]) if len(lows) >= 30 else min(lows)
         fib_levels = calculate_fibonacci(swing_high, swing_low)
         
+        # Calculate price distribution for heatmap
+        price_distribution = calculate_price_distribution(history, high_52w, low_52w)
+        
         # Determine trend
         trend = determine_trend(closes, ma_20, ma_50, current_price)
         
@@ -229,6 +232,7 @@ def fetch_ticker_data(symbol):
             'high_5d': round(max(highs[-5:]), 2),
             'low_5d': round(min(lows[-5:]), 2),
             'fibonacci': fib_levels,
+            'price_distribution': price_distribution,
             'trend': trend
             }
     except Exception as e:
@@ -248,6 +252,34 @@ def calculate_fibonacci(high, low):
         'level_100': round(low, 2),
         'swing_high': round(high, 2),
         'swing_low': round(low, 2)
+    }
+
+def calculate_price_distribution(history, high_52w, low_52w):
+    """Calculate price distribution for heatmap visualization"""
+    # Create 20 price buckets from 52w low to high
+    num_buckets = 20
+    bucket_size = (high_52w - low_52w) / num_buckets
+    buckets = [0] * num_buckets
+    
+    # Count days in each price bucket
+    for day in history:
+        close = float(day['close'])
+        bucket_idx = int((close - low_52w) / bucket_size)
+        if 0 <= bucket_idx < num_buckets:
+            buckets[bucket_idx] += 1
+    
+    # Create price levels and counts
+    price_levels = []
+    for i in range(num_buckets):
+        price = low_52w + (i + 0.5) * bucket_size
+        price_levels.append({
+            'price': round(price, 2),
+            'count': buckets[i]
+        })
+    
+    return {
+        'levels': price_levels,
+        'max_count': max(buckets) if buckets else 1
     }
 
 def determine_trend(closes, ma_20, ma_50, current_price):
