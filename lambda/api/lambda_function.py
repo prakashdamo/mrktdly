@@ -7,6 +7,7 @@ from boto3.dynamodb.conditions import Key
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('mrktdly-data')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
+predictions_table = dynamodb.Table('mrktdly-predictions')
 cache_table = dynamodb.Table('mrktdly-ticker-cache')  # Reuse existing cache table
 
 def decimal_default(obj):
@@ -53,19 +54,18 @@ def lambda_handler(event, context):
     
     try:
         if '/swing-signals' in path:
-            # Get swing trade signals with caching
+            # Get combined trade opportunities (swing + AI predictions)
             today = params.get('date', datetime.now(timezone.utc).strftime('%Y-%m-%d'))
             pattern = params.get('pattern', 'all')
             min_rr = float(params.get('min_rr', 0))
             
             # Check cache first (24 hour TTL)
-            cache_key = f"swing-signals-{today}-{pattern}-{min_rr}"
+            cache_key = f"trade-opportunities-{today}-{pattern}-{min_rr}"
             print(f"Cache key: {cache_key}")
             try:
                 cache_response = cache_table.get_item(Key={'ticker': cache_key})
                 if 'Item' in cache_response:
                     cached_data = cache_response['Item']
-                    # Check if cache is still valid (TTL)
                     if 'ttl' in cached_data and cached_data['ttl'] > int(datetime.now(timezone.utc).timestamp()):
                         print(f"Cache HIT for {cache_key}")
                         return {
@@ -73,34 +73,84 @@ def lambda_handler(event, context):
                             'headers': headers,
                             'body': cached_data['data']
                         }
-                    else:
-                        print(f"Cache EXPIRED for {cache_key}")
-                else:
-                    print(f"Cache MISS for {cache_key}")
             except Exception as e:
                 print(f"Cache error: {e}")
             
-            # Cache miss - fetch from DynamoDB
-            response = swing_signals_table.query(
+            # Fetch swing signals
+            swing_response = swing_signals_table.query(
                 KeyConditionExpression=Key('date').eq(today)
             )
+            swing_signals = swing_response['Items']
             
-            signals = response['Items']
+            # If no signals today, get most recent
+            if not swing_signals:
+                scan_response = swing_signals_table.scan(Limit=100)
+                if scan_response['Items']:
+                    from collections import defaultdict
+                    by_date = defaultdict(list)
+                    for item in scan_response['Items']:
+                        by_date[item['date']].append(item)
+                    most_recent_date = max(by_date.keys())
+                    swing_signals = by_date[most_recent_date]
+                    today = most_recent_date
+            
+            # Fetch ML predictions
+            try:
+                pred_response = predictions_table.query(
+                    KeyConditionExpression=Key('date').eq(today)
+                )
+                ml_predictions = pred_response.get('Items', [])
+                ml_predictions.sort(key=lambda x: float(x.get('probability', 0)), reverse=True)
+            except:
+                ml_predictions = []
+            
+            # Combine and deduplicate
+            combined_signals = []
+            seen_tickers = set()
+            
+            # Add swing signals first (better entry/exit data)
+            for signal in swing_signals:
+                ticker = signal.get('ticker', '')
+                if ticker not in seen_tickers:
+                    signal['source'] = 'Technical'
+                    combined_signals.append(signal)
+                    seen_tickers.add(ticker)
+            
+            # Add ML predictions that aren't duplicates
+            for pred in ml_predictions[:10]:
+                ticker = pred.get('ticker', '')
+                if ticker not in seen_tickers:
+                    price = float(pred.get('price', 0))
+                    combined_signals.append({
+                        'ticker': ticker,
+                        'pattern': 'ai_prediction',
+                        'entry': str(price),
+                        'support': str(price * 0.97),
+                        'target': str(price * 1.03),
+                        'risk_reward': '1.0',
+                        'volume_surge': '0',
+                        'historical_win_rate': str(float(pred.get('probability', 0)) * 100),
+                        'source': 'AI',
+                        'probability': pred.get('probability', 0)
+                    })
+                    seen_tickers.add(ticker)
             
             # Filter by pattern
-            if pattern != 'all':
-                signals = [s for s in signals if s.get('pattern') == pattern]
+            if pattern != 'all' and pattern != 'ai_prediction':
+                combined_signals = [s for s in combined_signals if s.get('pattern') == pattern]
+            elif pattern == 'ai_prediction':
+                combined_signals = [s for s in combined_signals if s.get('source') == 'AI']
             
             # Filter by risk/reward
-            signals = [s for s in signals if float(s.get('risk_reward', 0)) >= min_rr]
+            combined_signals = [s for s in combined_signals if float(s.get('risk_reward', 0)) >= min_rr]
             
             # Sort by risk/reward descending
-            signals.sort(key=lambda x: float(x.get('risk_reward', 0)), reverse=True)
+            combined_signals.sort(key=lambda x: float(x.get('risk_reward', 0)), reverse=True)
             
             result = {
                 'date': today,
-                'count': len(signals),
-                'signals': signals
+                'count': len(combined_signals),
+                'signals': combined_signals
             }
             
             result_json = json.dumps(result, default=decimal_default)
@@ -110,7 +160,7 @@ def lambda_handler(event, context):
                 cache_table.put_item(Item={
                     'ticker': cache_key,
                     'data': result_json,
-                    'ttl': int((datetime.now(timezone.utc).timestamp()) + 86400)  # 24 hours
+                    'ttl': int((datetime.now(timezone.utc).timestamp()) + 86400)
                 })
             except:
                 pass

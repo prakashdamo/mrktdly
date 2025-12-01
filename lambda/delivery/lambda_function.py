@@ -151,103 +151,128 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
                 f'<p style="color: #f3f4f6; margin: 8px 0 0; font-size: 15px;">{item.get("note", "")}</p></div>'
             )
     
-    # Build swing signals section
-    swing_html = ''
-    if swing_signals:
-        for signal in swing_signals:
+    # Combine and deduplicate signals
+    combined_signals = []
+    seen_tickers = set()
+    
+    # Add swing signals first (they have better entry/exit data)
+    for signal in swing_signals:
+        ticker = signal.get('ticker', '')
+        if ticker not in seen_tickers:
             pattern_name = signal.get('pattern', '').replace('_', ' ').title()
             entry = float(signal.get('entry', 0))
             support = float(signal.get('support', 0))
             target = float(signal.get('target', 0))
             rr = float(signal.get('risk_reward', 0))
             volume_surge = float(signal.get('volume_surge', 0))
-            
-            # Pattern-specific reasoning with historical win rates
             historical_wr = signal.get('historical_win_rate', 0)
-            wr_text = f" (Historical: {float(historical_wr):.1f}% win rate)" if historical_wr else ""
-    
-    # Build ML predictions section
-    ml_html = ''
-    if ml_predictions:
-        for pred in ml_predictions:
-            ticker = pred.get('ticker', '')
-            probability = float(pred.get('probability', 0))
-            confidence = pred.get('confidence', 'medium')
-            price = pred.get('price', '0')
-            rsi = pred.get('rsi', '50')
-            return_20d = pred.get('return_20d', '0')
             
-            # Color based on confidence
-            conf_color = '#10b981' if confidence == 'high' else '#fbbf24'
-            
-            ml_html += (
-                f'<div style="background: #374151; padding: 18px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid {conf_color};">'
-                f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">'
-                f'<div>'
-                f'<strong style="color: #fcd34d; font-size: 18px;">{ticker}</strong> '
-                f'<span style="color: #93c5fd; font-size: 16px;">${price}</span>'
-                f'</div>'
-                f'<span style="color: {conf_color}; font-size: 16px; font-weight: bold;">{probability*100:.0f}% likely</span>'
-                f'</div>'
-                f'<p style="color: #d1d5db; margin: 0; font-size: 14px;">'
-                f'RSI: {rsi} | 20-day return: {return_20d}% | {confidence.upper()} confidence'
-                f'</p></div>'
-            )
-            
-            if signal.get('pattern') == 'consolidation_breakout':
-                reason = f"Breaking out of 35-day consolidation with {int(volume_surge * 100)}% volume surge{wr_text}"
-            elif signal.get('pattern') == 'bull_flag':
-                reason = f"Bull flag pattern with strong uptrend, {int(volume_surge * 100)}% volume on breakout{wr_text}"
-            elif signal.get('pattern') == 'ascending_triangle':
-                reason = f"Ascending triangle breakout with rising support, {int(volume_surge * 100)}% volume{wr_text}"
-            elif signal.get('pattern') == 'momentum_alignment':
-                reason = f"RSI and MACD both trending up, price above 20-day MA - strong momentum{wr_text}"
-            elif signal.get('pattern') == 'volume_breakout':
-                reason = f"New 20-day high with {int(volume_surge * 100)}% volume surge - institutional buying{wr_text}"
+            # Pattern-specific reasoning
+            if signal.get('pattern') == 'ma20_pullback':
+                reason = f"Oversold bounce at 20-day MA support"
             elif signal.get('pattern') == 'reversal_after_decline':
-                reason = f"⭐ Strong reversal after 3+ down days with volume - 68.9% historical win rate"
+                reason = f"Strong reversal after 3+ down days with volume"
             elif signal.get('pattern') == 'gap_up_hold':
-                reason = f"⭐ Gap up holding for 2+ days - 67.3% historical win rate"
-            elif signal.get('pattern') == 'ma20_pullback':
-                reason = f"⭐ Oversold bounce at 20-day MA support - 60.2% historical win rate"
+                reason = f"Gap up holding for 2+ days"
+            elif signal.get('pattern') == 'consolidation_breakout':
+                reason = f"Breaking out of consolidation with {int(volume_surge * 100)}% volume"
+            elif signal.get('pattern') == 'bull_flag':
+                reason = f"Bull flag pattern with {int(volume_surge * 100)}% volume"
             else:
-                reason = f"Technical breakout with {int(volume_surge * 100)}% volume surge{wr_text}"
+                reason = f"Technical breakout with {int(volume_surge * 100)}% volume"
             
-            swing_html += f'''
-                <div style="background: #2d3748; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #60a5fa;">
-                    <div style="margin-bottom: 10px;">
-                        <strong style="color: #60a5fa; font-size: 20px;">{signal.get("ticker", "")}</strong>
-                        <span style="background: #065f46; color: #6ee7b7; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-left: 10px;">
-                            Risk $1 to Make ${rr:.1f}
-                        </span>
-                    </div>
-                    <div style="color: #d1d5db; font-size: 14px; margin-bottom: 12px;">
-                        <strong style="color: #f3f4f6;">{pattern_name}</strong> - {reason}
-                    </div>
-                    <table style="width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 6px; padding: 12px;">
-                        <tr>
-                            <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Entry Price</div>
-                                <div style="color: #f9fafb; font-size: 18px; font-weight: 700; margin-top: 4px;">${entry:.2f}</div>
-                            </td>
-                            <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Stop Loss</div>
-                                <div style="color: #fca5a5; font-size: 18px; font-weight: 700; margin-top: 4px;">${support:.2f}</div>
-                                <div style="font-size: 11px; color: #fca5a5; margin-top: 2px;">Risk: ${(entry - support):.2f}</div>
-                            </td>
-                            <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Target</div>
-                                <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">${target:.2f}</div>
-                                <div style="font-size: 11px; color: #6ee7b7; margin-top: 2px;">Gain: ${(target - entry):.2f}</div>
-                            </td>
-                            <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Upside</div>
-                                <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">+{((target - entry) / entry * 100):.1f}%</div>
-                            </td>
-                        </tr>
-                    </table>
+            wr_text = f" • {float(historical_wr):.0f}% historical win rate" if historical_wr else ""
+            
+            combined_signals.append({
+                'ticker': ticker,
+                'entry': entry,
+                'stop': support,
+                'target': target,
+                'rr': rr,
+                'pattern': pattern_name,
+                'reason': reason + wr_text,
+                'source': 'Technical'
+            })
+            seen_tickers.add(ticker)
+    
+    # Add ML predictions that aren't duplicates
+    for pred in ml_predictions:
+        ticker = pred.get('ticker', '')
+        if ticker not in seen_tickers:
+            price = float(pred.get('price', 0))
+            probability = float(pred.get('probability', 0))
+            
+            # Calculate entry/exit based on 3% move prediction
+            entry = price
+            target = price * 1.03  # 3% target
+            stop = price * 0.97    # 3% stop
+            rr = 1.0
+            
+            combined_signals.append({
+                'ticker': ticker,
+                'entry': entry,
+                'stop': stop,
+                'target': target,
+                'rr': rr,
+                'pattern': 'AI Prediction',
+                'reason': f"{probability*100:.0f}% probability of 3%+ move in 5 days",
+                'source': 'AI'
+            })
+            seen_tickers.add(ticker)
+    
+    # Sort by risk/reward
+    combined_signals.sort(key=lambda x: x['rr'], reverse=True)
+    
+    # Build unified signals HTML
+    signals_html = ''
+    for sig in combined_signals[:10]:  # Top 10
+        entry = sig['entry']
+        stop = sig['stop']
+        target = sig['target']
+        rr = sig['rr']
+        
+        # Badge color based on source
+        badge_color = '#667eea' if sig['source'] == 'Technical' else '#10b981'
+        
+        signals_html += f'''
+            <div style="background: #2d3748; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid {badge_color};">
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #60a5fa; font-size: 20px;">{sig['ticker']}</strong>
+                    <span style="color: #93c5fd; font-size: 16px; margin-left: 8px;">${entry:.2f}</span>
+                    <span style="background: #065f46; color: #6ee7b7; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-left: 10px;">
+                        Risk $1 to Make ${rr:.1f}
+                    </span>
+                    <span style="background: {badge_color}; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-left: 8px;">
+                        {sig['source']}
+                    </span>
                 </div>
-            '''
+                <div style="color: #d1d5db; font-size: 14px; margin-bottom: 12px;">
+                    <strong style="color: #f3f4f6;">{sig['pattern']}</strong> - {sig['reason']}
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 6px; padding: 12px;">
+                    <tr>
+                        <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Entry Price</div>
+                            <div style="color: #f9fafb; font-size: 18px; font-weight: 700; margin-top: 4px;">${entry:.2f}</div>
+                        </td>
+                        <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Stop Loss</div>
+                            <div style="color: #fca5a5; font-size: 18px; font-weight: 700; margin-top: 4px;">${stop:.2f}</div>
+                            <div style="font-size: 11px; color: #fca5a5; margin-top: 2px;">-{((entry - stop) / entry * 100):.1f}%</div>
+                        </td>
+                        <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Target</div>
+                            <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">${target:.2f}</div>
+                            <div style="font-size: 11px; color: #6ee7b7; margin-top: 2px;">+{((target - entry) / entry * 100):.1f}%</div>
+                        </td>
+                        <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Upside</div>
+                            <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">+{((target - entry) / entry * 100):.1f}%</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        '''
     
     html_body = f"""
 <!DOCTYPE html>
@@ -298,11 +323,8 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
                     <!-- Unusual Activity (if present) -->
                     {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🔥 Unusual Activity</h2>' + unusual_html + '</td></tr>' if unusual_html else ''}
                     
-                    <!-- ML Predictions (if present) -->
-                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #10b981; padding-bottom: 10px;">🤖 AI Predictions</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Machine learning model predicts stocks likely to move >3% in next 5 days.</p>' + ml_html + '</td></tr>' if ml_html else ''}
-                    
-                    <!-- Swing Trade Signals (if present) -->
-                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Swing Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical breakout patterns with defined entry, stop, and target levels.</p>' + swing_html + '</td></tr>' if swing_html else ''}
+                    <!-- Trade Opportunities (Combined) -->
+                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical patterns and AI predictions with defined entry, stop loss, and target levels.</p>' + signals_html + '</td></tr>' if signals_html else ''}
                     
                     <!-- Disclaimer -->
                     <tr>
@@ -332,7 +354,7 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
     """
     
     ses.send_email(
-        Source='prakash@dalalbytes.com',
+        Source='no-reply@marketdly.com',
         Destination={'ToAddresses': [email]},
         Message={
             'Subject': {'Data': f'📊 Daily Market Summary - {date_str}'},
