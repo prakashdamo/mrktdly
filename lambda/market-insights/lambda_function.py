@@ -88,15 +88,40 @@ def lambda_handler(event, context):
         volatilities = [float(item.get('volatility', 0)) for item in items if item.get('volatility')]
         avg_volatility = np.mean(volatilities) if volatilities else 0
 
-        # Top performers (YTD returns)
-        ticker_returns = defaultdict(list)
-        for item in items:
-            ticker = item['ticker']
-            ret_20d = float(item.get('return_20d', 0))
-            ticker_returns[ticker].append(ret_20d)
-
-        avg_returns = {t: np.mean(rets) for t, rets in ticker_returns.items()}
-        top_performers = sorted(avg_returns.items(), key=lambda x: x[1], reverse=True)[:20]
+        # Top performers (YTD returns from price history)
+        print("Calculating YTD performance...")
+        ytd_start = datetime(datetime.now().year, 1, 1).strftime('%Y-%m-%d')
+        
+        ticker_ytd = {}
+        for ticker in tickers:
+            try:
+                # Get first price of year
+                start_response = price_table.query(
+                    KeyConditionExpression='ticker = :ticker AND #d >= :start',
+                    ExpressionAttributeNames={'#d': 'date'},
+                    ExpressionAttributeValues={':ticker': ticker, ':start': ytd_start},
+                    Limit=1,
+                    ScanIndexForward=True
+                )
+                
+                # Get latest price
+                end_response = price_table.query(
+                    KeyConditionExpression='ticker = :ticker',
+                    ExpressionAttributeValues={':ticker': ticker},
+                    Limit=1,
+                    ScanIndexForward=False
+                )
+                
+                if start_response['Items'] and end_response['Items']:
+                    start_price = float(start_response['Items'][0]['close'])
+                    end_price = float(end_response['Items'][0]['close'])
+                    ytd_return = ((end_price - start_price) / start_price) * 100
+                    ticker_ytd[ticker] = ytd_return
+            except Exception as e:
+                print(f'Error calculating YTD for {ticker}: {e}')
+        
+        top_performers = sorted(ticker_ytd.items(), key=lambda x: x[1], reverse=True)[:50]
+        print(f"Top 50 YTD performers calculated")
 
         # Volatility trend (weekly averages)
         date_volatility = defaultdict(list)
@@ -111,7 +136,7 @@ def lambda_handler(event, context):
 
         # Sector performance
         sector_returns = defaultdict(list)
-        for ticker, ret in avg_returns.items():
+        for ticker, ret in ticker_ytd.items():
             sector = SECTORS.get(ticker, 'Other')
             sector_returns[sector].append(ret)
 
