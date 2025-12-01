@@ -131,16 +131,16 @@
 
         function createTopPerformersChart(data) {
             const trace = {
-                x: data.returns,
-                y: data.tickers,
+                x: data.returns.slice().reverse(),
+                y: data.tickers.slice().reverse(),
                 type: 'bar',
                 orientation: 'h',
                 marker: {
-                    color: data.returns,
-                    colorscale: 'RdYlGn',
+                    color: data.returns.slice().reverse(),
+                    colorscale: [[0, '#ef4444'], [0.5, '#fbbf24'], [1, '#22c55e']],
                     showscale: true
                 },
-                text: data.returns.map(r => `${r.toFixed(1)}%`),
+                text: data.returns.slice().reverse().map(r => `${r.toFixed(1)}%`),
                 textposition: 'outside'
             };
 
