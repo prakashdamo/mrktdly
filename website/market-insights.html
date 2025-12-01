@@ -112,9 +112,9 @@
                 </div>
 
                 <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <h2 class="text-2xl font-bold mb-2">🎲 Correlation Matrix</h2>
-                    <p class="text-gray-400 mb-6">Major indices correlation</p>
-                    <div id="correlationMatrix" style="height: 400px;"></div>
+                    <h2 class="text-2xl font-bold mb-2">🔗 Correlated Stocks</h2>
+                    <p class="text-gray-400 mb-6">Stocks that move together (correlation &gt; 0.7)</p>
+                    <div id="correlationPairs" style="height: 400px; overflow-y: auto;"></div>
                 </div>
             </div>
         </div>
@@ -274,27 +274,43 @@
             Plotly.newPlot('rsiDistribution', [trace], layout, {responsive: true});
         }
 
-        function createCorrelationMatrix(data) {
-            const trace = {
-                z: data.matrix,
-                x: data.tickers,
-                y: data.tickers,
-                type: 'heatmap',
-                colorscale: 'RdBu',
-                zmid: 0,
-                showscale: true
-            };
-
-            const layout = {
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                font: { color: '#e2e8f0' },
-                margin: { l: 80, r: 40, t: 20, b: 80 },
-                xaxis: { tickangle: -45 },
-                height: 400
-            };
-
-            Plotly.newPlot('correlationMatrix', [trace], layout, {responsive: true});
+        function createCorrelationPairs(data) {
+            const container = document.getElementById('correlationPairs');
+            
+            if (!data.pairs || data.pairs.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">No strong correlations found</p>';
+                return;
+            }
+            
+            let html = '<div class="space-y-3">';
+            data.pairs.forEach((pair, idx) => {
+                const corr = pair.correlation;
+                const isPositive = corr > 0;
+                const strength = Math.abs(corr);
+                const color = isPositive ? 'green' : 'red';
+                const bgColor = isPositive ? 'bg-green-900/20' : 'bg-red-900/20';
+                const borderColor = isPositive ? 'border-green-500/30' : 'border-red-500/30';
+                
+                html += `
+                    <div class="${bgColor} border ${borderColor} rounded-lg p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-4 flex-1">
+                            <span class="text-lg font-bold text-white">${idx + 1}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 bg-blue-600 rounded font-mono font-bold">${pair.stock1}</span>
+                                <span class="text-${color}-400 text-xl">↔</span>
+                                <span class="px-3 py-1 bg-blue-600 rounded font-mono font-bold">${pair.stock2}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-${color}-400">${(corr * 100).toFixed(0)}%</div>
+                            <div class="text-xs text-gray-400">${isPositive ? 'Positive' : 'Negative'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
         }
 
         async function init() {
@@ -320,7 +336,7 @@
                 setTimeout(() => createSectorHeatmap(data.sectorPerformance), 200);
                 setTimeout(() => createVolumeChart(data.volumePatterns), 300);
                 setTimeout(() => createRSIChart(data.rsiDistribution), 400);
-                setTimeout(() => createCorrelationMatrix(data.correlation), 500);
+                setTimeout(() => createCorrelationPairs(data.correlation), 500);
 
             } catch (error) {
                 console.error('Error:', error);

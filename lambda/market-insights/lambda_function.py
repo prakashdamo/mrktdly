@@ -162,23 +162,36 @@ def lambda_handler(event, context):
         # RSI distribution
         rsi_values = [float(item.get('rsi', 50)) for item in items if item.get('rsi')]
 
-        # Correlation matrix (major indices)
-        corr_tickers = ['SPY', 'QQQ', 'IWM', 'DIA']
-        ticker_prices = {t: [] for t in corr_tickers}
-
+        # Top correlated stock pairs (not indices)
+        print("Finding correlated stocks...")
+        stock_returns = {}
         for item in items:
             ticker = item['ticker']
-            if ticker in corr_tickers:
-                ret = float(item.get('return_5d', 0))
-                ticker_prices[ticker].append(ret)
-
-        # Calculate correlation
-        min_len = min(len(ticker_prices[t]) for t in corr_tickers)
-        if min_len > 10:
-            price_matrix = np.array([ticker_prices[t][:min_len] for t in corr_tickers])
-            corr_matrix = np.corrcoef(price_matrix).tolist()
-        else:
-            corr_matrix = [[1] * len(corr_tickers)] * len(corr_tickers)
+            if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:  # Exclude indices
+                if ticker not in stock_returns:
+                    stock_returns[ticker] = []
+                stock_returns[ticker].append(float(item.get('return_5d', 0)))
+        
+        # Calculate correlations between stocks
+        correlations = []
+        tickers_list = list(stock_returns.keys())
+        for i, ticker1 in enumerate(tickers_list[:30]):  # Top 30 stocks
+            for ticker2 in tickers_list[i+1:30]:
+                if len(stock_returns[ticker1]) > 10 and len(stock_returns[ticker2]) > 10:
+                    min_len = min(len(stock_returns[ticker1]), len(stock_returns[ticker2]))
+                    arr1 = np.array(stock_returns[ticker1][:min_len])
+                    arr2 = np.array(stock_returns[ticker2][:min_len])
+                    corr = np.corrcoef(arr1, arr2)[0, 1]
+                    if not np.isnan(corr) and abs(corr) > 0.7:  # Strong correlation
+                        correlations.append({
+                            'stock1': ticker1,
+                            'stock2': ticker2,
+                            'correlation': round(float(corr), 3)
+                        })
+        
+        # Sort by absolute correlation
+        correlations.sort(key=lambda x: abs(x['correlation']), reverse=True)
+        top_correlations = correlations[:20]  # Top 20 pairs
 
         # Build response
         insights = {
@@ -209,8 +222,7 @@ def lambda_handler(event, context):
                 'rsi': rsi_values[:1000]  # Sample for performance
             },
             'correlation': {
-                'tickers': corr_tickers,
-                'matrix': corr_matrix
+                'pairs': top_correlations
             }
         }
 
