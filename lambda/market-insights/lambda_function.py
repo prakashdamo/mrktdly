@@ -31,10 +31,18 @@ def lambda_handler(event, context):
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
 
-        # Fetch recent features data
+        # Fetch all features data with pagination
         print("Fetching features data...")
-        response = features_table.scan(Limit=5000)
-        items = response['Items']
+        items = []
+        response = features_table.scan()
+        items.extend(response['Items'])
+
+        while 'LastEvaluatedKey' in response:
+            response = features_table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            items.extend(response['Items'])
+            print(f"Fetched {len(items)} records so far...")
+
+        print(f"Total records fetched: {len(items)}")
 
         # Calculate stats
         total_records = len(items)
