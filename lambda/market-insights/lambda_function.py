@@ -175,14 +175,14 @@ def lambda_handler(event, context):
         # Calculate correlations between stocks
         correlations = []
         tickers_list = list(stock_returns.keys())
-        for i, ticker1 in enumerate(tickers_list[:30]):  # Top 30 stocks
-            for ticker2 in tickers_list[i+1:30]:
+        for i, ticker1 in enumerate(tickers_list[:50]):  # Top 50 stocks
+            for ticker2 in tickers_list[i+1:50]:
                 if len(stock_returns[ticker1]) > 10 and len(stock_returns[ticker2]) > 10:
                     min_len = min(len(stock_returns[ticker1]), len(stock_returns[ticker2]))
                     arr1 = np.array(stock_returns[ticker1][:min_len])
                     arr2 = np.array(stock_returns[ticker2][:min_len])
                     corr = np.corrcoef(arr1, arr2)[0, 1]
-                    if not np.isnan(corr) and abs(corr) > 0.7:  # Strong correlation
+                    if not np.isnan(corr) and abs(corr) > 0.6:  # Strong correlation
                         correlations.append({
                             'stock1': ticker1,
                             'stock2': ticker2,
