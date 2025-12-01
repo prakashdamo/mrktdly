@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Train improved models with SMOTE"""
-import boto3
 import pickle
+
+import boto3
 import numpy as np
+from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE
 
 dynamodb = boto3.resource('dynamodb')
 s3 = boto3.client('s3')
@@ -39,7 +40,7 @@ for item in items:
             float(item.get('pct_from_low', 0))
         ])
         y.append(1 if item.get('label') in ['big_move', '1', 1] else 0)
-    except:
+    except (ValueError, TypeError, KeyError):
         continue
 
 X = np.array(X)
@@ -48,12 +49,16 @@ y = np.array(y)
 print(f"Training samples: {len(X)}")
 counts = np.bincount(y)
 if len(counts) == 2:
-    print(f"Class distribution: {counts} ({100*counts[0]/len(y):.1f}% no_move, {100*counts[1]/len(y):.1f}% big_move)")
+    pct_0 = 100 * counts[0] / len(y)
+    pct_1 = 100 * counts[1] / len(y)
+    print(f"Class distribution: {counts} ({pct_0:.1f}% no_move, {pct_1:.1f}% big_move)")
 else:
     print(f"Class distribution: {counts} (only one class found)")
 
 # Split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 
 # Apply SMOTE
 print("\nApplying SMOTE...")
@@ -94,7 +99,6 @@ y_pred = (y_proba >= best_threshold).astype(int)
 tp = np.sum((y_pred == 1) & (y_test == 1))
 fp = np.sum((y_pred == 1) & (y_test == 0))
 fn = np.sum((y_pred == 0) & (y_test == 1))
-tn = np.sum((y_pred == 0) & (y_test == 0))
 precision = tp / (tp + fp) if (tp + fp) > 0 else 0
 recall = tp / (tp + fn) if (tp + fn) > 0 else 0
 print(f"Precision: {precision:.1%}, Recall: {recall:.1%}, Predictions: {np.sum(y_pred)}/{len(y_test)}")
@@ -117,16 +121,21 @@ for item in items:
         ])
         # Classify as BULL/NEUTRAL/BEAR
         ret_20d = float(item.get('return_20d', 0))
-        if ret_20d > 5: y_state.append('BULL')
-        elif ret_20d < -5: y_state.append('BEAR')
-        else: y_state.append('NEUTRAL')
-    except:
+        if ret_20d > 5:
+            y_state.append('BULL')
+        elif ret_20d < -5:
+            y_state.append('BEAR')
+        else:
+            y_state.append('NEUTRAL')
+    except (ValueError, TypeError, KeyError):
         continue
 
 X_state = np.array(X_state)
 y_state = np.array(y_state)
 
-state_model = RandomForestClassifier(n_estimators=50, max_depth=5, random_state=42, n_jobs=-1)
+state_model = RandomForestClassifier(
+    n_estimators=50, max_depth=5, random_state=42, n_jobs=-1
+)
 state_model.fit(X_state, y_state)
 
 with open('state_classifier_fixed.pkl', 'wb') as f:
@@ -151,17 +160,21 @@ for item in items:
         vol = float(item.get('volatility', 5))
         y_target.append(min(vol * 0.8, 10))
         y_stop.append(min(vol * 0.4, 5))
-    except:
+    except (ValueError, TypeError, KeyError):
         continue
 
 X_strategy = np.array(X_strategy)
 y_target = np.array(y_target)
 y_stop = np.array(y_stop)
 
-target_model = RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42, n_jobs=-1)
+target_model = RandomForestRegressor(
+    n_estimators=50, max_depth=5, random_state=42, n_jobs=-1
+)
 target_model.fit(X_strategy, y_target)
 
-stop_model = RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42, n_jobs=-1)
+stop_model = RandomForestRegressor(
+    n_estimators=50, max_depth=5, random_state=42, n_jobs=-1
+)
 stop_model.fit(X_strategy, y_stop)
 
 strategy_data = {
