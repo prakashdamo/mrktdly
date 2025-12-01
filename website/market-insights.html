@@ -115,7 +115,7 @@
                 <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
                     <h2 class="text-2xl font-bold mb-2">🔗 Stock Correlation Network</h2>
                     <p class="text-gray-400 mb-6">Stocks that move together cluster visually • Larger circles = more connections • Drag to explore</p>
-                    <div id="correlationPairs" style="height: 400px;"></div>
+                    <div id="correlationPairs" style="height: 600px;"></div>
                 </div>
             </div>
         </div>
@@ -308,7 +308,7 @@
             
             // Create SVG
             const width = container.clientWidth;
-            const height = 400;
+            const height = 600;
             
             container.innerHTML = '';
             const svg = d3.select('#correlationPairs')
@@ -319,10 +319,10 @@
             
             // Create force simulation
             const simulation = d3.forceSimulation(nodeArray)
-                .force('link', d3.forceLink(links).id(d => d.id).distance(80))
-                .force('charge', d3.forceManyBody().strength(-300))
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-500))
                 .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(30));
+                .force('collision', d3.forceCollide().radius(35));
             
             // Draw links
             const link = svg.append('g')
