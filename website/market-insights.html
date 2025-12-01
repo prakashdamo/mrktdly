@@ -191,17 +191,17 @@
                 showscale: true,
                 text: [data.returns.map(r => `${r.toFixed(1)}%`)],
                 texttemplate: '%{text}',
-                textfont: { size: 14, color: 'white' }
+                textfont: { size: 16, color: 'white', family: 'Arial, sans-serif' }
             };
 
             const layout = {
                 paper_bgcolor: 'rgba(0,0,0,0)',
                 plot_bgcolor: 'rgba(0,0,0,0)',
-                font: { color: '#e2e8f0' },
-                margin: { l: 50, r: 40, t: 20, b: 100 },
-                xaxis: { tickangle: -45, side: 'bottom' },
+                font: { color: '#e2e8f0', size: 14 },
+                margin: { l: 50, r: 40, t: 20, b: 120 },
+                xaxis: { tickangle: -45, side: 'bottom', tickfont: { size: 14 } },
                 yaxis: { visible: false },
-                height: 200
+                height: 250
             };
 
             Plotly.newPlot('sectorHeatmap', [trace], layout, {responsive: true});
