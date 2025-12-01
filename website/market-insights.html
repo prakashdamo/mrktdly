@@ -185,9 +185,13 @@
             const trace = {
                 z: [data.returns],
                 x: data.sectors,
+                y: ['YTD Return'],
                 type: 'heatmap',
-                colorscale: 'RdYlGn',
-                showscale: true
+                colorscale: [[0, '#dc2626'], [0.5, '#fbbf24'], [1, '#16a34a']],
+                showscale: true,
+                text: [data.returns.map(r => `${r.toFixed(1)}%`)],
+                texttemplate: '%{text}',
+                textfont: { size: 14, color: 'white' }
             };
 
             const layout = {
@@ -195,8 +199,9 @@
                 plot_bgcolor: 'rgba(0,0,0,0)',
                 font: { color: '#e2e8f0' },
                 margin: { l: 50, r: 40, t: 20, b: 100 },
-                xaxis: { tickangle: -45 },
-                height: 400
+                xaxis: { tickangle: -45, side: 'bottom' },
+                yaxis: { visible: false },
+                height: 200
             };
 
             Plotly.newPlot('sectorHeatmap', [trace], layout, {responsive: true});
