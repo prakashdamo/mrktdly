@@ -77,15 +77,27 @@ def lambda_handler(event, context):
 
         print(f"Total records fetched: {len(items)}")
 
-        # Calculate stats
-        total_records = len(items)
+        # Calculate market health stats
         tickers = set(item['ticker'] for item in items)
-        total_tickers = len(tickers)
-
-        dates = sorted(set(item['date'] for item in items))
-        date_range = len(dates)
-
-        volatilities = [float(item.get('volatility', 0)) for item in items if item.get('volatility')]
+        
+        # Get latest data per ticker
+        latest_by_ticker = {}
+        for item in items:
+            ticker = item['ticker']
+            date = item['date']
+            if ticker not in latest_by_ticker or date > latest_by_ticker[ticker]['date']:
+                latest_by_ticker[ticker] = item
+        
+        # % Above 200-day MA
+        above_ma200 = sum(1 for item in latest_by_ticker.values() if str(item.get('above_ma200', '0')) == '1')
+        pct_above_ma200 = (above_ma200 / len(latest_by_ticker)) * 100 if latest_by_ticker else 0
+        
+        # Bullish/Bearish counts (based on 20-day return)
+        bullish_count = sum(1 for item in latest_by_ticker.values() if float(item.get('return_20d', 0)) > 0)
+        bearish_count = sum(1 for item in latest_by_ticker.values() if float(item.get('return_20d', 0)) < 0)
+        
+        # Average volatility
+        volatilities = [float(item.get('volatility', 0)) for item in latest_by_ticker.values() if item.get('volatility')]
         avg_volatility = np.mean(volatilities) if volatilities else 0
 
         # Top performers (YTD returns from price history)
@@ -162,44 +174,104 @@ def lambda_handler(event, context):
         # RSI distribution
         rsi_values = [float(item.get('rsi', 50)) for item in items if item.get('rsi')]
 
-        # Top correlated stock pairs (not indices)
-        print("Finding correlated stocks...")
-        stock_returns = {}
-        for item in items:
-            ticker = item['ticker']
-            if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:  # Exclude indices
-                if ticker not in stock_returns:
-                    stock_returns[ticker] = []
-                stock_returns[ticker].append(float(item.get('return_5d', 0)))
-        
-        # Calculate correlations between stocks
-        correlations = []
-        tickers_list = list(stock_returns.keys())
-        for i, ticker1 in enumerate(tickers_list[:50]):  # Top 50 stocks
-            for ticker2 in tickers_list[i+1:50]:
-                if len(stock_returns[ticker1]) > 10 and len(stock_returns[ticker2]) > 10:
-                    min_len = min(len(stock_returns[ticker1]), len(stock_returns[ticker2]))
-                    arr1 = np.array(stock_returns[ticker1][:min_len])
-                    arr2 = np.array(stock_returns[ticker2][:min_len])
-                    corr = np.corrcoef(arr1, arr2)[0, 1]
-                    if not np.isnan(corr) and abs(corr) > 0.6:  # Strong correlation
-                        correlations.append({
-                            'stock1': ticker1,
-                            'stock2': ticker2,
-                            'correlation': round(float(corr), 3)
+        # 1-month top movers with volume confirmation
+        print("Calculating 1-month top movers...")
+        one_month_movers = []
+        for ticker in tickers:
+            if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:
+                ticker_items = [i for i in items if i['ticker'] == ticker]
+                if ticker_items:
+                    latest = max(ticker_items, key=lambda x: x['date'])
+                    ret_20d = float(latest.get('return_20d', 0))
+                    vol_ratio = float(latest.get('vol_ratio', 1))
+                    
+                    # Only include if volume is reasonable (vol_ratio > 0.8)
+                    if vol_ratio > 0.8 and abs(ret_20d) > 1:  # At least 1% move
+                        one_month_movers.append({
+                            'ticker': ticker,
+                            'return': ret_20d,
+                            'volume': vol_ratio
                         })
         
-        # Sort by absolute correlation
-        correlations.sort(key=lambda x: abs(x['correlation']), reverse=True)
-        top_correlations = correlations[:20]  # Top 20 pairs
+        # Sort by absolute return, take top 20
+        one_month_movers.sort(key=lambda x: abs(x['return']), reverse=True)
+        top_one_month = one_month_movers[:20]
+
+        # 10-day top movers (no volume filter)
+        print("Calculating 10-day top movers...")
+        ten_day_movers = []
+        for ticker in tickers:
+            if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:
+                ticker_items = [i for i in items if i['ticker'] == ticker]
+                if ticker_items:
+                    latest = max(ticker_items, key=lambda x: x['date'])
+                    ret_5d = float(latest.get('return_5d', 0))
+                    ret_20d = float(latest.get('return_20d', 0))
+                    ret_10d = (ret_5d + ret_20d) / 2  # Approximate 10-day
+                    
+                    if abs(ret_10d) > 1:  # At least 1% move
+                        ten_day_movers.append({
+                            'ticker': ticker,
+                            'return': ret_10d
+                        })
+        
+        # Sort by absolute return, take top 20
+        ten_day_movers.sort(key=lambda x: abs(x['return']), reverse=True)
+        top_ten_day = ten_day_movers[:20]
+
+        # Momentum heatmap - multi-timeframe returns
+        print("Calculating momentum...")
+        ticker_momentum = {}
+        for ticker in tickers:
+            if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:
+                ticker_items = [i for i in items if i['ticker'] == ticker]
+                if ticker_items:
+                    latest = max(ticker_items, key=lambda x: x['date'])
+                    ret_5d = float(latest.get('return_5d', 0))
+                    ret_20d = float(latest.get('return_20d', 0))
+                    
+                    # Calculate 60d return from price history
+                    try:
+                        cutoff_60d = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
+                        price_resp = price_table.query(
+                            KeyConditionExpression='ticker = :ticker AND #d >= :start',
+                            ExpressionAttributeNames={'#d': 'date'},
+                            ExpressionAttributeValues={':ticker': ticker, ':start': cutoff_60d},
+                            Limit=1,
+                            ScanIndexForward=True
+                        )
+                        if price_resp['Items']:
+                            old_price = float(price_resp['Items'][0]['close'])
+                            new_price = float(latest.get('close', old_price))
+                            ret_60d = ((new_price - old_price) / old_price) * 100
+                        else:
+                            ret_60d = ret_20d
+                    except:
+                        ret_60d = ret_20d
+                    
+                    ticker_momentum[ticker] = [ret_5d, ret_20d, ret_60d]
+        
+        # Top 30 by absolute momentum
+        momentum_sorted = sorted(ticker_momentum.items(), 
+                                key=lambda x: abs(x[1][1]), reverse=True)[:30]
+        momentum_data = [{'ticker': t, 'momentum': m} for t, m in momentum_sorted]
 
         # Build response
         insights = {
             'stats': {
-                'totalRecords': total_records,
-                'totalTickers': total_tickers,
-                'dateRange': date_range,
+                'pctAboveMA200': round(pct_above_ma200, 1),
+                'bullishCount': bullish_count,
+                'bearishCount': bearish_count,
                 'avgVolatility': round(avg_volatility, 2)
+            },
+            'tenDayMovers': {
+                'tickers': [m['ticker'] for m in top_ten_day],
+                'returns': [round(m['return'], 2) for m in top_ten_day]
+            },
+            'oneMonthMovers': {
+                'tickers': [m['ticker'] for m in top_one_month],
+                'returns': [round(m['return'], 2) for m in top_one_month],
+                'volumes': [round(m['volume'], 2) for m in top_one_month]
             },
             'topPerformers': {
                 'tickers': [t[0] for t in top_performers[:20]],
@@ -221,9 +293,7 @@ def lambda_handler(event, context):
             'rsiDistribution': {
                 'rsi': rsi_values[:1000]  # Sample for performance
             },
-            'correlation': {
-                'pairs': top_correlations
-            }
+            'momentum': momentum_data
         }
 
         # Cache the result
