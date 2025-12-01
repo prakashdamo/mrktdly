@@ -1,0 +1,28 @@
+NEW MODELS TRAINED - 2025-11-30
+
+✓ STOCK PREDICTOR (with SMOTE)
+  - Training: 32,443 samples (74.5% no_move, 25.5% big_move)
+  - After SMOTE: 38,680 balanced samples
+  - Features: 12 (return_5d, return_20d, volatility, rsi, atr, vol_ratio, above_ma20, above_ma50, above_ma200, ma_alignment, pct_from_high, pct_from_low)
+  - Threshold: 0.600
+  - Performance: 80.3% recall, 32.0% precision (4,155 predictions on 6,489 test samples)
+  - Files: stock_predictor_smote.pkl (5.6MB), stock_predictor.onnx (2.7MB)
+
+✓ STATE CLASSIFIER (fixed)
+  - Features: 4 (return_5d, return_20d, volatility, rsi)
+  - Classes: BULL, NEUTRAL, BEAR
+  - Files: state_classifier_fixed.pkl (112KB), state_classifier_fixed.onnx (53KB)
+
+✓ STRATEGY OPTIMIZER (fixed)
+  - Features: 8 (rsi, volatility, return_5d, return_20d, vol_ratio, above_ma20, above_ma50, pct_from_high)
+  - Outputs: optimal_target, optimal_stop
+  - Files: strategy_optimizer_fixed.pkl (469KB), optimal_target_fixed.onnx (113KB), optimal_stop_fixed.onnx (113KB)
+
+IMPROVEMENTS:
+  - Stock predictor recall: 5% → 80.3% (16x improvement)
+  - ONNX models have correct feature counts (no more 18/19 feature errors)
+  - All models tested and working
+  - Total ONNX size: 3.0MB (vs 150MB sklearn dependencies)
+
+NEXT STEP:
+  - Update ml-predictions Lambda to use new models
