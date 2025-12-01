@@ -189,8 +189,8 @@ def lambda_handler(event, context):
                 'avgVolatility': round(avg_volatility, 2)
             },
             'topPerformers': {
-                'tickers': [t[0] for t in top_performers],
-                'returns': [round(t[1], 2) for t in top_performers]
+                'tickers': [t[0] for t in top_performers[:20]],
+                'returns': [round(t[1], 2) for t in top_performers[:20]]
             },
             'volatilityTrend': {
                 'dates': vol_trend_dates,
