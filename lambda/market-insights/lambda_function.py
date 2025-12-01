@@ -11,6 +11,10 @@ import numpy as np
 dynamodb = boto3.resource('dynamodb')
 price_table = dynamodb.Table('mrktdly-price-history')
 features_table = dynamodb.Table('mrktdly-features')
+cache_table = dynamodb.Table('mrktdly-cache')
+
+CACHE_KEY = 'market-insights'
+CACHE_TTL = 3600  # 1 hour
 
 # Sector mapping
 SECTORS = {
@@ -27,20 +31,49 @@ def lambda_handler(event, context):
     """Generate market insights from historical data"""
 
     try:
+        # Check cache first
+        try:
+            cache_response = cache_table.get_item(Key={'cache_key': CACHE_KEY})
+            if 'Item' in cache_response:
+                cached_data = cache_response['Item']
+                cache_time = int(cached_data.get('timestamp', 0))
+                if datetime.now().timestamp() - cache_time < CACHE_TTL:
+                    print('Returning cached data')
+                    return {
+                        'statusCode': 200,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
+                            'X-Cache': 'HIT'
+                        },
+                        'body': cached_data['data']
+                    }
+        except Exception as e:
+            print(f'Cache check failed: {e}')
+
         # Get date range (last year)
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
 
-        # Fetch all features data with pagination
+        # Fetch recent data (last 90 days for performance)
         print("Fetching features data...")
+        cutoff_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
         items = []
-        response = features_table.scan()
+        response = features_table.scan(
+            FilterExpression='#d >= :cutoff',
+            ExpressionAttributeNames={'#d': 'date'},
+            ExpressionAttributeValues={':cutoff': cutoff_date}
+        )
         items.extend(response['Items'])
 
         while 'LastEvaluatedKey' in response:
-            response = features_table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            response = features_table.scan(
+                FilterExpression='#d >= :cutoff',
+                ExpressionAttributeNames={'#d': 'date'},
+                ExpressionAttributeValues={':cutoff': cutoff_date},
+                ExclusiveStartKey=response['LastEvaluatedKey']
+            )
             items.extend(response['Items'])
-            print(f"Fetched {len(items)} records so far...")
 
         print(f"Total records fetched: {len(items)}")
 
@@ -63,7 +96,7 @@ def lambda_handler(event, context):
             ticker_returns[ticker].append(ret_20d)
 
         avg_returns = {t: np.mean(rets) for t, rets in ticker_returns.items()}
-        top_performers = sorted(avg_returns.items(), key=lambda x: x[1], reverse=True)[:15]
+        top_performers = sorted(avg_returns.items(), key=lambda x: x[1], reverse=True)[:20]
 
         # Volatility trend (weekly averages)
         date_volatility = defaultdict(list)
@@ -73,7 +106,7 @@ def lambda_handler(event, context):
             if vol > 0:
                 date_volatility[date].append(vol)
 
-        vol_trend_dates = sorted(date_volatility.keys())[-90:]  # Last 90 days
+        vol_trend_dates = sorted(date_volatility.keys())
         vol_trend_values = [np.mean(date_volatility[d]) for d in vol_trend_dates]
 
         # Sector performance
@@ -156,13 +189,27 @@ def lambda_handler(event, context):
             }
         }
 
+        # Cache the result
+        try:
+            response_body = json.dumps(insights)
+            cache_table.put_item(Item={
+                'cache_key': CACHE_KEY,
+                'data': response_body,
+                'timestamp': int(datetime.now().timestamp()),
+                'ttl': int(datetime.now().timestamp()) + CACHE_TTL
+            })
+            print('Cached insights data')
+        except Exception as e:
+            print(f'Cache storage failed: {e}')
+
         return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'X-Cache': 'MISS'
             },
-            'body': json.dumps(insights)
+            'body': response_body
         }
 
     except Exception as e:

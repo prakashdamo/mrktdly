@@ -276,9 +276,9 @@
             try {
                 const data = await fetchMarketData();
                 
+                // Hide loading, show stats immediately
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('stats').classList.remove('hidden');
-                document.getElementById('charts').classList.remove('hidden');
 
                 // Update stats
                 document.getElementById('totalRecords').textContent = data.stats.totalRecords.toLocaleString();
@@ -286,13 +286,16 @@
                 document.getElementById('dateRange').textContent = data.stats.dateRange;
                 document.getElementById('avgVolatility').textContent = `${data.stats.avgVolatility.toFixed(1)}%`;
 
-                // Create charts
-                createTopPerformersChart(data.topPerformers);
-                createVolatilityTrendChart(data.volatilityTrend);
-                createSectorHeatmap(data.sectorPerformance);
-                createVolumeChart(data.volumePatterns);
-                createRSIChart(data.rsiDistribution);
-                createCorrelationMatrix(data.correlation);
+                // Show charts container
+                document.getElementById('charts').classList.remove('hidden');
+
+                // Load charts progressively
+                setTimeout(() => createTopPerformersChart(data.topPerformers), 0);
+                setTimeout(() => createVolatilityTrendChart(data.volatilityTrend), 100);
+                setTimeout(() => createSectorHeatmap(data.sectorPerformance), 200);
+                setTimeout(() => createVolumeChart(data.volumePatterns), 300);
+                setTimeout(() => createRSIChart(data.rsiDistribution), 400);
+                setTimeout(() => createCorrelationMatrix(data.correlation), 500);
 
             } catch (error) {
                 console.error('Error:', error);
