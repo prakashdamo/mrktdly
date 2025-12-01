@@ -79,7 +79,7 @@ def lambda_handler(event, context):
 
         # Calculate market health stats
         tickers = set(item['ticker'] for item in items)
-        
+
         # Get latest data per ticker
         latest_by_ticker = {}
         for item in items:
@@ -87,23 +87,23 @@ def lambda_handler(event, context):
             date = item['date']
             if ticker not in latest_by_ticker or date > latest_by_ticker[ticker]['date']:
                 latest_by_ticker[ticker] = item
-        
+
         # % Above 200-day MA
         above_ma200 = sum(1 for item in latest_by_ticker.values() if str(item.get('above_ma200', '0')) == '1')
         pct_above_ma200 = (above_ma200 / len(latest_by_ticker)) * 100 if latest_by_ticker else 0
-        
+
         # Bullish/Bearish counts (based on 20-day return)
         bullish_count = sum(1 for item in latest_by_ticker.values() if float(item.get('return_20d', 0)) > 0)
         bearish_count = sum(1 for item in latest_by_ticker.values() if float(item.get('return_20d', 0)) < 0)
-        
+
         # Average volatility
-        volatilities = [float(item.get('volatility', 0)) for item in latest_by_ticker.values() if item.get('volatility')]
+        pct_above_ma200 = (above_ma200 / len(latest_by_ticker)) * 100 if latest_by_ticker else 0
         avg_volatility = np.mean(volatilities) if volatilities else 0
 
         # Top performers (YTD returns from price history)
         print("Calculating YTD performance...")
         ytd_start = datetime(datetime.now().year, 1, 1).strftime('%Y-%m-%d')
-        
+
         ticker_ytd = {}
         for ticker in tickers:
             try:
@@ -115,7 +115,7 @@ def lambda_handler(event, context):
                     Limit=1,
                     ScanIndexForward=True
                 )
-                
+
                 # Get latest price
                 end_response = price_table.query(
                     KeyConditionExpression='ticker = :ticker',
@@ -123,7 +123,7 @@ def lambda_handler(event, context):
                     Limit=1,
                     ScanIndexForward=False
                 )
-                
+
                 if start_response['Items'] and end_response['Items']:
                     start_price = float(start_response['Items'][0]['close'])
                     end_price = float(end_response['Items'][0]['close'])
@@ -131,7 +131,7 @@ def lambda_handler(event, context):
                     ticker_ytd[ticker] = ytd_return
             except Exception as e:
                 print(f'Error calculating YTD for {ticker}: {e}')
-        
+
         top_performers = sorted(ticker_ytd.items(), key=lambda x: x[1], reverse=True)[:50]
         print(f"Top 50 YTD performers calculated")
 
@@ -184,7 +184,7 @@ def lambda_handler(event, context):
                     latest = max(ticker_items, key=lambda x: x['date'])
                     ret_20d = float(latest.get('return_20d', 0))
                     vol_ratio = float(latest.get('vol_ratio', 1))
-                    
+
                     # Only include if volume is reasonable (vol_ratio > 0.8)
                     if vol_ratio > 0.8 and abs(ret_20d) > 1:  # At least 1% move
                         one_month_movers.append({
@@ -192,7 +192,7 @@ def lambda_handler(event, context):
                             'return': ret_20d,
                             'volume': vol_ratio
                         })
-        
+
         # Sort by absolute return, take top 20
         one_month_movers.sort(key=lambda x: abs(x['return']), reverse=True)
         top_one_month = one_month_movers[:20]
@@ -208,13 +208,13 @@ def lambda_handler(event, context):
                     ret_5d = float(latest.get('return_5d', 0))
                     ret_20d = float(latest.get('return_20d', 0))
                     ret_10d = (ret_5d + ret_20d) / 2  # Approximate 10-day
-                    
+
                     if abs(ret_10d) > 1:  # At least 1% move
                         ten_day_movers.append({
                             'ticker': ticker,
                             'return': ret_10d
                         })
-        
+
         # Sort by absolute return, take top 20
         ten_day_movers.sort(key=lambda x: abs(x['return']), reverse=True)
         top_ten_day = ten_day_movers[:20]
@@ -229,7 +229,7 @@ def lambda_handler(event, context):
                     latest = max(ticker_items, key=lambda x: x['date'])
                     ret_5d = float(latest.get('return_5d', 0))
                     ret_20d = float(latest.get('return_20d', 0))
-                    
+
                     # Calculate 60d return from price history
                     try:
                         cutoff_60d = (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%d')
@@ -248,11 +248,11 @@ def lambda_handler(event, context):
                             ret_60d = ret_20d
                     except:
                         ret_60d = ret_20d
-                    
+
                     ticker_momentum[ticker] = [ret_5d, ret_20d, ret_60d]
-        
+
         # Top 30 by absolute momentum
-        momentum_sorted = sorted(ticker_momentum.items(), 
+        momentum_sorted = sorted(ticker_momentum.items(),
                                 key=lambda x: abs(x[1][1]), reverse=True)[:30]
         momentum_data = [{'ticker': t, 'momentum': m} for t, m in momentum_sorted]
 
