@@ -82,13 +82,25 @@
 
         <!-- Charts -->
         <div id="charts" class="hidden space-y-10">
+            <!-- Today's Movers -->
+            <div class="group bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-2 h-8 bg-gradient-to-b from-yellow-400 to-orange-600 rounded-full"></div>
+                    <div>
+                        <h2 class="text-2xl font-bold">Today's Top Movers</h2>
+                        <p class="text-gray-400 text-sm">Biggest moves in latest session</p>
+                    </div>
+                </div>
+                <div id="todayMovers" style="height: 400px;"></div>
+            </div>
+
             <!-- Two Column Grid - Recent Movers -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="group bg-gradient-to-br from-slate-800/60 to-slate-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/30">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-2 h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full"></div>
                         <div>
-                            <h2 class="text-2xl font-bold">10-Day Top Movers</h2>
+                            <h2 class="text-2xl font-bold">Last Week Top Movers</h2>
                             <p class="text-gray-400 text-sm">Hottest recent moves</p>
                         </div>
                     </div>
@@ -194,6 +206,32 @@
             const response = await fetch(`${API_BASE}/market-insights`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.json();
+        }
+
+        function createTodayMoversChart(data) {
+            const trace = {
+                x: data.returns.slice().reverse(),
+                y: data.tickers.slice().reverse(),
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: data.returns.slice().reverse().map(r => r > 0 ? '#fbbf24' : '#f97316')
+                },
+                text: data.returns.slice().reverse().map(r => `${r.toFixed(1)}%`),
+                textposition: 'outside'
+            };
+
+            const layout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                font: { color: '#e2e8f0' },
+                xaxis: { title: 'Today\'s Return (%)', gridcolor: '#334155' },
+                yaxis: { gridcolor: '#334155' },
+                margin: { l: 60, r: 80, t: 20, b: 60 },
+                height: 400
+            };
+
+            Plotly.newPlot('todayMovers', [trace], layout, {responsive: true});
         }
 
         function createTenDayMoversChart(data) {
@@ -520,7 +558,11 @@
                 // Show charts container
                 document.getElementById('charts').classList.remove('hidden');
 
-                // Load first 2 charts immediately
+                // Load first 3 charts immediately
+                if (data.todayMovers) {
+                    createTodayMoversChart(data.todayMovers);
+                    document.getElementById('todayMovers').dataset.loaded = 'true';
+                }
                 createTenDayMoversChart(data.tenDayMovers);
                 createOneMonthMoversChart(data.oneMonthMovers);
                 document.getElementById('tenDayMovers').dataset.loaded = 'true';

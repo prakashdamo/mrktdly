@@ -61,8 +61,8 @@ def lambda_handler(event, context):
                 'rsi': round(rsi, 1),
                 'volatility': round(volatility, 1),
                 'return_20d': round(return_20d, 1),
-                'above_ma20': features.get('above_ma20', False),
-                'above_ma50': features.get('above_ma50', False)
+                'above_ma20': features.get('above_ma20') == '1',
+                'above_ma50': features.get('above_ma50') == '1'
             }
         }
         

@@ -27,3 +27,35 @@ email_preview.html
 # Backups
 *.backup
 *.dark-backup
+
+# Temporary files
+*.swp
+*.swo
+*~
+output.json
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+test_output/
+*.test

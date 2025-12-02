@@ -9,6 +9,7 @@ lambda_client = boto3.client('lambda', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb')
 cache_table = dynamodb.Table('mrktdly-ticker-cache')
 price_history_table = dynamodb.Table('mrktdly-price-history')
+projections_table = dynamodb.Table('mrktdly-projections')
 
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
@@ -84,11 +85,15 @@ def lambda_handler(event, context):
             # Fall back to analysis without comprehensive data
             analysis = generate_ticker_analysis(ticker, ticker_data, None)
         
+        # Get projection if available
+        projection = get_projection(ticker)
+        
         result = {
             'ticker': ticker,
             'data': ticker_data,
             'comprehensive': comprehensive,
-            'analysis': analysis
+            'analysis': analysis,
+            'projection': projection
         }
         
         # Cache the result
@@ -148,6 +153,35 @@ def cache_analysis(ticker, result):
     except Exception as e:
         print(f'Cache write error: {e}')
 
+def get_projection(ticker):
+    """Get latest projection for ticker"""
+    try:
+        response = projections_table.query(
+            KeyConditionExpression=Key('ticker').eq(ticker),
+            ScanIndexForward=False,
+            Limit=1
+        )
+        if response['Items']:
+            proj = response['Items'][0]
+            return {
+                'current_price': float(proj['current_price']),
+                'volatility': float(proj['volatility']),
+                'drift': float(proj['drift']),
+                'projections': [
+                    {
+                        'day': int(p['day']),
+                        'p10': float(p['p10']),
+                        'p25': float(p['p25']),
+                        'p50': float(p['p50']),
+                        'p75': float(p['p75']),
+                        'p90': float(p['p90'])
+                    } for p in proj['projections']
+                ]
+            }
+    except Exception as e:
+        print(f'Error fetching projection: {e}')
+    return None
+
 def get_comprehensive_analysis(ticker):
     """Get comprehensive analysis from ticker-analysis-v2 Lambda"""
     try:
@@ -173,7 +207,7 @@ def fetch_ticker_data(symbol):
     try:
         # Get last 90 days of price history from DynamoDB
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=90)
+        start_date = end_date - timedelta(days=365)
         
         response = price_history_table.query(
             KeyConditionExpression=Key('ticker').eq(symbol) & Key('date').between(
@@ -233,6 +267,7 @@ def fetch_ticker_data(symbol):
             'low_5d': round(min(lows[-5:]), 2),
             'fibonacci': fib_levels,
             'price_distribution': price_distribution,
+            'historical_30d': [round(p, 2) for p in closes[-60:]],
             'trend': trend
             }
     except Exception as e:
@@ -256,6 +291,10 @@ def calculate_fibonacci(high, low):
 
 def calculate_price_distribution(history, high_52w, low_52w):
     """Calculate price distribution for heatmap visualization"""
+    # Safety check
+    if high_52w <= low_52w or len(history) < 10:
+        return None
+    
     # Create 20 price buckets from 52w low to high
     num_buckets = 20
     bucket_size = (high_52w - low_52w) / num_buckets

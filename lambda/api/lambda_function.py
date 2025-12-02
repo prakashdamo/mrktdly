@@ -15,6 +15,49 @@ def decimal_default(obj):
         return float(obj)
     raise TypeError
 
+def handle_health_score(event, headers):
+    """Handle health score requests"""
+    params = event.get('queryStringParameters') or {}
+    ticker = params.get('ticker')
+    
+    if not ticker:
+        return {
+            'statusCode': 400,
+            'headers': headers,
+            'body': json.dumps({'error': 'ticker parameter required'})
+        }
+    
+    try:
+        # Invoke technical-health-score Lambda
+        lambda_client = boto3.client('lambda')
+        response = lambda_client.invoke(
+            FunctionName='mrktdly-technical-health-score',
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'ticker': ticker})
+        )
+        
+        result = json.loads(response['Payload'].read())
+        
+        if result.get('statusCode') == 200:
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': result['body']
+            }
+        else:
+            return {
+                'statusCode': result.get('statusCode', 500),
+                'headers': headers,
+                'body': result.get('body', json.dumps({'error': 'Unknown error'}))
+            }
+            
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': headers,
+            'body': json.dumps({'error': str(e)})
+        }
+
 def lambda_handler(event, context):
     """API handler for analysis"""
     
@@ -31,6 +74,10 @@ def lambda_handler(event, context):
     
     if method == 'OPTIONS':
         return {'statusCode': 200, 'headers': headers, 'body': ''}
+    
+    # Route to health score endpoint
+    if '/health-score' in path:
+        return handle_health_score(event, headers)
     
     params = event.get('queryStringParameters') or {}
     date_key = params.get('date')

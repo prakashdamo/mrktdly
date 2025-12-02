@@ -55,22 +55,14 @@ def lambda_handler(event, context):
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
 
-        # Fetch recent data (last 90 days for performance)
+        # Fetch all features data (get most recent per ticker)
         print("Fetching features data...")
-        cutoff_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
         items = []
-        response = features_table.scan(
-            FilterExpression='#d >= :cutoff',
-            ExpressionAttributeNames={'#d': 'date'},
-            ExpressionAttributeValues={':cutoff': cutoff_date}
-        )
+        response = features_table.scan()
         items.extend(response['Items'])
 
         while 'LastEvaluatedKey' in response:
             response = features_table.scan(
-                FilterExpression='#d >= :cutoff',
-                ExpressionAttributeNames={'#d': 'date'},
-                ExpressionAttributeValues={':cutoff': cutoff_date},
                 ExclusiveStartKey=response['LastEvaluatedKey']
             )
             items.extend(response['Items'])
@@ -97,7 +89,7 @@ def lambda_handler(event, context):
         bearish_count = sum(1 for item in latest_by_ticker.values() if float(item.get('return_20d', 0)) < 0)
 
         # Average volatility
-        pct_above_ma200 = (above_ma200 / len(latest_by_ticker)) * 100 if latest_by_ticker else 0
+        volatilities = [float(item.get('volatility', 0)) for item in latest_by_ticker.values() if item.get('volatility')]
         avg_volatility = np.mean(volatilities) if volatilities else 0
 
         # Top performers (YTD returns from price history)
@@ -219,6 +211,42 @@ def lambda_handler(event, context):
         ten_day_movers.sort(key=lambda x: abs(x['return']), reverse=True)
         top_ten_day = ten_day_movers[:20]
 
+        # Today's top movers (1-day return from most recent date with data)
+        print("Calculating today's top movers...")
+        # Find most recent date that has non-zero return_1d data
+        dates_with_data = []
+        for item in items:
+            if 'return_1d' in item and item.get('return_1d'):
+                try:
+                    ret = float(item['return_1d'])
+                    if abs(ret) > 0.01:  # Has meaningful data
+                        dates_with_data.append(item['date'])
+                except:
+                    pass
+        
+        if dates_with_data:
+            most_recent_date = max(dates_with_data)
+            print(f"Most recent date with return_1d data: {most_recent_date}")
+            
+            today_movers = []
+            for ticker in tickers:
+                if ticker not in ['SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO']:
+                    ticker_items = [i for i in items if i['ticker'] == ticker and i.get('date') == most_recent_date and 'return_1d' in i]
+                    if ticker_items:
+                        latest = ticker_items[0]
+                        try:
+                            ret_1d = float(latest.get('return_1d', 0))
+                            if abs(ret_1d) > 0.1:
+                                today_movers.append({'ticker': ticker, 'return': ret_1d})
+                        except:
+                            pass
+            print(f"Found {len(today_movers)} movers from {most_recent_date}")
+            today_movers.sort(key=lambda x: abs(x['return']), reverse=True)
+            top_today = today_movers[:20]
+        else:
+            print("No return_1d data found")
+            top_today = []
+
         # Momentum heatmap - multi-timeframe returns
         print("Calculating momentum...")
         ticker_momentum = {}
@@ -263,6 +291,10 @@ def lambda_handler(event, context):
                 'bullishCount': bullish_count,
                 'bearishCount': bearish_count,
                 'avgVolatility': round(avg_volatility, 2)
+            },
+            'todayMovers': {
+                'tickers': [m['ticker'] for m in top_today],
+                'returns': [round(m['return'], 2) for m in top_today]
             },
             'tenDayMovers': {
                 'tickers': [m['ticker'] for m in top_ten_day],
