@@ -111,6 +111,7 @@ Rules:
 - Use ONLY actual numbers from data - no estimates
 - One entry per ticker in levels_to_watch
 - For unusual_activity, explain WHY it matters (not just that it moved)
+- Base insights and levels_to_watch STRICTLY on the input data provided - do NOT use tickers from examples unless they appear in the actual market data
 
 Return ONLY valid JSON: {{"market_overview": "", "market_insights": [], "levels_to_watch": [{{"symbol": "", "level": "", "note": ""}}], "unusual_activity": [{{"symbol": "", "move": "", "note": ""}}]}}"""
 

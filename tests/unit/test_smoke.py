@@ -9,7 +9,7 @@ class TestSmokeTests(unittest.TestCase):
         lambda_functions = [
             'lambda/data_fetch/lambda_function.py',
             'lambda/analysis/lambda_function.py',
-            'lambda/ticker_analysis/lambda_function.py',
+            'lambda/ticker-analysis/lambda_function.py',
             'lambda/ticker_precache/lambda_function.py',
             'lambda/api/lambda_function.py'
         ]
@@ -34,7 +34,7 @@ class TestSmokeTests(unittest.TestCase):
         """Verify cache duration is 2 hours as per requirements"""
         ticker_analysis_path = os.path.join(
             os.path.dirname(__file__), 
-            '../../lambda/ticker_analysis/lambda_function.py'
+            '../../lambda/ticker-analysis/lambda_function.py'
         )
         
         with open(ticker_analysis_path, 'r') as f:

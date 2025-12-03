@@ -144,10 +144,11 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
     unusual_html = ''
     if 'unusual_activity' in analysis and analysis['unusual_activity']:
         for item in analysis['unusual_activity']:
+            move = str(item.get("move", "")).replace('%', '')
             unusual_html += (
                 f'<div style="background: #374151; padding: 18px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid #fbbf24;">'
                 f'<strong style="color: #fcd34d; font-size: 17px;">{item.get("symbol", "")}</strong> '
-                f'<span style="color: #93c5fd; font-size: 16px;">{item.get("move", "")}%</span>'
+                f'<span style="color: #93c5fd; font-size: 16px;">{move}%</span>'
                 f'<p style="color: #f3f4f6; margin: 8px 0 0; font-size: 15px;">{item.get("note", "")}</p></div>'
             )
     

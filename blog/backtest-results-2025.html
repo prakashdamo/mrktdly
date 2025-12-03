@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Backtested 3 Trading Strategies on 2025 Data. One Returned 119%. Another Lost 50%.</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #fff; }
+        header { background: #1a1a1a; color: #fff; padding: 1rem 0; position: sticky; top: 0; z-index: 100; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+        nav a { color: #fff; text-decoration: none; margin-left: 2rem; }
+        nav a:hover { color: #4a9eff; }
+        .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        h1 { font-size: 2.5rem; margin: 2rem 0 1rem; line-height: 1.2; }
+        h2 { font-size: 1.8rem; margin: 2.5rem 0 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+        h3 { font-size: 1.3rem; margin: 2rem 0 1rem; }
+        .meta { color: #666; margin-bottom: 2rem; }
+        p { margin: 1rem 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+        .positive { color: #16a34a; font-weight: 600; }
+        .negative { color: #dc2626; font-weight: 600; }
+        .highlight { background: #fef3c7; padding: 0.1rem 0.3rem; border-radius: 3px; }
+        .insight-box { background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1.5rem; margin: 2rem 0; }
+        .warning-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 1.5rem; margin: 2rem 0; }
+        .key-finding { background: #f0fdf4; border-left: 4px solid #16a34a; padding: 1rem; margin: 1rem 0; }
+        ul, ol { margin: 1rem 0 1rem 2rem; }
+        li { margin: 0.5rem 0; }
+        code { background: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.9em; }
+        footer { background: #1a1a1a; color: #fff; text-align: center; padding: 2rem; margin-top: 4rem; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" style="font-weight: bold; font-size: 1.2rem; margin: 0;">Prakash Damodaran</a>
+            <div>
+                <a href="/#about">About</a>
+                <a href="/#projects">Projects</a>
+                <a href="/#blog">Blog</a>
+                <a href="/#contact">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>I Backtested 3 Trading Strategies on 2025 Data. One Returned 119%. Another Lost 50%.</h1>
+        <div class="meta">December 2, 2025 · 15 min read</div>
+
+        <p>I spent the last week running backtests on 2025 market data. I tested three strategies across nine different tickers—five individual stocks and four sector ETFs. The results surprised me.</p>
+
+        <p>One strategy on Palantir returned 119.8%. Another on the same stock returned just 21.4%. A strategy that crushed it on Tesla lost 50% on HIMS. There's no universal "best" strategy. It depends entirely on the stock.</p>
+
+        <p>Here's what I learned.</p>
+
+        <h2>The Setup</h2>
+
+        <p>I tested three strategies that anyone can implement:</p>
+
+        <p><strong>1. Buy & Hold</strong><br>
+        Buy on day one. Hold until the end. Zero decisions. Zero stress. The benchmark.</p>
+
+        <p><strong>2. Moving Average Crossover</strong><br>
+        Buy when the 20-day moving average crosses above the 50-day. Sell when it crosses below. Classic trend-following.</p>
+
+        <p><strong>3. RSI Strategy</strong><br>
+        Buy when RSI drops below 30 (oversold). Sell when it rises above 70 (overbought). Mean reversion play.</p>
+
+        <p>Starting capital: $10,000. Period: January 1 to December 2, 2025. No dividends. No taxes. Real transaction costs tested separately.</p>
+
+        <h2>The Results</h2>
+
+        <h3>Palantir (PLTR)</h3>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Final Value</th>
+                <th class="right">ROI</th>
+                <th class="right">Trades</th>
+                <th class="right">Max Drawdown</th>
+                <th class="right">Sharpe</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">$21,980</td>
+                <td class="right positive">+119.8%</td>
+                <td class="right">1</td>
+                <td class="right negative">40.6%</td>
+                <td class="right">1.62</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">$13,619</td>
+                <td class="right positive">+36.2%</td>
+                <td class="right">4</td>
+                <td class="right negative">25.3%</td>
+                <td class="right">1.02</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">$12,144</td>
+                <td class="right positive">+21.4%</td>
+                <td class="right">3</td>
+                <td class="right negative">3.2%</td>
+                <td class="right">2.41</td>
+            </tr>
+        </table>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> Buy & hold crushed the active strategies. But look at that 40.6% drawdown. You had to stomach watching $22,000 drop to $13,000 at some point. The RSI strategy had only a 3.2% drawdown but missed most of the gains.
+        </div>
+
+        <h3>Google (GOOGL)</h3>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Final Value</th>
+                <th class="right">ROI</th>
+                <th class="right">Trades</th>
+                <th class="right">Max Drawdown</th>
+                <th class="right">Sharpe</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">$16,517</td>
+                <td class="right positive">+65.2%</td>
+                <td class="right">1</td>
+                <td class="right negative">29.9%</td>
+                <td class="right">1.85</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">$18,908</td>
+                <td class="right positive">+89.1%</td>
+                <td class="right">1</td>
+                <td class="right negative">7.5%</td>
+                <td class="right">3.26</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">$13,198</td>
+                <td class="right positive">+32.0%</td>
+                <td class="right">4</td>
+                <td class="right negative">7.8%</td>
+                <td class="right">2.02</td>
+            </tr>
+        </table>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> MA Crossover won. It caught the trend early and avoided the worst drawdown. The Sharpe ratio of 3.26 is exceptional—high returns with low volatility. This is what good trading looks like.
+        </div>
+
+        <h3>Tesla (TSLA)</h3>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Final Value</th>
+                <th class="right">ROI</th>
+                <th class="right">Trades</th>
+                <th class="right">Max Drawdown</th>
+                <th class="right">Sharpe</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">$11,026</td>
+                <td class="right positive">+10.3%</td>
+                <td class="right">1</td>
+                <td class="right negative">48.2%</td>
+                <td class="right">0.53</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">$12,982</td>
+                <td class="right positive">+29.8%</td>
+                <td class="right">4</td>
+                <td class="right negative">21.5%</td>
+                <td class="right">0.93</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">$13,111</td>
+                <td class="right positive">+31.1%</td>
+                <td class="right">3</td>
+                <td class="right negative">15.7%</td>
+                <td class="right">1.36</td>
+            </tr>
+        </table>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> Active strategies outperformed by 3x. Buy & hold suffered a brutal 48% drawdown for a measly 10% return. This is where technical analysis actually helps.
+        </div>
+
+        <h3>HIMS (Hims & Hers)</h3>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Final Value</th>
+                <th class="right">ROI</th>
+                <th class="right">Trades</th>
+                <th class="right">Max Drawdown</th>
+                <th class="right">Sharpe</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">$15,236</td>
+                <td class="right positive">+52.4%</td>
+                <td class="right">1</td>
+                <td class="right negative">63.1%</td>
+                <td class="right">0.96</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">$4,906</td>
+                <td class="right negative">-50.9%</td>
+                <td class="right">6</td>
+                <td class="right negative">60.6%</td>
+                <td class="right">-0.93</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">$10,788</td>
+                <td class="right positive">+7.9%</td>
+                <td class="right">3</td>
+                <td class="right negative">23.1%</td>
+                <td class="right">0.44</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <strong>Warning:</strong> This is what extreme volatility looks like. Buy & hold returned 52% but with a 63% drawdown. You'd need iron nerves. MA Crossover got whipsawed and lost half your money. Even winning hurts with this stock.
+        </div>
+
+        <h3>S&P 500 (SPY)</h3>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Final Value</th>
+                <th class="right">ROI</th>
+                <th class="right">Trades</th>
+                <th class="right">Max Drawdown</th>
+                <th class="right">Sharpe</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">$11,542</td>
+                <td class="right positive">+15.4%</td>
+                <td class="right">1</td>
+                <td class="right negative">19.0%</td>
+                <td class="right">0.92</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">$11,577</td>
+                <td class="right positive">+15.8%</td>
+                <td class="right">1</td>
+                <td class="right negative">5.1%</td>
+                <td class="right">1.87</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">$11,445</td>
+                <td class="right positive">+14.5%</td>
+                <td class="right">3</td>
+                <td class="right negative">6.3%</td>
+                <td class="right">1.14</td>
+            </tr>
+        </table>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> All strategies performed similarly on the index. MA Crossover reduced drawdown from 19% to 5% with barely any cost to returns. This is the value of risk management.
+        </div>
+
+        <h2>Sector ETF Results</h2>
+
+        <p>I also tested four sector ETFs to see if different sectors favor different strategies.</p>
+
+        <table>
+            <tr>
+                <th>Sector</th>
+                <th>Ticker</th>
+                <th>Best Strategy</th>
+                <th class="right">ROI</th>
+                <th class="right">Max DD</th>
+            </tr>
+            <tr>
+                <td>Technology</td>
+                <td>XLK</td>
+                <td>MA Crossover</td>
+                <td class="right positive">+23.1%</td>
+                <td class="right negative">10.5%</td>
+            </tr>
+            <tr>
+                <td>Healthcare</td>
+                <td>XLV</td>
+                <td>Buy & Hold</td>
+                <td class="right positive">+12.3%</td>
+                <td class="right negative">14.0%</td>
+            </tr>
+            <tr>
+                <td>Financials</td>
+                <td>XLF</td>
+                <td>RSI</td>
+                <td class="right positive">+11.7%</td>
+                <td class="right negative">4.8%</td>
+            </tr>
+            <tr>
+                <td>Energy</td>
+                <td>XLE</td>
+                <td>RSI</td>
+                <td class="right positive">+20.7%</td>
+                <td class="right negative">6.5%</td>
+            </tr>
+        </table>
+
+        <div class="insight-box">
+            <strong>Insight:</strong> Energy was the most interesting. Buy & hold returned only 5.7%. RSI returned 20.7%—nearly 4x better. The sector was choppy all year, and mean reversion crushed trend-following.
+        </div>
+
+        <h2>Transaction Costs Matter</h2>
+
+        <p>I reran all tests with $5 and $10 per trade fees. Here's the impact:</p>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th class="right">Avg Trades</th>
+                <th class="right">$5 Fee Impact</th>
+                <th class="right">$10 Fee Impact</th>
+            </tr>
+            <tr>
+                <td>Buy & Hold</td>
+                <td class="right">1</td>
+                <td class="right negative">-0.08%</td>
+                <td class="right negative">-0.15%</td>
+            </tr>
+            <tr>
+                <td>MA Crossover</td>
+                <td class="right">2-4</td>
+                <td class="right negative">-0.15%</td>
+                <td class="right negative">-0.30%</td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td class="right">3-5</td>
+                <td class="right negative">-0.20%</td>
+                <td class="right negative">-0.40%</td>
+            </tr>
+        </table>
+
+        <p>Buy & hold is nearly immune to fees. Active strategies lose 0.2-0.4% with realistic costs. The Energy MA Crossover made 7 trades and lost 0.68% to $10 fees.</p>
+
+        <p><span class="highlight">Zero-commission brokers are essential for active trading.</span> Even small fees compound quickly.</p>
+
+        <h2>What Actually Matters: Risk-Adjusted Returns</h2>
+
+        <p>Raw returns don't tell the full story. A 50% return with a 60% drawdown is misery. A 30% return with a 5% drawdown is smooth sailing.</p>
+
+        <p>The Sharpe ratio captures this. It measures return per unit of risk. Higher is better.</p>
+
+        <h3>Top 5 Sharpe Ratios</h3>
+
+        <ol>
+            <li><strong>GOOGL MA Crossover:</strong> 3.26 (89% return, 7.5% drawdown)</li>
+            <li><strong>PLTR RSI:</strong> 2.41 (21% return, 3.2% drawdown)</li>
+            <li><strong>GOOGL RSI:</strong> 2.02 (32% return, 7.8% drawdown)</li>
+            <li><strong>SPY MA Crossover:</strong> 1.87 (16% return, 5.1% drawdown)</li>
+            <li><strong>GOOGL Buy & Hold:</strong> 1.85 (65% return, 29.9% drawdown)</li>
+        </ol>
+
+        <p>Google dominated the risk-adjusted rankings. Smooth, consistent gains with minimal pain.</p>
+
+        <h3>Worst Sharpe Ratios</h3>
+
+        <ol>
+            <li><strong>HIMS MA Crossover:</strong> -0.93 (lost 50%)</li>
+            <li><strong>Energy MA Crossover:</strong> -0.93 (lost 17%)</li>
+            <li><strong>Healthcare RSI:</strong> 0.09 (barely positive)</li>
+        </ol>
+
+        <p>Choppy, volatile stocks destroy trend-following strategies.</p>
+
+        <h2>The Pattern</h2>
+
+        <p>After analyzing all the data, a clear pattern emerged:</p>
+
+        <div class="insight-box">
+            <h3>Match Strategy to Stock Type</h3>
+            
+            <p><strong>Strong Uptrends (PLTR, HIMS):</strong><br>
+            Buy & hold dominates. Active strategies miss the big moves. Accept higher drawdowns for higher returns.</p>
+
+            <p><strong>Moderate Trends (GOOGL, Tech Sector):</strong><br>
+            MA Crossover wins. Better risk-adjusted returns. Catches trends while avoiding major drawdowns.</p>
+
+            <p><strong>Volatile/Choppy (TSLA, Energy):</strong><br>
+            RSI excels. Buys dips, sells rips. Avoids getting whipsawed. Can outperform by 3-4x.</p>
+
+            <p><strong>Stable/Index (SPY):</strong><br>
+            All strategies similar. MA Crossover slightly better for drawdown reduction. Pick based on your risk tolerance.</p>
+        </div>
+
+        <h2>Maximum Drawdown: The Hidden Killer</h2>
+
+        <p>Returns get the headlines. Drawdowns determine whether you can actually hold.</p>
+
+        <p><strong>Largest Drawdowns:</strong></p>
+        <ul>
+            <li>HIMS Buy & Hold: 63.1%</li>
+            <li>HIMS MA Crossover: 60.6%</li>
+            <li>TSLA Buy & Hold: 48.2%</li>
+            <li>PLTR Buy & Hold: 40.6%</li>
+        </ul>
+
+        <p><strong>Smallest Drawdowns:</strong></p>
+        <ul>
+            <li>PLTR RSI: 3.2%</li>
+            <li>Financials MA Crossover: 4.6%</li>
+            <li>SPY MA Crossover: 5.1%</li>
+        </ul>
+
+        <p>Active strategies significantly reduce drawdowns. But in strong uptrends, they sacrifice returns.</p>
+
+        <p>The question: Would you rather make 119% and suffer a 40% drawdown, or make 21% with a 3% drawdown?</p>
+
+        <p>There's no right answer. It depends on your psychology.</p>
+
+        <h2>What This Doesn't Tell You</h2>
+
+        <p>Backtests have serious limitations. I'm not hiding them:</p>
+
+        <p><strong>1. Survivorship Bias</strong><br>
+        I tested stocks that survived 2025. I didn't test stocks that crashed and burned. The real world includes failures.</p>
+
+        <p><strong>2. Overfitting</strong><br>
+        These strategies were optimized on the same data I tested them on. They'll perform worse on future data.</p>
+
+        <p><strong>3. Market Regime</strong><br>
+        2025 was mostly bullish. Bear markets behave differently. These results won't hold in a crash.</p>
+
+        <p><strong>4. Slippage</strong><br>
+        Real execution prices differ from close prices. You'll get worse fills than the backtest shows.</p>
+
+        <p><strong>5. Taxes</strong><br>
+        Active strategies trigger short-term capital gains. That's taxed at your income rate. Buy & hold gets long-term rates. Big difference.</p>
+
+        <p><strong>6. Psychology</strong><br>
+        It's easy to hold through a 40% drawdown in a backtest. It's brutal in real life when it's your money.</p>
+
+        <p><strong>7. Black Swans</strong><br>
+        None of these strategies would have saved you in March 2020 or the 2008 crash. Technical analysis can't predict rare events.</p>
+
+        <h2>What I'm Taking Away</h2>
+
+        <p>After running 81 different backtest configurations, here's what matters:</p>
+
+        <p><strong>1. There's no universal best strategy.</strong> It depends on the stock. Match the strategy to the price action.</p>
+
+        <p><strong>2. Risk-adjusted returns matter more than raw returns.</strong> A smooth 30% beats a volatile 50%.</p>
+
+        <p><strong>3. Drawdowns are the real test.</strong> Can you actually hold through a 40% drop? Be honest with yourself.</p>
+
+        <p><strong>4. Transaction costs are negligible for buy & hold.</strong> They hurt active strategies but not enough to kill them.</p>
+
+        <p><strong>5. Diversification caps upside.</strong> PLTR alone returned 119%. SPY returned 15%. Concentration builds wealth. Diversification preserves it.</p>
+
+        <p><strong>6. Technical analysis works better on some stocks than others.</strong> It helped on Tesla and Energy. It hurt on PLTR and HIMS.</p>
+
+        <p><strong>7. Backtests are useful for learning, not predicting.</strong> They show what happened, not what will happen.</p>
+
+        <h2>The Real Question</h2>
+
+        <p>The real question isn't "which strategy is best?" It's "which strategy can you actually execute?"</p>
+
+        <p>Can you hold PLTR through a 40% drawdown? If yes, buy & hold wins.</p>
+
+        <p>Do you panic and sell at the bottom? Then you need a strategy with smaller drawdowns, even if it means lower returns.</p>
+
+        <p>Do you have the discipline to follow signals mechanically? Then active strategies might work.</p>
+
+        <p>Do you second-guess every trade? Stick to buy & hold.</p>
+
+        <p>The best strategy is the one you can actually follow.</p>
+
+        <h2>What's Next</h2>
+
+        <p>I'm building a backtesting tool that lets you test any strategy on any stock with real historical data. See the results before risking real money.</p>
+
+        <p>I'm also working on alerts that notify you when a stock's technical health score drops below a threshold. Early warning system for risk management.</p>
+
+        <p>The goal isn't to predict the future. It's to make better decisions with the information we have.</p>
+
+        <div class="insight-box">
+            <p><strong>Bottom Line:</strong> I tested three strategies on nine tickers. The results varied wildly. PLTR buy & hold returned 119%. HIMS MA Crossover lost 50%. There's no magic formula. Match the strategy to the stock. Manage risk. Be honest about what you can actually execute.</p>
+            
+            <p>That's all you can do.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Prakash Damodaran. All rights reserved.</p>
+    </footer>
+</body>
+</html>

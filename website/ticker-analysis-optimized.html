@@ -1,0 +1,101 @@
+// Add this optimization to the displayAnalysis function
+// Replace the sequential loading with parallel loading
+
+// BEFORE (Sequential - 3+ seconds):
+// loadPerformanceStats(ticker);
+// loadHealthScore(ticker);
+
+// AFTER (Parallel - ~1.2 seconds):
+async function loadAllData(ticker) {
+    const startTime = performance.now();
+    
+    try {
+        // Load all APIs in parallel
+        const [healthData, signalData] = await Promise.all([
+            fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/health-score?ticker=${ticker}`).then(r => r.json()),
+            fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?ticker=${ticker}&days=30`).then(r => r.json())
+        ]);
+        
+        const endTime = performance.now();
+        console.log(`✓ Parallel load completed in ${Math.round(endTime - startTime)}ms`);
+        
+        // Update health score
+        updateHealthScore(healthData);
+        
+        // Update performance stats
+        updatePerformanceStats(signalData);
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+function updateHealthScore(data) {
+    // Update badge in header
+    document.getElementById('healthEmoji').textContent = data.emoji;
+    document.getElementById('healthScore').textContent = `${data.score}/100`;
+    document.getElementById('healthScoreBadge').classList.remove('hidden');
+    
+    // Update detailed card
+    const scoreColor = data.score >= 80 ? 'text-green-400' : 
+                      data.score >= 60 ? 'text-yellow-400' : 
+                      data.score >= 40 ? 'text-orange-400' : 'text-red-400';
+    
+    const ratingBg = data.score >= 80 ? 'from-green-900/30 to-green-800/20' : 
+                    data.score >= 60 ? 'from-yellow-900/30 to-yellow-800/20' : 
+                    data.score >= 40 ? 'from-orange-900/30 to-orange-800/20' : 'from-red-900/30 to-red-800/20';
+    
+    document.getElementById('healthScoreContent').innerHTML = `
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="text-center">
+                <div class="inline-block bg-gradient-to-br ${ratingBg} rounded-2xl p-8 mb-4">
+                    <div class="text-6xl mb-2">${data.emoji}</div>
+                    <div class="${scoreColor} text-5xl font-bold mb-2">${data.score}/100</div>
+                    <div class="text-xl text-gray-300">${data.rating}</div>
+                </div>
+            </div>
+            <div class="space-y-3">
+                ${data.components.map(c => `
+                    <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                        <span class="text-gray-300">${c.name}</span>
+                        <span class="font-semibold ${c.score >= 80 ? 'text-green-400' : c.score >= 60 ? 'text-yellow-400' : 'text-red-400'}">${c.score}/100</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function updatePerformanceStats(stats) {
+    const perfDiv = document.getElementById('modelPerformance');
+    
+    if (stats.total_signals === 0) {
+        perfDiv.innerHTML = '<div class="text-gray-400 text-center">No signals yet for this ticker</div>';
+        return;
+    }
+    
+    perfDiv.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                <div class="text-gray-400 text-xs mb-1">Win Rate</div>
+                <div class="text-2xl font-bold ${stats.win_rate >= 60 ? 'text-green-400' : 'text-yellow-400'}">${stats.win_rate}%</div>
+                <div class="text-xs text-gray-500">${stats.win_count}/${stats.closed_signals}</div>
+            </div>
+            <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                <div class="text-gray-400 text-xs mb-1">Expectancy</div>
+                <div class="text-2xl font-bold ${stats.expectancy > 0 ? 'text-green-400' : 'text-red-400'}">${stats.expectancy > 0 ? '+' : ''}${stats.expectancy}%</div>
+                <div class="text-xs text-gray-500">per trade</div>
+            </div>
+            <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                <div class="text-gray-400 text-xs mb-1">Avg Win/Loss</div>
+                <div class="text-lg font-bold text-white">+${stats.avg_win}% / ${stats.avg_loss}%</div>
+                <div class="text-xs text-gray-500">R:R ${stats.risk_reward}:1</div>
+            </div>
+            <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                <div class="text-gray-400 text-xs mb-1">Total Signals</div>
+                <div class="text-2xl font-bold text-white">${stats.total_signals}</div>
+                <div class="text-xs text-gray-500">${stats.open_signals} open</div>
+            </div>
+        </div>
+    `;
+}

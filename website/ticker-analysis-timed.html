@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticker Analysis Performance Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Ticker Analysis Performance Test</h1>
+        
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <label class="block mb-2">Enter Ticker:</label>
+            <div class="flex gap-4">
+                <input type="text" id="ticker" value="AAPL" class="bg-slate-700 px-4 py-2 rounded flex-1" placeholder="AAPL">
+                <button onclick="runTest()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold">
+                    Run Test
+                </button>
+            </div>
+        </div>
+
+        <div id="results" class="space-y-4"></div>
+        
+        <div id="summary" class="hidden bg-slate-800 rounded-lg p-6 mt-6">
+            <h2 class="text-2xl font-bold mb-4">Performance Summary</h2>
+            <div id="summaryContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod';
+        const timings = {};
+
+        function addLog(step, duration, status = 'success') {
+            const resultsDiv = document.getElementById('results');
+            const color = status === 'success' ? 'text-green-400' : status === 'error' ? 'text-red-400' : 'text-yellow-400';
+            const icon = status === 'success' ? '✓' : status === 'error' ? '✗' : '⏱';
+            
+            resultsDiv.innerHTML += `
+                <div class="bg-slate-800 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="${color} text-xl">${icon}</span>
+                        <span>${step}</span>
+                    </div>
+                    <span class="font-mono ${color}">${duration}ms</span>
+                </div>
+            `;
+        }
+
+        async function runTest() {
+            const ticker = document.getElementById('ticker').value.toUpperCase();
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').classList.add('hidden');
+            
+            const overallStart = performance.now();
+            
+            try {
+                // 1. Main ticker analysis
+                const t1 = performance.now();
+                const analysisResponse = await fetch(`${API_BASE}/ticker-analysis?ticker=${ticker}`);
+                const t2 = performance.now();
+                timings.analysis = t2 - t1;
+                addLog('1. Ticker Analysis API', Math.round(timings.analysis));
+                
+                const analysisData = await analysisResponse.json();
+                const t3 = performance.now();
+                timings.analysisParse = t3 - t2;
+                addLog('   └─ JSON Parse', Math.round(timings.analysisParse), 'info');
+                
+                // 2. Health Score
+                const t4 = performance.now();
+                const healthResponse = await fetch(`${API_BASE}/health-score?ticker=${ticker}`);
+                const t5 = performance.now();
+                timings.health = t5 - t4;
+                addLog('2. Health Score API', Math.round(timings.health));
+                
+                const healthData = await healthResponse.json();
+                const t6 = performance.now();
+                timings.healthParse = t6 - t5;
+                addLog('   └─ JSON Parse', Math.round(timings.healthParse), 'info');
+                
+                // 3. Signal Stats
+                const t7 = performance.now();
+                const signalResponse = await fetch(`${API_BASE}/signal-stats?ticker=${ticker}&days=30`);
+                const t8 = performance.now();
+                timings.signals = t8 - t7;
+                addLog('3. Signal Stats API', Math.round(timings.signals));
+                
+                const signalData = await signalResponse.json();
+                const t9 = performance.now();
+                timings.signalsParse = t9 - t8;
+                addLog('   └─ JSON Parse', Math.round(timings.signalsParse), 'info');
+                
+                // 4. ML Strategy (optional)
+                const t10 = performance.now();
+                const mlResponse = await fetch(`${API_BASE}/ml-strategy?ticker=${ticker}`);
+                const t11 = performance.now();
+                timings.ml = t11 - t10;
+                addLog('4. ML Strategy API', Math.round(timings.ml));
+                
+                const mlData = await mlResponse.json();
+                const t12 = performance.now();
+                timings.mlParse = t12 - t11;
+                addLog('   └─ JSON Parse', Math.round(timings.mlParse), 'info');
+                
+                const overallEnd = performance.now();
+                timings.total = overallEnd - overallStart;
+                
+                // Show summary
+                showSummary();
+                
+            } catch (error) {
+                addLog('Error: ' + error.message, 0, 'error');
+            }
+        }
+
+        function showSummary() {
+            const summaryDiv = document.getElementById('summary');
+            const contentDiv = document.getElementById('summaryContent');
+            
+            const apiTotal = timings.analysis + timings.health + timings.signals + timings.ml;
+            const parseTotal = timings.analysisParse + timings.healthParse + timings.signalsParse + timings.mlParse;
+            const overhead = timings.total - apiTotal - parseTotal;
+            
+            contentDiv.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-700 rounded p-4">
+                        <div class="text-gray-400 text-sm mb-1">Total Time</div>
+                        <div class="text-3xl font-bold text-blue-400">${Math.round(timings.total)}ms</div>
+                    </div>
+                    <div class="bg-slate-700 rounded p-4">
+                        <div class="text-gray-400 text-sm mb-1">API Calls</div>
+                        <div class="text-3xl font-bold text-green-400">${Math.round(apiTotal)}ms</div>
+                        <div class="text-xs text-gray-500">${((apiTotal/timings.total)*100).toFixed(1)}% of total</div>
+                    </div>
+                    <div class="bg-slate-700 rounded p-4">
+                        <div class="text-gray-400 text-sm mb-1">JSON Parsing</div>
+                        <div class="text-3xl font-bold text-yellow-400">${Math.round(parseTotal)}ms</div>
+                        <div class="text-xs text-gray-500">${((parseTotal/timings.total)*100).toFixed(1)}% of total</div>
+                    </div>
+                    <div class="bg-slate-700 rounded p-4">
+                        <div class="text-gray-400 text-sm mb-1">Overhead</div>
+                        <div class="text-3xl font-bold text-purple-400">${Math.round(overhead)}ms</div>
+                        <div class="text-xs text-gray-500">${((overhead/timings.total)*100).toFixed(1)}% of total</div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-700 rounded p-4">
+                    <h3 class="font-bold mb-3">Breakdown by API:</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Ticker Analysis:</span>
+                            <span class="font-mono">${Math.round(timings.analysis)}ms (${((timings.analysis/apiTotal)*100).toFixed(1)}%)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Health Score:</span>
+                            <span class="font-mono">${Math.round(timings.health)}ms (${((timings.health/apiTotal)*100).toFixed(1)}%)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Signal Stats:</span>
+                            <span class="font-mono">${Math.round(timings.signals)}ms (${((timings.signals/apiTotal)*100).toFixed(1)}%)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>ML Strategy:</span>
+                            <span class="font-mono">${Math.round(timings.ml)}ms (${((timings.ml/apiTotal)*100).toFixed(1)}%)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-900/30 rounded border border-blue-500/50">
+                    <h3 class="font-bold mb-2">💡 Optimization Opportunities:</h3>
+                    <ul class="text-sm space-y-1 text-gray-300">
+                        ${timings.analysis > 500 ? '<li>• Ticker Analysis is slow (>500ms) - consider caching</li>' : ''}
+                        ${timings.health > 300 ? '<li>• Health Score is slow (>300ms) - optimize calculation</li>' : ''}
+                        ${apiTotal > 2000 ? '<li>• Consider parallel API calls instead of sequential</li>' : ''}
+                        ${parseTotal > 100 ? '<li>• JSON parsing overhead is high - consider smaller payloads</li>' : ''}
+                        <li>• Current: Sequential calls. Parallel would save ~${Math.round(apiTotal - Math.max(timings.analysis, timings.health, timings.signals, timings.ml))}ms</li>
+                    </ul>
+                </div>
+            `;
+            
+            summaryDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

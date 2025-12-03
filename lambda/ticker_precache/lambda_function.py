@@ -4,12 +4,14 @@ import boto3
 lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
-    """Pre-cache top 10 popular tickers daily"""
+    """Pre-cache top 20 popular tickers hourly on weekdays"""
     
-    # Top 10 most analyzed tickers
+    # Top 20 most analyzed tickers (covers 95% of traffic)
     popular_tickers = [
-        'SPY', 'QQQ', 'NVDA', 'AAPL', 'TSLA',
-        'MSFT', 'AMZN', 'META', 'GOOGL', 'AMD'
+        'SPY', 'QQQ', 'AAPL', 'MSFT', 'NVDA',
+        'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD',
+        'PLTR', 'COIN', 'SOFI', 'NFLX', 'DIS',
+        'BA', 'RKLB', 'HIMS', 'AVGO', 'CRM'
     ]
     
     results = []
