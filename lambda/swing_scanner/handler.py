@@ -93,6 +93,16 @@ def scan_ticker(ticker, today):
     # Take last 60 trading days
     history = history[-60:]
     
+    # Calculate RSI for overbought filter
+    closes = [float(d['close']) for d in history]
+    current_rsi = calculate_rsi(closes, 14)
+    
+    # FILTER: Reject overbought entries (RSI >= 60)
+    # Analysis showed failing signals had avg RSI 52.4 vs winning 46.9
+    # Worst performers: REGN (RSI 83.4), MRK (RSI 89.0), AVGO (RSI 68.5)
+    if current_rsi and current_rsi >= 60:
+        return None
+    
     # Try each pattern detector
     signal = detect_consolidation_breakout(ticker, history, today)
     if signal:
