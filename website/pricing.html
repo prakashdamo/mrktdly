@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Daily Market Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <a href="/index.html" class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center font-bold text-lg">DMS</div>
+                    <span class="text-xl font-bold">Daily Market Summary</span>
+                </a>
+                <div class="flex gap-4">
+                    <a href="/index.html" class="text-gray-400 hover:text-white transition">Home</a>
+                    <a href="/market-insights.html" class="text-gray-400 hover:text-white transition">Market Intelligence</a>
+                    <a href="/pricing.html" class="text-white font-medium">Pricing</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-16 max-w-7xl">
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Simple, Transparent Pricing
+            </h1>
+            <p class="text-xl text-gray-400">Choose the plan that fits your trading style</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <!-- Free Tier -->
+            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+                <h3 class="text-2xl font-bold mb-2">Free</h3>
+                <div class="text-4xl font-bold mb-6">$0<span class="text-lg text-gray-400">/month</span></div>
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Daily market summary</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>3 ticker analyses/day</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>3 sample signals</span></li>
+                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Email alerts</span></li>
+                </ul>
+                <a href="/index.html" class="block w-full text-center py-3 px-6 bg-slate-700 hover:bg-slate-600 rounded-lg transition">Get Started</a>
+            </div>
+
+            <!-- Basic Tier -->
+            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+                <h3 class="text-2xl font-bold mb-2">Basic</h3>
+                <div class="text-4xl font-bold mb-6">$9.99<span class="text-lg text-gray-400">/month</span></div>
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Daily market summary</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Unlimited</strong> ticker analyses</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>10 signals</strong> per day</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>1 evening</strong> email alert</span></li>
+                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Weekly technical report</span></li>
+                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Full signal performance</span></li>
+                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">AI portfolio analysis</span></li>
+                </ul>
+                <button onclick="checkout('basic')" class="block w-full text-center py-3 px-6 bg-slate-700 hover:bg-slate-600 rounded-lg transition font-bold">Subscribe Now</button>
+            </div>
+
+            <!-- Pro Tier -->
+            <div class="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500 rounded-2xl p-8 relative">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-bold">BEST VALUE</div>
+                <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                <div class="text-4xl font-bold mb-6">$19.99<span class="text-lg text-gray-400">/month</span></div>
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Unlimited</strong> ticker analyses</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>All signals</strong> (unlimited)</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Configurable</strong> email alerts</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Weekly technical report</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Full signal performance tracking</span></li>
+                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>AI portfolio analysis & backtesting</span></li>
+                </ul>
+                <button onclick="checkout('pro')" class="block w-full text-center py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg transition font-bold">Subscribe Now</button>
+            </div>
+        </div>

@@ -6,8 +6,11 @@
     <title>Ticker Analysis - Daily Market Summary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="/js/auth-helper.js?v=20251203-4"></script>
+    <script src="/js/nav.js?v=20251203-4"></script>
 </head>
 <body class="bg-slate-900 text-white antialiased">
+    <div id="appNav" data-active=""></div>
     <div class="container mx-auto px-6 py-8 max-w-7xl">
         <!-- Header -->
         <header class="mb-12">
@@ -199,7 +202,7 @@
     <script>
         async function loadPerformanceStats(ticker) {
             try {
-                const response = await fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?ticker=${ticker}&days=30`);
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?ticker=${ticker}&days=30`);
                 const stats = await response.json();
                 
                 const perfDiv = document.getElementById('modelPerformance');
@@ -262,196 +265,175 @@
             }
         }
 
-        function displayAnalysis() {
-            const data = JSON.parse(sessionStorage.getItem('tickerAnalysis'));
+        async function displayAnalysis() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticker = urlParams.get('ticker');
             
-            if (!data) {
+            if (!ticker) {
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('error').classList.remove('hidden');
                 return;
             }
 
-            const { ticker, data: tickerData, analysis } = data;
-
-            // Title and stats
-            const changeColor = tickerData.change >= 0 ? 'text-green-400' : 'text-red-400';
-            document.getElementById('tickerTitle').textContent = `${ticker} Analysis`;
-            document.getElementById('tickerStats').innerHTML = `
-                <span class="text-3xl font-bold">$${tickerData.price}</span>
-                <span class="${changeColor} font-semibold">${tickerData.change >= 0 ? '+' : ''}${tickerData.change} (${tickerData.change_percent}%)</span>
-                <span class="text-gray-500">|</span>
-                <span>Vol: ${tickerData.volume.toLocaleString()}</span>
-                <span class="text-gray-500">|</span>
-                <span>52W: $${tickerData.low_52w} - $${tickerData.high_52w}</span>
-            `;
-
-            // Trend Analysis
-            if (tickerData.trend) {
-                const trendDiv = document.getElementById('trendAnalysis');
-                const trendColor = tickerData.trend.direction.includes('Up') ? 'text-green-400' : 
-                                   tickerData.trend.direction.includes('Down') ? 'text-red-400' : 'text-yellow-400';
-                trendDiv.innerHTML = `
-                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
-                        <div class="text-gray-400 text-xs mb-1">Direction</div>
-                        <div class="${trendColor} text-lg font-bold">${tickerData.trend.direction}</div>
-                    </div>
-                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
-                        <div class="text-gray-400 text-xs mb-1">Strength</div>
-                        <div class="text-white text-lg font-bold">${tickerData.trend.strength}</div>
-                    </div>
-                    <div class="bg-[#252a3a] rounded-lg p-4 text-center">
-                        <div class="text-gray-400 text-xs mb-1">Momentum</div>
-                        <div class="text-white text-lg font-bold">${tickerData.trend.momentum}</div>
-                    </div>
-                    <div class="bg-[#252a3a] rounded-lg p-4 col-span-2 md:col-span-1">
-                        <div class="text-gray-400 text-xs mb-1">Analysis</div>
-                        <div class="text-gray-300 text-sm">${tickerData.trend.description}</div>
-                    </div>
-                `;
-            }
-
-            // Price Range Visualization
-            if (tickerData.price_distribution) {
-                // 52-Week Gauge
-                const percentile = ((tickerData.price - tickerData.low_52w) / (tickerData.high_52w - tickerData.low_52w)) * 100;
-                document.getElementById('low52w').textContent = `$${tickerData.low_52w}`;
-                document.getElementById('high52w').textContent = `$${tickerData.high_52w}`;
-                document.getElementById('percentile').textContent = `${percentile.toFixed(0)}th percentile`;
+            try {
+                // Fetch full analysis
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ticker-analysis`, {
+                    method: 'POST',
+                    body: JSON.stringify({ ticker })
+                });
+                const data = await response.json();
+                const { data: tickerData, analysis } = data;
                 
-                const marker = document.getElementById('priceMarker');
-                marker.style.left = `${percentile}%`;
-                marker.querySelector('div').textContent = `$${tickerData.price}`;
+                // Title and stats
+                const changeColor = tickerData.change >= 0 ? 'text-green-400' : 'text-red-400';
+                document.getElementById('tickerTitle').textContent = `${ticker} Analysis`;
+                document.getElementById('tickerStats').innerHTML = `
+                    <span class="text-3xl font-bold">$${tickerData.price}</span>
+                    <span class="${changeColor} font-semibold">${tickerData.change >= 0 ? '+' : ''}${tickerData.change} (${tickerData.change_percent}%)</span>
+                    <span class="text-gray-500">|</span>
+                    <span>Vol: ${tickerData.volume.toLocaleString()}</span>
+                `;
+                
+                // Trend Analysis
+                if (tickerData.trend) {
+                    const trendColor = tickerData.trend.direction.includes('Up') ? 'text-green-400' : 
+                                       tickerData.trend.direction.includes('Down') ? 'text-red-400' : 'text-yellow-400';
+                    document.getElementById('trendAnalysis').innerHTML = `
+                        <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                            <div class="text-gray-400 text-xs mb-1">Direction</div>
+                            <div class="${trendColor} text-lg font-bold">${tickerData.trend.direction}</div>
+                        </div>
+                        <div class="bg-[#252a3a] rounded-lg p-4 text-center">
+                            <div class="text-gray-400 text-xs mb-1">Strength</div>
+                            <div class="text-white text-lg font-bold">${tickerData.trend.strength}</div>
+                        </div>
+                    `;
+                }
+                
+                // Price Range Visualization
+                if (tickerData.low_52w && tickerData.high_52w) {
+                    const percentile = ((tickerData.price - tickerData.low_52w) / (tickerData.high_52w - tickerData.low_52w)) * 100;
+                    document.getElementById('low52w').textContent = `$${tickerData.low_52w}`;
+                    document.getElementById('high52w').textContent = `$${tickerData.high_52w}`;
+                    document.getElementById('percentile').textContent = `${percentile.toFixed(0)}th percentile`;
+                    
+                    const marker = document.getElementById('priceMarker');
+                    marker.style.left = `${percentile}%`;
+                    marker.querySelector('div').textContent = `$${tickerData.price}`;
+                }
                 
                 // Price Distribution Heatmap
-                const dist = tickerData.price_distribution;
-                const trace = {
-                    x: dist.levels.map(l => l.count),
-                    y: dist.levels.map(l => l.price),
-                    type: 'bar',
-                    orientation: 'h',
-                    marker: {
-                        color: dist.levels.map(l => l.count),
-                        colorscale: [[0, '#1e293b'], [0.5, '#3b82f6'], [1, '#22c55e']],
-                        showscale: false
-                    },
-                    hovertemplate: '$%{y:.2f}<br>%{x} days<extra></extra>'
-                };
+                if (tickerData.price_distribution) {
+                    const dist = tickerData.price_distribution;
+                    const trace = {
+                        x: dist.levels.map(l => l.count),
+                        y: dist.levels.map(l => l.price),
+                        type: 'bar',
+                        orientation: 'h',
+                        marker: {
+                            color: dist.levels.map(l => l.count),
+                            colorscale: [[0, '#1e293b'], [0.5, '#3b82f6'], [1, '#22c55e']],
+                            showscale: false
+                        },
+                        hovertemplate: '$%{y:.2f}<br>%{x} days<extra></extra>'
+                    };
+                    
+                    const layout = {
+                        paper_bgcolor: 'transparent',
+                        plot_bgcolor: 'transparent',
+                        font: { color: '#e2e8f0' },
+                        xaxis: { title: 'Days at Price Level', gridcolor: '#334155' },
+                        yaxis: { title: 'Price', gridcolor: '#334155' },
+                        margin: { l: 60, r: 20, t: 20, b: 60 },
+                        height: 400,
+                        shapes: [{
+                            type: 'line',
+                            y0: tickerData.price,
+                            y1: tickerData.price,
+                            x0: 0,
+                            x1: 1,
+                            xref: 'paper',
+                            line: { color: '#fff', width: 2, dash: 'dash' }
+                        }],
+                        annotations: [{
+                            y: tickerData.price,
+                            x: 1,
+                            xref: 'paper',
+                            text: `Current: $${tickerData.price}`,
+                            showarrow: false,
+                            xanchor: 'left',
+                            font: { color: '#fff', size: 12 }
+                        }]
+                    };
+                    
+                    Plotly.newPlot('priceHeatmap', [trace], layout, {responsive: true});
+                }
                 
-                const layout = {
-                    paper_bgcolor: 'transparent',
-                    plot_bgcolor: 'transparent',
-                    font: { color: '#e2e8f0' },
-                    xaxis: { title: 'Days at Price Level', gridcolor: '#334155' },
-                    yaxis: { title: 'Price', gridcolor: '#334155' },
-                    margin: { l: 60, r: 20, t: 20, b: 60 },
-                    height: 400,
-                    shapes: [{
-                        type: 'line',
-                        y0: tickerData.price,
-                        y1: tickerData.price,
-                        x0: 0,
-                        x1: 1,
-                        xref: 'paper',
-                        line: { color: '#fff', width: 2, dash: 'dash' }
-                    }],
-                    annotations: [{
-                        y: tickerData.price,
-                        x: 1,
-                        xref: 'paper',
-                        text: `Current: $${tickerData.price}`,
-                        showarrow: false,
-                        xanchor: 'left',
-                        font: { color: '#fff', size: 12 }
-                    }]
-                };
+                // Fibonacci Levels
+                if (tickerData.fibonacci) {
+                    const fibDiv = document.getElementById('fibonacciLevels');
+                    const fib = tickerData.fibonacci;
+                    const levels = [
+                        { name: '0.0% (High)', value: fib.level_0 },
+                        { name: '23.6%', value: fib.level_236 },
+                        { name: '38.2%', value: fib.level_382 },
+                        { name: '50.0%', value: fib.level_500 },
+                        { name: '61.8%', value: fib.level_618 },
+                        { name: '100% (Low)', value: fib.level_100 }
+                    ];
+                    fibDiv.innerHTML = levels.map(l => `
+                        <div class="flex justify-between items-center p-3 rounded bg-[#252a3a]">
+                            <span class="text-gray-300">${l.name}</span>
+                            <span class="font-mono font-bold text-white">$${l.value}</span>
+                        </div>
+                    `).join('');
+                }
                 
-                Plotly.newPlot('priceHeatmap', [trace], layout, {responsive: true});
+                // Price Action
+                document.getElementById('priceAction').textContent = analysis.price_action;
+                
+                // Technical Analysis
+                const techList = document.getElementById('technicalAnalysis');
+                techList.innerHTML = analysis.technical_analysis.map(item => 
+                    `<li class="flex items-start"><span class="text-purple-400 mr-2">•</span><span>${item}</span></li>`
+                ).join('');
+                
+                // Key Levels
+                document.getElementById('keyLevels').innerHTML = analysis.key_levels.map(level => `
+                    <div class="bg-[#252a3a] rounded-lg p-4">
+                        <div class="font-semibold text-purple-400 text-lg mb-2">$${level.level}</div>
+                        <div class="text-gray-300 text-sm">${level.note}</div>
+                    </div>
+                `).join('');
+                
+                // Trading Considerations
+                document.getElementById('tradingConsiderations').innerHTML = analysis.trading_considerations.map(item =>
+                    `<li class="flex items-start"><span class="text-blue-400 mr-2">•</span><span>${item}</span></li>`
+                ).join('');
+                
+                // Risk Assessment
+                document.getElementById('riskAssessment').innerHTML = analysis.risk_assessment.map(item =>
+                    `<li class="flex items-start"><span class="text-yellow-400 mr-2">⚠</span><span>${item}</span></li>`
+                ).join('');
+                
+                // Load health score and performance stats
+                await loadHealthScore(ticker);
+                await loadPerformanceStats(ticker);
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
             }
-
-            // Fibonacci Levels
-            if (tickerData.fibonacci) {
-                const fibDiv = document.getElementById('fibonacciLevels');
-                const fib = tickerData.fibonacci;
-                const currentPrice = tickerData.price;
-                
-                const levels = [
-                    { name: '0.0% (High)', value: fib.level_0, pct: '0.0%' },
-                    { name: '23.6%', value: fib.level_236, pct: '23.6%' },
-                    { name: '38.2%', value: fib.level_382, pct: '38.2%' },
-                    { name: '50.0%', value: fib.level_500, pct: '50.0%' },
-                    { name: '61.8%', value: fib.level_618, pct: '61.8%' },
-                    { name: '78.6%', value: fib.level_786, pct: '78.6%' },
-                    { name: '100% (Low)', value: fib.level_100, pct: '100%' }
-                ];
-                
-                levels.forEach(level => {
-                    const isNear = Math.abs(currentPrice - level.value) / currentPrice < 0.02; // Within 2%
-                    const div = document.createElement('div');
-                    div.className = `flex justify-between items-center p-3 rounded ${isNear ? 'bg-purple-900/30 border border-purple-500' : 'bg-[#252a3a]'}`;
-                    div.innerHTML = `
-                        <span class="text-gray-300">${level.name}</span>
-                        <span class="font-mono font-bold ${isNear ? 'text-purple-400' : 'text-white'}">$${level.value}</span>
-                        ${isNear ? '<span class="text-xs text-purple-400">← Current</span>' : ''}
-                    `;
-                    fibDiv.appendChild(div);
-                });
-            }
-
-            // Price Action
-            document.getElementById('priceAction').textContent = analysis.price_action;
-
-            // Technical Analysis
-            const techList = document.getElementById('technicalAnalysis');
-            analysis.technical_analysis.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'flex items-start';
-                li.innerHTML = `<span class="text-purple-400 mr-2">•</span><span>${item}</span>`;
-                techList.appendChild(li);
-            });
-
-            // Key Levels
-            const levelsDiv = document.getElementById('keyLevels');
-            analysis.key_levels.forEach(level => {
-                const div = document.createElement('div');
-                div.className = 'bg-[#252a3a] rounded-lg p-4';
-                div.innerHTML = `
-                    <div class="font-semibold text-purple-400 text-lg mb-2">${level.level}</div>
-                    <div class="text-gray-300 text-sm">${level.note}</div>
-                `;
-                levelsDiv.appendChild(div);
-            });
-
-            // Trading Considerations
-            const tradingList = document.getElementById('tradingConsiderations');
-            analysis.trading_considerations.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'flex items-start';
-                li.innerHTML = `<span class="text-blue-400 mr-2">•</span><span>${item}</span>`;
-                tradingList.appendChild(li);
-            });
-
-            // Risk Assessment
-            const riskList = document.getElementById('riskAssessment');
-            analysis.risk_assessment.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'flex items-start';
-                li.innerHTML = `<span class="text-yellow-400 mr-2">⚠</span><span>${item}</span>`;
-                riskList.appendChild(li);
-            });
-
-            // Show content
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('content').classList.remove('hidden');
-            
-            // Load performance stats and health score
-            loadPerformanceStats(ticker);
-            loadHealthScore(ticker);
         }
 
         // Load Technical Health Score
         async function loadHealthScore(ticker) {
             try {
-                const response = await fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/health-score?ticker=${ticker}`);
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/health-score?ticker=${ticker}`);
                 const data = await response.json();
                 
                 // Update badge in header
@@ -570,8 +552,12 @@
             }
         }
 
-        // Load on page load
-        displayAnalysis();
+        // Check auth and load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                displayAnalysis();
+            }
+        });
 
         // ML Prediction Modal
         async function showMLPrediction() {
@@ -594,7 +580,7 @@
             document.body.appendChild(modal);
             
             try {
-                const response = await fetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ml-strategy?ticker=${ticker}`);
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ml-strategy?ticker=${ticker}`);
                 const data = await response.json();
                 
                 document.getElementById('mlContent').innerHTML = `

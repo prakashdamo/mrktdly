@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test - Marketdly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/auth-helper.js?v=20251203-2"></script>
+</head>
+<body class="bg-slate-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Authentication Test</h1>
+        
+        <div class="space-y-6">
+            <!-- Step 1: Check localStorage -->
+            <div class="bg-slate-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">1. LocalStorage Check</h2>
+                <button onclick="checkLocalStorage()" class="bg-blue-600 px-4 py-2 rounded">Check Tokens</button>
+                <pre id="localStorageResult" class="mt-4 text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+
+            <!-- Step 2: Test getSession -->
+            <div class="bg-slate-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">2. Get Session Test</h2>
+                <button onclick="testGetSession()" class="bg-blue-600 px-4 py-2 rounded">Test getSession()</button>
+                <pre id="sessionResult" class="mt-4 text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+
+            <!-- Step 3: Test API Call -->
+            <div class="bg-slate-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">3. API Call Test</h2>
+                <button onclick="testApiCall()" class="bg-green-600 px-4 py-2 rounded">Test Market Insights API</button>
+                <pre id="apiResult" class="mt-4 text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+
+            <!-- Step 4: Test Health Score -->
+            <div class="bg-slate-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">4. Health Score Test</h2>
+                <input type="text" id="tickerInput" placeholder="Enter ticker (e.g., AAPL)" class="bg-slate-700 px-4 py-2 rounded mr-2">
+                <button onclick="testHealthScore()" class="bg-green-600 px-4 py-2 rounded">Test Health Score API</button>
+                <pre id="healthResult" class="mt-4 text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorageResult');
+            const keys = Object.keys(localStorage).filter(k => k.includes('Cognito'));
+            
+            if (keys.length === 0) {
+                result.textContent = '❌ No Cognito tokens found in localStorage\n\nPlease log in first at /index.html';
+                return;
+            }
+            
+            const data = {};
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                data[key] = value.length > 100 ? value.substring(0, 100) + '...' : value;
+            });
+            
+            result.textContent = '✅ Found Cognito tokens:\n\n' + JSON.stringify(data, null, 2);
+        }
+
+        function testGetSession() {
+            const result = document.getElementById('sessionResult');
+            try {
+                const session = getSession();
+                if (session && session.idToken) {
+                    result.textContent = '✅ Session retrieved successfully!\n\n' + 
+                        'idToken: ' + session.idToken.substring(0, 50) + '...\n' +
+                        'Token length: ' + session.idToken.length;
+                } else {
+                    result.textContent = '❌ No session found\n\nPlease log in first at /index.html\n\nCheck console for debug info';
+                }
+            } catch (error) {
+                result.textContent = '❌ Error: ' + error.message + '\n\nStack: ' + error.stack;
+            }
+        }
+
+        async function testApiCall() {
+            const result = document.getElementById('apiResult');
+            result.textContent = '⏳ Testing API call...';
+            
+            try {
+                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/market-insights');
+                const data = await response.json();
+                result.textContent = '✅ API call successful!\n\n' + JSON.stringify(data, null, 2).substring(0, 500) + '...';
+            } catch (error) {
+                result.textContent = '❌ API call failed:\n\n' + error.message + '\n\nCheck browser console for details';
+            }
+        }
+
+        async function testHealthScore() {
+            const result = document.getElementById('healthResult');
+            const ticker = document.getElementById('tickerInput').value.toUpperCase() || 'AAPL';
+            result.textContent = `⏳ Testing health score for ${ticker}...`;
+            
+            try {
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/health-score?ticker=${ticker}`);
+                const data = await response.json();
+                result.textContent = '✅ Health score API successful!\n\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = '❌ Health score API failed:\n\n' + error.message + '\n\nCheck browser console for details';
+            }
+        }
+
+        // Auto-run localStorage check on load
+        window.onload = () => {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

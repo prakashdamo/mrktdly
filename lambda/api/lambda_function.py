@@ -66,7 +66,7 @@ def lambda_handler(event, context):
     print(f"Path: {path}, Method: {method}")
     
     headers = {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://marketdly.com',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET,OPTIONS',
         'Content-Type': 'application/json'
@@ -105,6 +105,10 @@ def lambda_handler(event, context):
             today = params.get('date', datetime.now(timezone.utc).strftime('%Y-%m-%d'))
             pattern = params.get('pattern', 'all')
             min_rr = float(params.get('min_rr', 0))
+            user_id = params.get('user_id', 'anonymous')
+            
+            # Check subscription tier
+            tier = get_subscription_tier(user_id)
             
             # Check cache first (24 hour TTL)
             cache_key = f"trade-opportunities-{today}-{pattern}-{min_rr}"
@@ -194,9 +198,18 @@ def lambda_handler(event, context):
             # Sort by risk/reward descending
             combined_signals.sort(key=lambda x: float(x.get('risk_reward', 0)), reverse=True)
             
+            # Limit signals based on tier
+            if tier == 'free':
+                combined_signals = combined_signals[:3]
+            elif tier == 'basic':
+                combined_signals = combined_signals[:10]
+            # Pro tier gets unlimited signals
+            
             result = {
                 'date': today,
                 'count': len(combined_signals),
+                'total_available': len(combined_signals) if tier == 'pro' else 'upgrade_required',
+                'tier': tier,
                 'signals': combined_signals
             }
             
@@ -254,3 +267,15 @@ def lambda_handler(event, context):
             'headers': headers,
             'body': json.dumps({'error': str(e)})
         }
+
+def get_subscription_tier(user_id):
+    """Get user's subscription tier"""
+    try:
+        subscriptions_table = dynamodb.Table('mrktdly-subscriptions')
+        response = subscriptions_table.get_item(Key={'email': user_id})
+        if 'Item' in response and response['Item'].get('status') == 'active':
+            return response['Item'].get('tier', 'free')
+        return 'free'
+    except Exception as e:
+        print(f'Error getting subscription: {e}')
+        return 'free'

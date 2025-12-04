@@ -22,29 +22,7 @@
     </style>
 </head>
 <body class="bg-slate-900 text-white antialiased">
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
-        <div class="container mx-auto px-6 py-4 max-w-7xl">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-6">
-                    <a href="/index.html" class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center font-bold text-lg">
-                            DMS
-                        </div>
-                        <span class="text-xl font-bold">Daily Market Summary</span>
-                    </a>
-                    <div class="flex gap-4">
-                        <a href="/index.html" class="text-gray-400 hover:text-white transition">Home</a>
-                        <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">Portfolio</a>
-                        <a href="/swing-scanner.html" class="text-white font-medium">Swing Scanner</a>
-                    </div>
-                </div>
-                <div id="navUserInfo">
-                    <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="appNav" data-active="swing-scanner"></div>
 
     <div class="container mx-auto px-6 py-12 max-w-7xl">
         <!-- Header -->
@@ -171,9 +149,12 @@
             document.getElementById('emptyState').classList.add('hidden');
 
             try {
+                const userId = localStorage.getItem('user_id') || 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
+                localStorage.setItem('user_id', userId);
+                
                 // Try today first, if no signals, try yesterday
-                let response = await fetch(
-                    `${API_BASE}/swing-signals?pattern=${pattern}&min_rr=${minRR}`
+                let response = await authenticatedFetch(
+                    `${API_BASE}/swing-signals?pattern=${pattern}&min_rr=${minRR}&user_id=${userId}`
                 );
 
                 if (!response.ok) {
@@ -188,8 +169,8 @@
                     yesterday.setDate(yesterday.getDate() - 1);
                     const yesterdayStr = yesterday.toISOString().split('T')[0];
                     
-                    response = await fetch(
-                        `${API_BASE}/swing-signals?date=${yesterdayStr}&pattern=${pattern}&min_rr=${minRR}`
+                    response = await authenticatedFetch(
+                        `${API_BASE}/swing-signals?date=${yesterdayStr}&pattern=${pattern}&min_rr=${minRR}&user_id=${userId}`
                     );
                     data = await response.json();
                 }
@@ -213,6 +194,24 @@
             document.getElementById('resultsContainer').classList.remove('hidden');
             document.getElementById('signalCount').textContent = data.count;
             document.getElementById('scanDate').textContent = `As of ${data.date}`;
+            
+            // Show upgrade banner for free users
+            if (data.tier === 'free' && data.total_available === 'upgrade_required') {
+                const banner = document.createElement('div');
+                banner.className = 'bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-500 rounded-lg p-4 mb-6';
+                banner.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white font-bold">🔒 Showing 3 of ${data.count}+ signals</p>
+                            <p class="text-gray-300 text-sm">Upgrade to Pro for full access to all trade signals</p>
+                        </div>
+                        <a href="/pricing.html" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition whitespace-nowrap">
+                            Upgrade Now
+                        </a>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').prepend(banner);
+            }
 
             const tbody = document.getElementById('signalsTable');
             tbody.innerHTML = data.signals.map(signal => {

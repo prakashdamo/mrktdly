@@ -8,8 +8,8 @@ features_table = dynamodb.Table('mrktdly-features')
 
 def lambda_handler(event, context):
     headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Origin': 'https://marketdly.com',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
         'Access-Control-Allow-Methods': 'GET,OPTIONS',
         'Content-Type': 'application/json'
     }

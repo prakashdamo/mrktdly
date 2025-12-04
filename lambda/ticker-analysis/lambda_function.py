@@ -10,6 +10,8 @@ dynamodb = boto3.resource('dynamodb')
 cache_table = dynamodb.Table('mrktdly-ticker-cache')
 price_history_table = dynamodb.Table('mrktdly-price-history')
 projections_table = dynamodb.Table('mrktdly-projections')
+subscriptions_table = dynamodb.Table('mrktdly-subscriptions')
+usage_table = dynamodb.Table('mrktdly-usage')
 
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
@@ -20,10 +22,11 @@ def lambda_handler(event, context):
     """Analyze a single ticker in depth"""
     
     headers = {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://marketdly.com',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST,OPTIONS',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300, s-maxage=900'
     }
     
     if event.get('httpMethod') == 'OPTIONS':
@@ -32,6 +35,7 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event.get('body', '{}'))
         ticker = body.get('ticker', '').upper().strip()
+        user_id = body.get('user_id', 'anonymous')  # From cookie
         
         if not ticker:
             return {
@@ -39,6 +43,25 @@ def lambda_handler(event, context):
                 'headers': headers,
                 'body': json.dumps({'error': 'Ticker symbol required'})
             }
+        
+        # Check subscription and usage limits
+        sub_check = check_subscription(user_id)
+        if not sub_check['allowed']:
+            return {
+                'statusCode': 429,
+                'headers': headers,
+                'body': json.dumps({
+                    'error': 'Daily limit reached',
+                    'message': f'Free tier allows {sub_check["limit"]} ticker analyses per day. Upgrade to Basic for unlimited access.',
+                    'usage': sub_check['usage'],
+                    'limit': sub_check['limit'],
+                    'upgrade_url': '/pricing.html'
+                })
+            }
+        
+        # Increment usage for free tier
+        if sub_check['tier'] == 'free':
+            increment_usage(user_id)
         
         # Check cache first (5 minute TTL)
         cached = get_cached_analysis(ticker)
@@ -183,24 +206,54 @@ def get_projection(ticker):
     return None
 
 def get_comprehensive_analysis(ticker):
-    """Get comprehensive analysis from ticker-analysis-v2 Lambda"""
+    """Get comprehensive analysis combining ML models"""
     try:
-        response = lambda_client.invoke(
-            FunctionName='mrktdly-ticker-analysis-v2',
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'ticker': ticker})
-        )
+        date_key = datetime.now().strftime('%Y-%m-%d')
         
-        result = json.loads(response['Payload'].read())
-        if result.get('statusCode') == 200:
-            body_str = result['body']
-            if isinstance(body_str, str):
-                return json.loads(body_str)
-            return body_str
+        # Get movement prediction
+        movement = None
+        try:
+            proj_response = projections_table.get_item(Key={'date': date_key, 'ticker': ticker})
+            if 'Item' in proj_response:
+                item = proj_response['Item']
+                movement = {
+                    'probability': float(item.get('probability', 0)),
+                    'likely_to_move': float(item.get('probability', 0)) > 0.6
+                }
+        except Exception as e:
+            print(f'Error getting movement prediction: {e}')
+        
+        # Get state classification
+        state = None
+        try:
+            state_response = lambda_client.invoke(
+                FunctionName='mrktdly-state-classifier',
+                InvocationType='RequestResponse',
+                Payload=json.dumps({'ticker': ticker})
+            )
+            result = json.loads(state_response['Payload'].read())
+            if result.get('statusCode') == 200:
+                body = json.loads(result['body']) if isinstance(result['body'], str) else result['body']
+                state = {
+                    'state': body.get('state_name', 'Unknown'),
+                    'action': body.get('action', 'UNKNOWN'),
+                    'confidence': body.get('confidence', 0)
+                }
+        except Exception as e:
+            print(f'Error getting state: {e}')
+        
+        # Format insights
+        insights = []
+        if movement and movement['likely_to_move']:
+            insights.append(f"ML Model: {movement['probability']*100:.0f}% probability of 3%+ move in 5 days")
+        if state:
+            insights.append(f"Market State: {state['state']} - {state['action']} signal ({state['confidence']*100:.0f}% confidence)")
+        
+        return '\n'.join(insights) if insights else ''
+        
     except Exception as e:
-        print(f'Error getting comprehensive analysis: {e}')
-    
-    return None
+        print(f'Error in comprehensive analysis: {e}')
+        return ''
 
 def fetch_ticker_data(symbol):
     """Fetch comprehensive data for a single ticker from DynamoDB"""
@@ -371,12 +424,15 @@ def generate_ticker_analysis(ticker, data, comprehensive=None):
     
     # Add comprehensive model data to prompt if available
     model_insights = ""
-    if comprehensive and isinstance(comprehensive, dict):
-        state = comprehensive.get('market_state', {}) or {}
-        levels = comprehensive.get('price_levels', {}) or {}
-        rec = comprehensive.get('recommendation', {}) or {}
-        
-        model_insights = f"""
+    if comprehensive:
+        if isinstance(comprehensive, str) and comprehensive:
+            model_insights = f"\n\nML MODEL INSIGHTS:\n{comprehensive}\n"
+        elif isinstance(comprehensive, dict):
+            state = comprehensive.get('market_state', {}) or {}
+            levels = comprehensive.get('price_levels', {}) or {}
+            rec = comprehensive.get('recommendation', {}) or {}
+            
+            model_insights = f"""
 
 ML MODEL ANALYSIS:
 - Market State: {state.get('state', 'Unknown')} ({state.get('confidence', 0)*100:.0f}% confidence)
@@ -506,3 +562,36 @@ Return ONLY valid JSON: {{"price_action": "", "technical_analysis": [], "key_lev
             'trading_considerations': ['Monitor price action at key levels', 'Watch volume for confirmation'],
             'risk_assessment': ['Market volatility', 'Technical levels may not hold']
         }
+
+def check_subscription(user_id):
+    """Check subscription tier and usage"""
+    try:
+        response = subscriptions_table.get_item(Key={'email': user_id})
+        tier = 'free'
+        if 'Item' in response and response['Item'].get('status') == 'active':
+            tier = response['Item'].get('tier', 'free')
+        
+        if tier == 'free':
+            today = datetime.now().strftime('%Y-%m-%d')
+            usage_response = usage_table.get_item(Key={'user_id': user_id, 'date': today})
+            usage = int(usage_response['Item'].get('count', 0)) if 'Item' in usage_response else 0
+            limit = 3
+            return {'tier': tier, 'usage': usage, 'limit': limit, 'allowed': usage < limit}
+        
+        return {'tier': tier, 'allowed': True}
+    except Exception as e:
+        print(f'Error checking subscription: {e}')
+        return {'tier': 'free', 'usage': 0, 'limit': 3, 'allowed': True}
+
+def increment_usage(user_id):
+    """Increment usage count"""
+    try:
+        today = datetime.now().strftime('%Y-%m-%d')
+        usage_table.update_item(
+            Key={'user_id': user_id, 'date': today},
+            UpdateExpression='SET #count = if_not_exists(#count, :zero) + :inc',
+            ExpressionAttributeNames={'#count': 'count'},
+            ExpressionAttributeValues={':zero': 0, ':inc': 1}
+        )
+    except Exception as e:
+        print(f'Error incrementing usage: {e}')

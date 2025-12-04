@@ -14,7 +14,7 @@ features_table = dynamodb.Table('mrktdly-features')
 cache_table = dynamodb.Table('mrktdly-cache')
 
 CACHE_KEY = 'market-insights'
-CACHE_TTL = 3600  # 1 hour
+CACHE_TTL = 21600  # 6 hours
 
 # Sector mapping
 SECTORS = {

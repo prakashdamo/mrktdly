@@ -11,25 +11,31 @@
     </style>
 </head>
 <body class="bg-slate-900 text-white antialiased">
-    <!-- Navigation -->
-    <nav class="bg-slate-800/50 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-sm">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <a href="/" class="text-xl font-bold">📊 MarketDly</a>
-                <div class="flex items-center gap-4">
-                    <a href="/challenge.html" class="text-gray-400 hover:text-white transition">🏆 Challenge</a>
-                    <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
-                    <span id="userEmail" class="text-sm text-gray-400"></span>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="appNav" data-active="portfolio"></div>
 
     <div class="container mx-auto px-6 py-8 max-w-7xl">
         <!-- Header -->
         <div class="text-center mb-12">
             <h1 class="text-4xl font-bold mb-4">💼 My Portfolios</h1>
             <p class="text-gray-400 text-lg">Manage your portfolios and submit to the challenge</p>
+        </div>
+
+        <!-- Upgrade Banner (for free users) -->
+        <div id="upgradeBanner" class="hidden mb-8 bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-2 border-blue-500 rounded-xl p-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold mb-2">🚀 Unlock Full Trading Intelligence</h3>
+                    <p class="text-gray-300">Upgrade to Pro for unlimited ticker analyses, all trade signals, and 2x daily alerts</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="/pricing.html" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-bold transition whitespace-nowrap">
+                        Upgrade to Pro
+                    </a>
+                    <button onclick="document.getElementById('upgradeBanner').style.display='none'" class="px-4 py-3 text-gray-400 hover:text-white transition">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- My Portfolios -->
@@ -183,7 +189,7 @@
                 msg.className = 'mb-4 text-sm text-gray-400';
                 msg.textContent = 'Creating portfolio...';
 
-                const response = await fetch(`${API_URL}/portfolio`, {
+                const response = await authenticatedFetch(`${API_URL}/portfolio`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({user_email: userEmail, portfolio_name: name, holdings, is_public: isPublic})
@@ -210,7 +216,7 @@
 
         async function loadMyPortfolios() {
             try {
-                const response = await fetch(`${API_URL}/portfolio?user_email=${encodeURIComponent(userEmail)}`);
+                const response = await authenticatedFetch(`${API_URL}/portfolio?user_email=${encodeURIComponent(userEmail)}`);
                 const data = await response.json();
 
                 const container = document.getElementById('myPortfolios');
@@ -263,7 +269,7 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/portfolio`, {
+                const response = await authenticatedFetch(`${API_URL}/portfolio`, {
                     method: 'DELETE',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({portfolio_id: portfolioId, user_email: userEmail})
@@ -284,7 +290,7 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/submit-challenge`, {
+                const response = await authenticatedFetch(`${API_URL}/submit-challenge`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({portfolio_id: portfolioId, user_email: userEmail})
@@ -308,3 +314,28 @@
     </script>
 </body>
 </html>
+
+    <script>
+        // Show upgrade banner for free users
+        async function checkTierAndShowBanner() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
+            
+            try {
+                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/subscription-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userEmail, action: 'check' })
+                });
+                const data = await response.json();
+                
+                if (data.tier === 'free') {
+                    document.getElementById('upgradeBanner').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking tier:', error);
+            }
+        }
+        
+        checkTierAndShowBanner();
+    </script>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ticker API</title>
+    <script src="/js/auth-helper.js?v=20251203-3"></script>
+</head>
+<body style="background: #0a0f19; color: white; padding: 20px; font-family: monospace;">
+    <h1>Ticker API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPIs() {
+            const results = document.getElementById('results');
+            const ticker = 'AAPL';
+            
+            results.innerHTML += '<h2>Testing authentication...</h2>';
+            const session = getSession();
+            if (!session) {
+                results.innerHTML += '<p style="color:red">❌ No session found</p>';
+                return;
+            }
+            results.innerHTML += '<p style="color:green">✅ Session found</p>';
+            results.innerHTML += `<p>Token: ${session.idToken.substring(0, 50)}...</p>`;
+            
+            // Test health-score
+            results.innerHTML += '<h2>Testing health-score...</h2>';
+            try {
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/health-score?ticker=${ticker}`);
+                const data = await response.json();
+                results.innerHTML += `<p style="color:green">✅ Health Score: ${data.score}</p>`;
+            } catch (error) {
+                results.innerHTML += `<p style="color:red">❌ Error: ${error.message}</p>`;
+                console.error('health-score error:', error);
+            }
+            
+            // Test signal-stats
+            results.innerHTML += '<h2>Testing signal-stats...</h2>';
+            try {
+                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?ticker=${ticker}&days=30`);
+                const data = await response.json();
+                results.innerHTML += `<p style="color:green">✅ Win Rate: ${data.win_rate}%</p>`;
+                results.innerHTML += `<p>Total signals: ${data.total_signals}</p>`;
+            } catch (error) {
+                results.innerHTML += `<p style="color:red">❌ Error: ${error.message}</p>`;
+                console.error('signal-stats error:', error);
+            }
+            
+            // Test ml-strategy with detailed logging
+            results.innerHTML += '<h2>Testing ml-strategy...</h2>';
+            try {
+                const url = `https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ml-strategy?ticker=${ticker}`;
+                results.innerHTML += `<p>URL: ${url}</p>`;
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.idToken}`
+                };
+                results.innerHTML += `<p>Headers: Authorization Bearer ${session.idToken.substring(0, 30)}...</p>`;
+                
+                const response = await fetch(url, { headers });
+                results.innerHTML += `<p>Response status: ${response.status}</p>`;
+                results.innerHTML += `<p>Response headers: ${JSON.stringify([...response.headers.entries()])}</p>`;
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    results.innerHTML += `<p style="color:red">❌ Response body: ${errorText}</p>`;
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                results.innerHTML += `<p style="color:green">✅ Target: ${data.strategy.target}%</p>`;
+                results.innerHTML += `<p>Full response: ${JSON.stringify(data, null, 2)}</p>`;
+            } catch (error) {
+                results.innerHTML += `<p style="color:red">❌ Error: ${error.message}</p>`;
+                results.innerHTML += `<p>Stack: ${error.stack}</p>`;
+                console.error('ml-strategy error:', error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                testAPIs();
+            }
+        });
+    </script>
+</body>
+</html>

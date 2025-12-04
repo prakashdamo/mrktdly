@@ -68,7 +68,14 @@ def lambda_handler(event, context):
         'timestamp': datetime.now(timezone.utc).isoformat()
     })
     
-    return {'statusCode': 200, 'body': json.dumps('Analysis generated')}
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Cache-Control': 'public, max-age=600, s-maxage=1800',
+            'Content-Type': 'application/json'
+        },
+        'body': json.dumps('Analysis generated')
+    }
 
 def generate_analysis(market_data, unusual_activity):
     """Use Bedrock to create educational market analysis"""

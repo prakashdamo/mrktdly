@@ -110,8 +110,8 @@ def calculate_stats(signals, ticker):
     technical_win_rate = (len(technical_wins) / len(technical_signals) * 100) if technical_signals else 0
     ai_win_rate = (len(ai_wins) / len(ai_signals) * 100) if ai_signals else 0
     
-    # Get recent signals (last 10)
-    recent = sorted(signals, key=lambda x: x.get('date', x.get('signal_date', '')), reverse=True)[:10]
+    # Get recent signals (last 200)
+    recent = sorted(signals, key=lambda x: x.get('date', x.get('signal_date', '')), reverse=True)[:200]
     recent_signals = []
     for s in recent:
         try:

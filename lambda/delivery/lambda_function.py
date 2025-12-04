@@ -10,6 +10,7 @@ table = dynamodb.Table('mrktdly-data')
 waitlist_table = dynamodb.Table('mrktdly-waitlist')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
 predictions_table = dynamodb.Table('mrktdly-predictions')
+subscriptions_table = dynamodb.Table('mrktdly-subscriptions')
 
 def lambda_handler(event, context):
     """Delivers daily analysis via email"""
@@ -99,12 +100,33 @@ def lambda_handler(event, context):
     except Exception as e:
         print(f"Error fetching predictions: {e}")
     
-    # Send emails
+    # Send emails based on subscription tier
+    current_hour = datetime.now(timezone.utc).hour
+    is_morning = current_hour < 18  # Before 6pm UTC (1pm EST)
+    
     sent_count = 0
     for email in emails:
         try:
-            send_email(email, analysis, swing_signals, ml_predictions, date_key)
-            sent_count += 1
+            tier = get_subscription_tier(email)
+            
+            # Basic users: only evening email with 10 signals
+            # Pro users: configurable emails (both morning and evening) with all signals
+            # Free users: no signals
+            if tier == 'basic':
+                if not is_morning:  # Evening only
+                    # Limit to 10 signals for basic tier
+                    limited_swing = swing_signals[:10] if len(swing_signals) > 10 else swing_signals
+                    limited_ml = ml_predictions[:10] if len(ml_predictions) > 10 else ml_predictions
+                    send_email(email, analysis, limited_swing, limited_ml, date_key)
+                    sent_count += 1
+                else:
+                    print(f'Skipping morning email for basic user: {email}')
+            elif tier == 'pro':
+                send_email(email, analysis, swing_signals, ml_predictions, date_key)
+                sent_count += 1
+            else:
+                send_email(email, analysis, [], [], date_key)  # No signals for free
+                sent_count += 1
         except Exception as e:
             print(f'Failed to send to {email}: {e}')
     
@@ -325,7 +347,7 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
                     {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🔥 Unusual Activity</h2>' + unusual_html + '</td></tr>' if unusual_html else ''}
                     
                     <!-- Trade Opportunities (Combined) -->
-                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical patterns and AI predictions with defined entry, stop loss, and target levels.</p>' + signals_html + '</td></tr>' if signals_html else ''}
+                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical patterns and AI predictions with defined entry, stop loss, and target levels.</p>' + signals_html + '</td></tr>' if signals_html else '<tr><td style="padding: 20px 40px;"><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; text-align: center;"><h2 style="color: #ffffff; font-size: 24px; margin: 0 0 15px;">🔒 Unlock Trade Signals</h2><p style="color: #e0e0e0; font-size: 16px; margin: 0 0 20px;">Upgrade to Pro to receive daily trade opportunities with entry, stop loss, and target levels.</p><a href="https://marketdly.com/pricing.html" style="display: inline-block; background: #ffffff; color: #667eea; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">View Pricing →</a></div></td></tr>'}
                     
                     <!-- Disclaimer -->
                     <tr>
@@ -362,3 +384,14 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
             'Body': {'Html': {'Data': html_body}}
         }
     )
+
+def get_subscription_tier(email):
+    """Get user's subscription tier"""
+    try:
+        response = subscriptions_table.get_item(Key={'email': email})
+        if 'Item' in response and response['Item'].get('status') == 'active':
+            return response['Item'].get('tier', 'free')
+        return 'free'
+    except Exception as e:
+        print(f'Error getting subscription for {email}: {e}')
+        return 'free'
