@@ -271,10 +271,15 @@ def lambda_handler(event, context):
 def get_subscription_tier(user_id):
     """Get user's subscription tier"""
     try:
+        print(f'Checking subscription for user_id: {user_id}')
         subscriptions_table = dynamodb.Table('mrktdly-subscriptions')
         response = subscriptions_table.get_item(Key={'email': user_id})
+        print(f'DynamoDB response: {response}')
         if 'Item' in response and response['Item'].get('status') == 'active':
-            return response['Item'].get('tier', 'free')
+            tier = response['Item'].get('tier', 'free')
+            print(f'Found tier: {tier}')
+            return tier
+        print('No active subscription found, returning free')
         return 'free'
     except Exception as e:
         print(f'Error getting subscription: {e}')

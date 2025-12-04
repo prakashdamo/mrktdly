@@ -154,21 +154,33 @@
                 // Get user email from Cognito if logged in
                 let userId = 'anonymous';
                 if (currentUser) {
-                    const username = currentUser.getUsername();
-                    const emailKey = `CognitoIdentityServiceProvider.3ras51lrq716j8mij5887uug17.${username}.email`;
-                    userId = localStorage.getItem(emailKey) || username;
+                    // Get email from user attributes
+                    await new Promise((resolve) => {
+                        currentUser.getUserAttributes((err, attributes) => {
+                            if (!err && attributes) {
+                                const emailAttr = attributes.find(attr => attr.Name === 'email');
+                                if (emailAttr) {
+                                    userId = emailAttr.Value;
+                                }
+                            }
+                            resolve();
+                        });
+                    });
+                    console.log('User ID for API call:', userId);
                 }
                 
                 // Try today first, if no signals, try yesterday
                 let response = await authenticatedFetch(
                     `${API_BASE}/swing-signals?pattern=${pattern}&min_rr=${minRR}&user_id=${userId}`
                 );
+                console.log('API Response status:', response.status);
 
                 if (!response.ok) {
                     throw new Error('Failed to load signals');
                 }
 
                 let data = await response.json();
+                console.log('API Response data:', {tier: data.tier, count: data.count, total_available: data.total_available});
                 
                 // If no signals today, try yesterday
                 if (data.count === 0) {
