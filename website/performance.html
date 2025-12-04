@@ -123,7 +123,11 @@
                 
                 if (!userEmail) return 'free';
                 
-                const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/subscription-check?user_id=${userEmail}`);
+                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/subscription-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userEmail, action: 'check' })
+                });
                 const data = await response.json();
                 return data.tier || 'free';
             } catch (error) {
