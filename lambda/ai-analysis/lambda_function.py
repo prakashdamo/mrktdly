@@ -2,6 +2,7 @@ import json
 import boto3
 from datetime import datetime, timedelta
 from decimal import Decimal
+from bedrock_limiter import check_and_increment, BedrockLimitExceeded
 
 bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb')
@@ -22,6 +23,12 @@ def lambda_handler(event, context):
         cached = get_from_cache(cache_key)
         if cached:
             return response(200, {'analysis': cached, 'cached': True})
+        
+        # Check Bedrock rate limit
+        try:
+            check_and_increment()
+        except BedrockLimitExceeded as e:
+            return response(429, {'error': str(e)})
         
         # Call Bedrock Claude
         payload = {

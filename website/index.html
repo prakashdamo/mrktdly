@@ -74,8 +74,8 @@
     <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
         <div class="container mx-auto px-6 py-4 max-w-7xl">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center relative overflow-hidden group">
+                <a href="/dashboard.html" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center relative overflow-hidden">
                         <svg class="w-6 h-6 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                         </svg>
@@ -85,7 +85,7 @@
                         <div class="text-xl font-bold">MarketDly</div>
                         <div class="text-xs text-gray-400">Quantitative Trading Intelligence</div>
                     </div>
-                </div>
+                </a>
                 <div id="navAuth" class="flex items-center gap-3">
                     <a href="/blog.html" class="px-3 py-2 text-gray-300 hover:text-white font-medium transition">Blog</a>
                     <a href="/pricing.html" class="px-3 py-2 text-gray-300 hover:text-white font-medium transition">Pricing</a>
@@ -94,10 +94,11 @@
                 </div>
                 <div id="navUserInfo" class="hidden">
                     <div class="flex items-center gap-3">
+                        <a href="/dashboard.html" class="text-gray-400 hover:text-white transition">Dashboard</a>
                         <a href="/market-insights.html" class="text-gray-400 hover:text-white transition">Market Intelligence</a>
-                        <a href="/performance.html" class="text-gray-400 hover:text-white transition">Performance</a>
                         <a href="/portfolio.html" class="text-gray-400 hover:text-white transition">Portfolio</a>
-                        <a href="/swing-scanner.html" class="text-gray-400 hover:text-white transition">Scanner</a>
+                        <a href="/swing-scanner.html" class="text-gray-400 hover:text-white transition">Swing Scanner</a>
+                        <a href="/performance.html" class="text-gray-400 hover:text-white transition">Performance</a>
                         <span class="text-gray-400">👋 <span id="navUserEmail" class="text-white font-medium"></span></span>
                         <button id="navLogoutBtn" class="px-4 py-2 text-gray-400 hover:text-white transition">Logout</button>
                     </div>

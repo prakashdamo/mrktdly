@@ -3,6 +3,7 @@ import os
 import boto3
 from datetime import datetime, timezone
 from decimal import Decimal
+from bedrock_limiter import check_and_increment, BedrockLimitExceeded
 
 dynamodb = boto3.resource('dynamodb')
 bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
@@ -79,6 +80,14 @@ def lambda_handler(event, context):
 
 def generate_analysis(market_data, unusual_activity):
     """Use Bedrock to create educational market analysis"""
+    
+    # Check Bedrock rate limit
+    try:
+        check_and_increment()
+    except BedrockLimitExceeded as e:
+        print(f'Bedrock limit exceeded: {e}')
+        # Fall through to fallback analysis
+        raise Exception('Rate limit exceeded')
     
     # Format unusual activity for Claude
     unusual_summary = "\n".join([
