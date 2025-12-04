@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         if sub_check['tier'] == 'free':
             increment_usage(user_id)
         
-        # Check cache first (5 minute TTL)
+        # Check cache first (12 hour TTL)
         cached = get_cached_analysis(ticker)
         if cached:
             print(f'Cache hit for {ticker}')
@@ -137,13 +137,13 @@ def lambda_handler(event, context):
         }
 
 def get_cached_analysis(ticker):
-    """Get cached analysis if less than 2 hours old"""
+    """Get cached analysis if less than 12 hours old"""
     try:
         response = cache_table.get_item(Key={'ticker': ticker})
         if 'Item' in response:
             item = response['Item']
             cached_time = datetime.fromisoformat(item['timestamp'])
-            if datetime.utcnow() - cached_time < timedelta(hours=2):
+            if datetime.utcnow() - cached_time < timedelta(hours=12):
                 return {
                     'ticker': item['ticker'],
                     'data': item['data'],
@@ -171,7 +171,7 @@ def cache_analysis(ticker, result):
             'data': convert_to_decimal(result['data']),
             'analysis': result['analysis'],  # Already strings
             'timestamp': datetime.utcnow().isoformat(),
-            'ttl': int((datetime.utcnow() + timedelta(hours=2)).timestamp())  # 2 hour cache
+            'ttl': int((datetime.utcnow() + timedelta(hours=12)).timestamp())  # 12 hour cache
         })
     except Exception as e:
         print(f'Cache write error: {e}')
