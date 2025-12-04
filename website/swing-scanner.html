@@ -151,8 +151,13 @@
             document.getElementById('emptyState').classList.add('hidden');
 
             try {
-                const userId = localStorage.getItem('user_id') || 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
-                localStorage.setItem('user_id', userId);
+                // Get user email from Cognito if logged in
+                let userId = 'anonymous';
+                if (currentUser) {
+                    const username = currentUser.getUsername();
+                    const emailKey = `CognitoIdentityServiceProvider.3ras51lrq716j8mij5887uug17.${username}.email`;
+                    userId = localStorage.getItem(emailKey) || username;
+                }
                 
                 // Try today first, if no signals, try yesterday
                 let response = await authenticatedFetch(
