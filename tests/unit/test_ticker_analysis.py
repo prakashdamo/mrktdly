@@ -4,7 +4,7 @@ import os
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../lambda/ticker_analysis'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../lambda/ticker-analysis'))
 import lambda_function
 
 class TestTickerAnalysis(unittest.TestCase):

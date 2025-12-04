@@ -20,9 +20,10 @@ class TestTickerPrecache(unittest.TestCase):
         
         result = lambda_function.lambda_handler({}, {})
         
+        print(f"Result: {result}")
         self.assertEqual(result['statusCode'], 200)
-        # Should invoke Lambda 10 times (one per ticker)
-        self.assertEqual(mock_client.invoke.call_count, 10)
+        # Should invoke Lambda 20 times (one per ticker)
+        self.assertEqual(mock_client.invoke.call_count, 20)
     
     @patch('lambda_function.lambda_client')
     def test_handles_invoke_errors_gracefully(self, mock_client):
