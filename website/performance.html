@@ -88,7 +88,39 @@
     <script>
         async function getUserTier() {
             try {
-                const userEmail = localStorage.getItem('userEmail');
+                let userEmail = localStorage.getItem('userEmail');
+                
+                // If not in localStorage, get from Cognito
+                if (!userEmail) {
+                    const poolData = {
+                        UserPoolId: 'us-east-1_N5yuAGHc3',
+                        ClientId: '3ras51lrq716j8mij5887uug17'
+                    };
+                    const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+                    const currentUser = userPool.getCurrentUser();
+                    
+                    if (currentUser) {
+                        await new Promise((resolve) => {
+                            currentUser.getSession((err, session) => {
+                                if (!err && session.isValid()) {
+                                    currentUser.getUserAttributes((err, attributes) => {
+                                        if (!err && attributes) {
+                                            const emailAttr = attributes.find(attr => attr.Name === 'email');
+                                            if (emailAttr) {
+                                                userEmail = emailAttr.Value;
+                                                localStorage.setItem('userEmail', userEmail);
+                                            }
+                                        }
+                                        resolve();
+                                    });
+                                } else {
+                                    resolve();
+                                }
+                            });
+                        });
+                    }
+                }
+                
                 if (!userEmail) return 'free';
                 
                 const response = await authenticatedFetch(`https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/subscription-check?user_id=${userEmail}`);
