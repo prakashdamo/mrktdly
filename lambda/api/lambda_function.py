@@ -110,8 +110,8 @@ def lambda_handler(event, context):
             # Check subscription tier
             tier = get_subscription_tier(user_id)
             
-            # Check cache first (24 hour TTL)
-            cache_key = f"trade-opportunities-{today}-{pattern}-{min_rr}"
+            # Check cache first (24 hour TTL) - include tier in cache key
+            cache_key = f"trade-opportunities-{today}-{pattern}-{min_rr}-{tier}"
             print(f"Cache key: {cache_key}")
             try:
                 cache_response = cache_table.get_item(Key={'ticker': cache_key})
