@@ -39,8 +39,8 @@ class TestSmokeTests(unittest.TestCase):
         
         with open(ticker_analysis_path, 'r') as f:
             content = f.read()
-            # Check for 2 hour cache
-            self.assertIn('hours=2', content, "Cache should be 2 hours")
+            # Check for 12 hour cache (optimal for cost efficiency)
+            self.assertIn('hours=12', content, "Cache should be 12 hours")
     
     def test_precache_has_10_tickers(self):
         """Verify pre-cache Lambda has exactly 10 tickers"""
