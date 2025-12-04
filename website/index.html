@@ -973,8 +973,19 @@
             msg.textContent = '';
             
             try {
-                const userId = localStorage.getItem('user_id') || 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
-                localStorage.setItem('user_id', userId);
+                // Get user email if logged in, otherwise anonymous
+                let userId = 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
+                if (currentUser) {
+                    await new Promise((resolve) => {
+                        currentUser.getUserAttributes((err, attributes) => {
+                            if (!err && attributes) {
+                                const emailAttr = attributes.find(attr => attr.Name === 'email');
+                                if (emailAttr) userId = emailAttr.Value;
+                            }
+                            resolve();
+                        });
+                    });
+                }
                 
                 const response = await fetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ticker-analysis', {
                     method: 'POST',
@@ -1018,8 +1029,19 @@
             msg.textContent = '';
             
             try {
-                const userId = localStorage.getItem('user_id') || 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
-                localStorage.setItem('user_id', userId);
+                // Get user email if logged in, otherwise anonymous
+                let userId = 'anon_' + Math.random().toString(36).substr(2, 9) + Date.now();
+                if (currentUser) {
+                    await new Promise((resolve) => {
+                        currentUser.getUserAttributes((err, attributes) => {
+                            if (!err && attributes) {
+                                const emailAttr = attributes.find(attr => attr.Name === 'email');
+                                if (emailAttr) userId = emailAttr.Value;
+                            }
+                            resolve();
+                        });
+                    });
+                }
                 
                 const response = await fetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/ticker-analysis', {
                     method: 'POST',
