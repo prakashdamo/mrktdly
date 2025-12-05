@@ -44,12 +44,34 @@ def track_ai_prediction(pred, date):
     try:
         ticker = pred['ticker']
         
-        # Check if already exists
-        existing = swing_signals_table.get_item(Key={'ticker': ticker, 'date': date})
-        if 'Item' in existing:
-            print(f'AI prediction already tracked: {ticker}')
+        # Check if active AI prediction already exists for this ticker
+        response = swing_signals_table.query(
+            KeyConditionExpression=Key('ticker').eq(ticker),
+            FilterExpression='#s = :status AND #src = :source',
+            ExpressionAttributeNames={'#s': 'status', '#src': 'source'},
+            ExpressionAttributeValues={':status': 'active', ':source': 'AI'}
+        )
+        
+        if response['Items']:
+            # Update existing prediction with new confirmation
+            existing = response['Items'][0]
+            conf_dates = existing.get('confirmation_dates', [existing['date']])
+            if date not in conf_dates:
+                conf_dates.append(date)
+                
+            swing_signals_table.update_item(
+                Key={'ticker': ticker, 'date': existing['date']},
+                UpdateExpression='SET signal_count = signal_count + :inc, last_seen = :today, confirmation_dates = :dates',
+                ExpressionAttributeValues={
+                    ':inc': Decimal('1'),
+                    ':today': date,
+                    ':dates': conf_dates
+                }
+            )
+            print(f'Updated AI prediction: {ticker} ({len(conf_dates)} confirmations)')
             return
             
+        # New AI prediction
         price = float(pred.get('price', 0))
         entry = price
         target = price * 1.03  # 3% target
@@ -67,7 +89,10 @@ def track_ai_prediction(pred, date):
             'pattern': 'ai_prediction',
             'risk_reward': Decimal('1.0'),
             'conviction': Decimal(str(float(pred.get('probability', 0)) * 5)),  # Scale to 0-5
-            'detected_at': f"{date}T12:00:00"
+            'detected_at': f"{date}T12:00:00",
+            'signal_count': Decimal('1'),
+            'last_seen': date,
+            'confirmation_dates': [date]
         }
         
         swing_signals_table.put_item(Item=item)

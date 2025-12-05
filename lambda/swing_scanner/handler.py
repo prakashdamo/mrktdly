@@ -8,6 +8,53 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 
+from decimal import Decimal
+
+dynamodb = boto3.resource('dynamodb')
+swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
+cache_table = dynamodb.Table('mrktdly-api-cache')
+
+def check_existing_signal(ticker, pattern):
+    """Check if active signal exists for ticker with same pattern"""
+    try:
+        response = swing_signals_table.query(
+            KeyConditionExpression='ticker = :ticker',
+            FilterExpression='#s = :status AND pattern = :pattern',
+            ExpressionAttributeNames={'#s': 'status'},
+            ExpressionAttributeValues={
+                ':ticker': ticker,
+                ':status': 'active',
+                ':pattern': pattern
+            }
+        )
+        return response['Items'][0] if response['Items'] else None
+    except:
+        return None
+
+def update_signal_repetition(signal, today):
+    """Update existing signal with new confirmation date"""
+    try:
+        ticker = signal['ticker']
+        date = signal['date']
+        
+        # Get current confirmation dates
+        conf_dates = signal.get('confirmation_dates', [signal['date']])
+        if today not in conf_dates:
+            conf_dates.append(today)
+        
+        swing_signals_table.update_item(
+            Key={'ticker': ticker, 'date': date},
+            UpdateExpression='SET signal_count = signal_count + :inc, last_seen = :today, confirmation_dates = :dates',
+            ExpressionAttributeValues={
+                ':inc': Decimal('1'),
+                ':today': today,
+                ':dates': conf_dates
+            }
+        )
+        print(f"Updated {ticker} {signal['pattern']}: {len(conf_dates)} confirmations")
+    except Exception as e:
+        print(f"Error updating signal repetition: {e}")
+
 dynamodb = boto3.resource('dynamodb')
 price_history_table = dynamodb.Table('mrktdly-price-history')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
@@ -38,9 +85,20 @@ def lambda_handler(event, context):
         try:
             signal = scan_ticker(ticker, today)
             if signal:
-                signals_found.append(signal)
-                # Store in DynamoDB
-                swing_signals_table.put_item(Item=signal)
+                # Check if signal already exists (active, same pattern)
+                existing = check_existing_signal(ticker, signal['pattern'])
+                
+                if existing:
+                    # Update existing signal with repetition
+                    update_signal_repetition(existing, today)
+                    signals_found.append(existing)
+                else:
+                    # New signal - add tracking fields
+                    signal['signal_count'] = Decimal('1')
+                    signal['last_seen'] = today
+                    signal['confirmation_dates'] = [today]
+                    swing_signals_table.put_item(Item=signal)
+                    signals_found.append(signal)
         except Exception as e:
             print(f"Error scanning {ticker}: {e}")
     
