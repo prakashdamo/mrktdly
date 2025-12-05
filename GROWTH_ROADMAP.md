@@ -110,6 +110,7 @@
 - [ ] Design simple graphics (Canva templates)
 - [ ] Write 20 tweet templates
 - [ ] Prepare Reddit post templates
+- [ ] Set up daily landing page stats email with funnel metrics (visits, conversions, traffic sources, engagement, lead capture details)
 
 ### Success Metrics
 - 4 blog posts published
