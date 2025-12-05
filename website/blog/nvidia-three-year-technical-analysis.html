@@ -49,162 +49,65 @@
       }
     }
     </script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.7;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-            background: #fafafa;
-        }
-        .header {
-            border-bottom: 3px solid #2c3e50;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2.2em;
-            margin-bottom: 10px;
-        }
-        .meta {
-            color: #7f8c8d;
-            font-size: 0.95em;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 40px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #34495e;
-            margin-top: 30px;
-        }
-        .price-box {
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .price-box strong {
-            color: #2c3e50;
-        }
-        .indicator {
-            background: #fff;
-            padding: 15px;
-            margin: 15px 0;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-        }
-        .bullish {
-            border-left-color: #27ae60;
-        }
-        .bearish {
-            border-left-color: #e74c3c;
-        }
-        .neutral {
-            border-left-color: #95a5a6;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: #fff;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        th {
-            background: #34495e;
-            color: #fff;
-            font-weight: 600;
-        }
-        .disclaimer {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 30px 0;
-            font-size: 0.9em;
-        }
-        .key-level {
-            font-weight: 600;
-            color: #e74c3c;
-        }
-        ul {
-            line-height: 1.8;
-        }
-        .back-link {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #ecf0f1;
-        }
-        .back-link a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/public-nav.js"></script>
 </head>
-<body>
-    <div class="header">
-        <h1>NVIDIA (NVDA): A Three-Year Technical Analysis</h1>
-        <div class="meta">
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div id="publicNav" data-active="blog"></div>
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+<header class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-4">NVIDIA (NVDA): A Three-Year Technical Analysis</h1>
+        <div class="text-xl text-gray-400 flex gap-4 mt-4 text-sm">
             Published: December 3, 2025 | By Uncle D
         </div>
     </div>
 
-    <div class="price-box">
+    <div class="bg-slate-800/50 border border-purple-500/30 rounded-xl p-6 mb-8">
         <strong>Current Price:</strong> $181.46<br>
         <strong>52-Week Range:</strong> $86.62 - $212.19<br>
         <strong>3-Year Range:</strong> $13.88 (Dec 2022) - $212.19 (Oct 2025)<br>
         <strong>3-Year Performance:</strong> +1,207% from lows
     </div>
 
-    <h2>Executive Summary</h2>
+    <h2 class="text-3xl font-bold mb-6">Executive Summary</h2>
     <p>NVIDIA's three-year technical journey represents one of the most extraordinary bull runs in modern market history. From the depths of $13.88 in December 2022—when the crypto winter and recession fears dominated sentiment—the stock has surged 1,207% to reach $212.19 in October 2025. This rally, fueled by the AI revolution and NVIDIA's dominant position in GPU technology, has created one of the largest wealth creation events in technology stocks.</p>
 
     <p>Currently trading at $181.46, NVDA sits 14.5% below its recent highs, in what appears to be a healthy consolidation after an unprecedented run. The stock remains well above its 200-day moving average (+17.6%), though it has slipped below both the 20-day and 50-day averages, suggesting short-term weakness within a longer-term uptrend.</p>
 
-    <div class="chart">
-        <img src="/blog/images/nvda-3year-rally.png" alt="NVIDIA 3-Year Rally Chart">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">NVIDIA's extraordinary 1,207% rally from December 2022 lows to October 2025 peak—the AI boom's biggest winner</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nvda-3year-rally.png" alt="NVIDIA 3-Year Rally Chart" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">NVIDIA's extraordinary 1,207% rally from December 2022 lows to October 2025 peak—the AI boom's biggest winner</p>
     </div>
 
-    <h2>The Three-Year Journey</h2>
+    <h2 class="text-3xl font-bold mb-6">The Three-Year Journey</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nvda-ai-boom-phases.png" alt="NVIDIA AI Boom Phases 2022-2025">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">The four distinct phases of NVIDIA's AI boom journey from crypto winter to market maturity</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nvda-ai-boom-phases.png" alt="NVIDIA AI Boom Phases 2022-2025" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">The four distinct phases of NVIDIA's AI boom journey from crypto winter to market maturity</p>
     </div>
 
-    <h3>Phase 1: The Bottom (Late 2022 - Early 2023)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 1: The Bottom (Late 2022 - Early 2023)</h3>
     <p>December 2022 marked peak pessimism for technology stocks. The Federal Reserve was aggressively raising rates, the crypto market had collapsed, and recession fears were mounting. NVIDIA, heavily exposed to both gaming and data center markets, saw its stock crater to $13.88 on December 28, 2022—a level that would prove to be one of the greatest buying opportunities of the decade.</p>
 
     <p>The technical setup at the lows showed classic capitulation: deeply oversold RSI readings, price trading at multi-year lows, and volume patterns suggesting exhaustion selling. What wasn't visible in the charts was the fundamental shift occurring beneath the surface—the early stages of the AI revolution that would transform NVIDIA from a gaming chip company into the infrastructure provider for artificial intelligence.</p>
 
-    <h3>Phase 2: The AI Awakening (2023)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 2: The AI Awakening (2023)</h3>
     <p>The year 2023 marked a fundamental shift in NVIDIA's narrative. The launch of ChatGPT in late 2022 had sparked an AI arms race, and NVIDIA's GPUs were the picks and shovels of this new gold rush. The stock began a relentless climb that would see it appreciate over 200% during the year.</p>
 
     <p>From a technical perspective, the rally was characterized by consistent higher highs and higher lows, strong volume on advances, and minimal pullbacks. Each earnings report brought blowout numbers and raised guidance, fueling further momentum. By year-end 2023, NVDA had transformed from a beaten-down semiconductor stock into a market darling, with the stock trading above all major moving averages and momentum indicators in overbought territory—yet continuing to climb.</p>
 
-    <h3>Phase 3: The Parabolic Move (2024 - Mid 2025)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 3: The Parabolic Move (2024 - Mid 2025)</h3>
     <p>If 2023 was impressive, 2024 was extraordinary. NVIDIA's stock entered a parabolic phase, driven by insatiable demand for AI infrastructure. Data center revenue exploded, margins expanded, and the company's competitive moat appeared insurmountable. The stock split 10-for-1 in June 2024, making shares more accessible to retail investors and adding fuel to the rally.</p>
 
     <p>The move from roughly $50 (post-split adjusted) in early 2024 to over $200 by October 2025 represented another quadrupling of value. This type of price action—a 1,200%+ gain over three years—is virtually unprecedented for a company of NVIDIA's market capitalization. The technical indicators during this phase showed persistent overbought conditions, yet the stock continued to defy gravity, proving once again that momentum can persist far longer than fundamentals might suggest.</p>
 
-    <h3>Phase 4: Current Consolidation (Late 2025)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 4: Current Consolidation (Late 2025)</h3>
     <p>The October 2025 high of $212.19 marked a potential inflection point. Since then, NVDA has pulled back 14.5% to current levels around $181, entering what appears to be a consolidation phase. This correction has been accompanied by declining volume—down 41% from the three-year average—suggesting a market in wait-and-see mode rather than active distribution.</p>
 
     <p>The technical structure shows a stock that remains in a long-term uptrend (17.6% above the 200-day MA) but is experiencing short-term weakness (below both 20-day and 50-day MAs). This configuration often precedes either a continuation of the uptrend after a healthy digestion of gains or a deeper correction if support levels fail to hold.</p>
 
-    <h2>Support and Resistance Architecture</h2>
+    <h2 class="text-3xl font-bold mb-6">Support and Resistance Architecture</h2>
 
     <table>
         <thead>
@@ -250,14 +153,14 @@
 
     <p>The $172 level represents immediate support and corresponds to the lower Bollinger Band. A break below this level would likely trigger additional selling and could lead to a test of the $154 level (200-day MA). On the upside, NVDA needs to reclaim the $185-187 zone (20/50-day MAs) to signal that the correction has run its course.</p>
 
-    <h2>Current Technical Positioning</h2>
+    <h2 class="text-3xl font-bold mb-6">Current Technical Positioning</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nvda-consolidation.png" alt="NVIDIA 2024-2025 Consolidation">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">NVDA's recent consolidation showing the 14.5% pullback from October 2025 peak</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nvda-consolidation.png" alt="NVIDIA 2024-2025 Consolidation" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">NVDA's recent consolidation showing the 14.5% pullback from October 2025 peak</p>
     </div>
 
-    <h3>Moving Averages</h3>
+    <h3 class="text-2xl font-semibold mb-4">Moving Averages</h3>
     <div class="indicator neutral">
         <strong>20-Day SMA:</strong> $185.22 (Price -2.0%)<br>
         <strong>50-Day SMA:</strong> $186.82 (Price -2.9%)<br>
@@ -268,7 +171,7 @@
 
     <p>The 17.6% premium to the 200-day MA is substantial but not extreme for NVDA, which has historically traded at significant premiums during bull markets. However, it does suggest limited downside protection if sentiment shifts. A move to the 200-day MA would imply a 15% decline from current levels—a scenario that would likely be viewed as a buying opportunity by long-term bulls but could trigger stop-losses for shorter-term traders.</p>
 
-    <h3>Momentum Indicators</h3>
+    <h3 class="text-2xl font-semibold mb-4">Momentum Indicators</h3>
     <div class="indicator bearish">
         <strong>RSI (14):</strong> 44.8 - Approaching oversold territory<br>
         <strong>MACD:</strong> -2.87 (Signal: -2.06) - Bearish, histogram negative
@@ -278,7 +181,7 @@
 
     <p>The MACD presents a more bearish picture, with both the MACD line and signal line in negative territory and the MACD below the signal line. This configuration suggests weakening momentum and is consistent with a stock in correction mode. A bullish crossover—where the MACD line crosses above the signal line—would be an early indication that momentum is stabilizing.</p>
 
-    <h3>Bollinger Bands</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bollinger Bands</h3>
     <div class="indicator neutral">
         <strong>Upper Band:</strong> $198.32<br>
         <strong>Middle Band (20 SMA):</strong> $185.22<br>
@@ -288,7 +191,7 @@
 
     <p>Price is currently in the lower third of the Bollinger Bands, suggesting the stock is relatively cheap compared to its recent 20-day range. The bands have a width of $26.20 (14.2% of the middle band), indicating elevated but not extreme volatility. A move to the lower band ($172) would represent a 5.2% decline and could present a tactical buying opportunity for mean-reversion traders.</p>
 
-    <h3>Volume Analysis</h3>
+    <h3 class="text-2xl font-semibold mb-4">Volume Analysis</h3>
     <div class="indicator bearish">
         <strong>3-Year Average Volume:</strong> 363.8M shares<br>
         <strong>Recent 20-Day Average:</strong> 213.7M shares (-41.3%)
@@ -298,7 +201,7 @@
 
     <p>Low volume during a correction can be interpreted two ways: either as a sign that selling pressure is exhausted (bullish), or as an indication that buyers are absent (bearish). In NVDA's case, the fact that price has held relatively well despite the volume decline suggests the former interpretation may be more accurate. However, any breakout—in either direction—would ideally be accompanied by a surge in volume to confirm the move.</p>
 
-    <h2>The AI Narrative and Technical Reality</h2>
+    <h2 class="text-3xl font-bold mb-6">The AI Narrative and Technical Reality</h2>
 
     <p>NVIDIA's technical journey cannot be separated from its fundamental narrative. The 1,207% rally was not a speculative bubble divorced from reality—it was driven by genuine revenue and earnings growth as the company became the primary beneficiary of the AI infrastructure buildout.</p>
 
@@ -306,29 +209,29 @@
 
     <p>The technical evidence leans toward the former interpretation: price remains above the 200-day MA, the pullback has been orderly rather than panicked, and volume patterns suggest consolidation rather than distribution. However, the market's verdict is not yet final, and the next few weeks of price action will be critical in determining which scenario unfolds.</p>
 
-    <h2>Scenario Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Scenario Analysis</h2>
 
-    <h3>Bullish Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bullish Case</h3>
     <p><strong>Trigger:</strong> Reclaim of $185-187 zone (20/50-day SMAs) on volume > 300M shares</p>
     <p><strong>Confirmation:</strong> Close above $190 for two consecutive days</p>
     <p><strong>Initial Target:</strong> $200 (psychological level, upper Bollinger Band)</p>
     <p><strong>Extended Target:</strong> $212 (October 2025 highs), potentially $230-250 (measured move)</p>
     <p><strong>Probability Assessment:</strong> Moderate. The long-term trend remains bullish, and NVDA has a history of resuming uptrends after consolidations.</p>
 
-    <h3>Bearish Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bearish Case</h3>
     <p><strong>Trigger:</strong> Break below $172 (lower Bollinger Band) on volume > 350M shares</p>
     <p><strong>Confirmation:</strong> Failure to reclaim $172 within 2-3 days</p>
     <p><strong>Initial Target:</strong> $160-165 (gap fill, prior support)</p>
     <p><strong>Extended Target:</strong> $154 (200-day SMA)</p>
     <p><strong>Probability Assessment:</strong> Moderate. The declining volume and proximity to support suggest a breakdown is possible but not imminent.</p>
 
-    <h3>Neutral/Consolidation Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Neutral/Consolidation Case</h3>
     <p><strong>Range:</strong> $172 - $190</p>
     <p><strong>Duration:</strong> Could persist for weeks or months</p>
     <p><strong>Strategy:</strong> Range-bound trading, accumulation on weakness</p>
     <p><strong>Probability Assessment:</strong> High in the near term. The current setup suggests the market is comfortable with NVDA in the $175-185 range.</p>
 
-    <h2>Key Levels to Monitor</h2>
+    <h2 class="text-3xl font-bold mb-6">Key Levels to Monitor</h2>
 
     <p><strong>Critical Support:</strong> $172 (lower Bollinger Band)</p>
     <p><strong>Immediate Support:</strong> $175-180 (recent consolidation lows)</p>
@@ -336,7 +239,7 @@
     <p><strong>Major Resistance:</strong> $200 (psychological level), $212 (October 2025 highs)</p>
     <p><strong>Long-term Support:</strong> $154 (200-day SMA)</p>
 
-    <h2>Technical Observations</h2>
+    <h2 class="text-3xl font-bold mb-6">Technical Observations</h2>
 
     <ul>
         <li><strong>Magnitude of Rally:</strong> The 1,207% gain over three years places NVDA among the best-performing large-cap stocks in history. This type of appreciation typically requires extended consolidation periods to digest gains.</li>
@@ -352,7 +255,7 @@
         <li><strong>Volatility Considerations:</strong> NVDA remains a high-volatility stock, with daily ranges of $5-10 being typical. Position sizing and stop-loss placement should account for this normal volatility.</li>
     </ul>
 
-    <h2>Conclusion</h2>
+    <h2 class="text-3xl font-bold mb-6">Conclusion</h2>
 
     <p>NVIDIA's three-year technical journey from $13.88 to $212.19 represents one of the most impressive bull runs in modern market history. The current consolidation around $181—14.5% below the recent highs—appears to be a healthy digestion of gains rather than the beginning of a significant bear market.</p>
 
@@ -364,12 +267,13 @@
 
     <p>As always, NVIDIA's technical setup must be viewed in the context of its fundamental narrative. The AI revolution that drove the 1,207% rally remains intact, but the stock's valuation and technical extension suggest that near-term returns may be more modest than the extraordinary gains of the past three years. Patience and discipline will likely be rewarded more than aggressive speculation at current levels.</p>
 
-    <div class="disclaimer">
+    <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6 mb-8">
         <strong>Disclaimer:</strong> This analysis is for educational and informational purposes only and should not be construed as financial advice. Technical analysis is one tool among many for evaluating securities and has inherent limitations. Past price patterns do not guarantee future results. NVIDIA is a high-volatility stock with significant event risk related to earnings reports, product cycles, competitive dynamics, and broader semiconductor industry trends. All investments carry risk, including the potential loss of principal. Readers should conduct their own research and consult with qualified financial professionals before making investment decisions.
     </div>
 
-    <div class="back-link">
+    <div class="mt-12 pt-8 border-t border-gray-700">
         <a href="index.html">← Back to Blog</a>
+    </div>
     </div>
 </body>
 </html>

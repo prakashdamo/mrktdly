@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Trading Algorithm: 2-Week Performance Review (The Good, Bad & Ugly)</title>
+    <meta name="description" content="Complete transparency: 68.9% win rate, 74 trades, real results. See what's working, what's not, and what we're improving.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/public-nav.js"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div id="publicNav" data-active="blog"></div>
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-4">
+                Our Trading Algorithm: 2-Week Performance Review
+            </h1>
+            <p class="text-xl text-gray-400">The Good, Bad & Ugly - Complete Transparency</p>
+            <div class="flex gap-4 mt-4 text-sm text-gray-500">
+                <span>📅 December 5, 2024</span>
+                <span>⏱️ 8 min read</span>
+                <span>📊 Data-Driven Analysis</span>
+            </div>
+        </header>
+
+        <!-- Disclaimer -->
+        <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4 mb-8">
+            <p class="text-sm text-yellow-200">
+                <strong>EDUCATIONAL CONTENT:</strong> This is a transparent analysis of our trading algorithm's performance. 
+                Past performance does not guarantee future results. This is not financial advice.
+            </p>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">Executive Summary</h2>
+            <div class="bg-slate-800/50 border border-purple-500/30 rounded-xl p-6">
+                <p class="text-lg text-gray-300 mb-4">
+                    We launched our dual-signal trading algorithm on <strong>November 21, 2024</strong>. 
+                    After 2 weeks and <strong>74 closed trades</strong>, here's what the data shows:
+                </p>
+                <ul class="space-y-2 text-gray-300">
+                    <li>✅ <strong>68.9% win rate</strong> (51 wins, 23 losses)</li>
+                    <li>✅ <strong>+1.33% expectancy</strong> per trade</li>
+                    <li>✅ <strong>Technical patterns outperforming</strong> AI predictions (78.4% vs 59.5%)</li>
+                    <li>⚠️ <strong>Small sample size</strong> - need 200+ trades for statistical confidence</li>
+                    <li>⚠️ <strong>Only tested in bull market</strong> conditions</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Performance Dashboard -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">Performance Dashboard</h2>
+            <img src="/blog/images/performance-dashboard.png" alt="Performance Dashboard" class="w-full rounded-xl shadow-2xl mb-4">
+            <p class="text-sm text-gray-400 text-center">Real-time performance metrics from our DynamoDB tracking system</p>
+        </section>
+
+        <!-- The Good -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-green-400">✅ The Good</h2>
+            
+            <h3 class="text-2xl font-semibold mb-4">1. Strong Win Rate (68.9%)</h3>
+            <p class="text-gray-300 mb-4">
+                Our algorithm is winning more than 2 out of 3 trades. This puts us in the <strong>top 20% of retail trading systems</strong> 
+                and competitive with professional algorithmic traders (typically 55-70% win rate).
+            </p>
+            
+            <h3 class="text-2xl font-semibold mb-4 mt-6">2. Positive Expectancy (+1.33%)</h3>
+            <p class="text-gray-300 mb-4">
+                The math works: <code class="bg-slate-700 px-2 py-1 rounded">(68.9% × 3.19%) + (31.1% × -2.79%) = +1.33%</code>
+            </p>
+            <p class="text-gray-300 mb-4">
+                This means on average, we make <strong>1.33% per trade</strong>. Over 100 trades, that's 133% cumulative return 
+                (assuming equal position sizing and no compounding).
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">3. Technical Patterns Crushing It</h3>
+            <img src="/blog/images/win-rate-by-source.png" alt="Win Rate by Source" class="w-full rounded-xl shadow-2xl mb-4">
+            <p class="text-gray-300 mb-4">
+                Our technical pattern scanner is delivering a <strong>78.4% win rate</strong> (29/37 trades). 
+                Classic chart patterns like consolidation breakouts and MA pullbacks are proving more reliable than our AI ensemble.
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">4. Tight Risk Management Working</h3>
+            <p class="text-gray-300 mb-4">
+                Our 3% stop loss is doing its job: <strong>65.2% of losses hit the stop</strong>, preventing larger drawdowns. 
+                The average loss is only -2.79%, while average wins are +3.19% - a favorable 1.14:1 reward-to-risk ratio.
+            </p>
+        </section>
+
+        <!-- The Bad -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-yellow-400">⚠️ The Bad</h2>
+            
+            <h3 class="text-2xl font-semibold mb-4">1. AI Predictions Underperforming</h3>
+            <p class="text-gray-300 mb-4">
+                Our ensemble ML model (combining 4 algorithms) is only hitting <strong>59.5% win rate</strong> (22/37 trades). 
+                While still profitable, it's significantly behind technical patterns.
+            </p>
+            <p class="text-gray-300 mb-4">
+                <strong>Why?</strong> AI predictions use fixed ±3% targets/stops, while technical patterns use measured moves 
+                based on chart structure. The AI needs dynamic target calculation.
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">2. MA20 Pullback Pattern Failing</h3>
+            <img src="/blog/images/pattern-performance.png" alt="Pattern Performance" class="w-full rounded-xl shadow-2xl mb-4">
+            <p class="text-gray-300 mb-4">
+                The "MA20 Pullback" pattern has a dismal <strong>20% win rate</strong> (1/5 trades). 
+                This classic "buy the dip" strategy isn't working in current market conditions.
+            </p>
+            <p class="text-gray-300 mb-4">
+                <strong>Action:</strong> We're disabling this pattern until we can refine the entry criteria.
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">3. Small Sample Size</h3>
+            <p class="text-gray-300 mb-4">
+                74 trades is not statistically significant. We need <strong>200+ trades</strong> to be 95% confident 
+                these results aren't due to luck. Current results could be within normal variance.
+            </p>
+        </section>
+
+        <!-- The Ugly -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-red-400">❌ The Ugly</h2>
+            
+            <h3 class="text-2xl font-semibold mb-4">1. Return Distribution Shows Asymmetry</h3>
+            <img src="/blog/images/return-distribution.png" alt="Return Distribution" class="w-full rounded-xl shadow-2xl mb-4">
+            <p class="text-gray-300 mb-4">
+                Our wins cluster around +3% (hitting targets), but losses are more spread out. Some trades are getting 
+                stopped out at -3%, while others drift lower before closing. This suggests our stop placement could be optimized.
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">2. No Bear Market Testing</h3>
+            <p class="text-gray-300 mb-4">
+                We launched during a <strong>bull market rally</strong>. We have zero data on how the system performs during:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 mb-4 ml-4">
+                <li>Market corrections (-10%+)</li>
+                <li>Bear markets (-20%+)</li>
+                <li>High volatility (VIX > 30)</li>
+                <li>Choppy, sideways markets</li>
+            </ul>
+            <p class="text-gray-300 mb-4">
+                <strong>Risk:</strong> The system could fail spectacularly when market conditions change.
+            </p>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-6">3. Execution Slippage Not Tracked</h3>
+            <p class="text-gray-300 mb-4">
+                Our returns assume perfect execution at signal prices. In reality, you'd face:
+            </p>
+            <ul class="list-disc list-inside text-gray-300 mb-4 ml-4">
+                <li>Bid-ask spread: ~0.05-0.10%</li>
+                <li>Market impact: ~0.05-0.15% (depending on size)</li>
+                <li>Timing delays: Signals generated after close, executed next day</li>
+            </ul>
+            <p class="text-gray-300 mb-4">
+                Real-world returns could be <strong>0.2-0.4% worse per trade</strong>.
+            </p>
+        </section>
+
+        <!-- Equity Curve -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">Equity Curve</h2>
+            <img src="/blog/images/equity-curve.png" alt="Equity Curve" class="w-full rounded-xl shadow-2xl mb-4">
+            <p class="text-gray-300 mb-4">
+                Cumulative returns show steady growth with manageable drawdowns. The largest drawdown was approximately -8% 
+                (around trade 15-20), which recovered within 5 trades.
+            </p>
+            <p class="text-gray-300 mb-4">
+                <strong>Key observation:</strong> No catastrophic losses. The 3% stop loss is preventing blow-ups.
+            </p>
+        </section>
+
+        <!-- What We're Improving -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">🔧 What We're Improving</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-slate-800/50 border border-blue-500/30 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-blue-400">1. Testing 4% Stop Loss</h3>
+                    <p class="text-gray-300">
+                        Backtest shows 4% stops would have saved 50% of losing trades (55% improvement). 
+                        We're testing this on new signals to see if it improves real-world performance.
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/50 border border-blue-500/30 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-blue-400">2. Dynamic AI Targets</h3>
+                    <p class="text-gray-300">
+                        Instead of fixed ±3%, AI predictions will use support/resistance levels from technical analysis 
+                        to set more realistic targets.
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/50 border border-blue-500/30 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-blue-400">3. RSI Filter Refinement</h3>
+                    <p class="text-gray-300">
+                        Current filter rejects RSI > 60. Analysis shows winning trades average RSI of 47 vs losers at 52. 
+                        We're testing RSI < 55 as a stricter threshold.
+                    </p>
+                </div>
+
+                <div class="bg-slate-800/50 border border-blue-500/30 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-blue-400">4. Confirmation Count Weighting</h3>
+                    <p class="text-gray-300">
+                        Signals that repeat multiple days (3x, 5x confirmed) should get higher position sizing. 
+                        We're building a confidence-weighted allocation system.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transparency Commitment -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">Our Transparency Commitment</h2>
+            <div class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/50 rounded-xl p-6">
+                <p class="text-gray-300 mb-4">
+                    Unlike most trading services that cherry-pick winners or only show backtests, we're tracking 
+                    <strong>every single trade in real-time</strong> in our DynamoDB database.
+                </p>
+                <p class="text-gray-300 mb-4">
+                    You can see our live performance on the <a href="/performance.html" class="text-blue-400 hover:text-blue-300 underline">Performance Page</a>. 
+                    Every win, every loss, every pattern - fully transparent.
+                </p>
+                <p class="text-gray-300">
+                    We'll publish monthly performance reviews like this one, showing what's working and what we're fixing. 
+                    No hype, just data.
+                </p>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6">Conclusion</h2>
+            <p class="text-gray-300 mb-4">
+                After 2 weeks and 74 trades, our algorithm is showing <strong>promising but early results</strong>:
+            </p>
+            <ul class="space-y-2 text-gray-300 mb-6">
+                <li>✅ 68.9% win rate is competitive with professional systems</li>
+                <li>✅ Technical patterns are delivering strong performance</li>
+                <li>✅ Risk management is preventing catastrophic losses</li>
+                <li>⚠️ Need more data to prove long-term viability</li>
+                <li>⚠️ Untested in bear markets or high volatility</li>
+            </ul>
+            <p class="text-gray-300 mb-4">
+                <strong>Grade: B+</strong> - Good start, but too early to declare victory. We're cautiously optimistic 
+                and committed to continuous improvement based on real data.
+            </p>
+            <p class="text-gray-300">
+                Check back next month for the 6-week review with 150+ trades.
+            </p>
+        </section>
+
+        <!-- CTA -->
+        <section class="mb-12">
+            <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-8 text-center">
+                <h3 class="text-2xl font-bold mb-4">Want Daily Signals?</h3>
+                <p class="text-lg mb-6">Get our trading signals delivered to your inbox every morning before market open.</p>
+                <a href="/pricing.html" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
+                    View Pricing →
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-gray-700 pt-8 text-center text-gray-500 text-sm">
+            <p>© 2024 Market Daily. All rights reserved.</p>
+            <p class="mt-2">Data updated: December 5, 2024</p>
+        </footer>
+    </div>
+</body>
+</html>

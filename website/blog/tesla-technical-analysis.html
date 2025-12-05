@@ -49,167 +49,60 @@
       }
     }
     </script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.7;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-            background: #fafafa;
-        }
-        .header {
-            border-bottom: 3px solid: #2c3e50;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2.2em;
-            margin-bottom: 10px;
-        }
-        .meta {
-            color: #7f8c8d;
-            font-size: 0.95em;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 40px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #34495e;
-            margin-top: 30px;
-        }
-        .price-box {
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .price-box strong {
-            color: #2c3e50;
-        }
-        .chart {
-            margin: 30px 0;
-            text-align: center;
-        }
-        .chart img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .indicator {
-            background: #fff;
-            padding: 15px;
-            margin: 15px 0;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-        }
-        .bullish {
-            border-left-color: #27ae60;
-        }
-        .bearish {
-            border-left-color: #e74c3c;
-        }
-        .neutral {
-            border-left-color: #95a5a6;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: #fff;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        th {
-            background: #34495e;
-            color: #fff;
-            font-weight: 600;
-        }
-        .disclaimer {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 30px 0;
-            font-size: 0.9em;
-        }
-        .key-level {
-            font-weight: 600;
-            color: #e74c3c;
-        }
-        ul {
-            line-height: 1.8;
-        }
-        .back-link {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #ecf0f1;
-        }
-        .back-link a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/public-nav.js"></script>
 </head>
-<body>
-    <div class="header">
-        <h1>Tesla (TSLA): A Three-Year Technical Analysis</h1>
-        <div class="meta">
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div id="publicNav" data-active="blog"></div>
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+<header class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-4">Tesla (TSLA): A Three-Year Technical Analysis</h1>
+        <div class="text-xl text-gray-400 flex gap-4 mt-4 text-sm">
             Published: December 3, 2025 | By Uncle D
         </div>
     </div>
 
-    <div class="price-box">
+    <div class="bg-slate-800/50 border border-purple-500/30 rounded-xl p-6 mb-8">
         <strong>Current Price:</strong> $429.24<br>
         <strong>52-Week Range:</strong> $214.25 - $488.54<br>
         <strong>3-Year Range:</strong> $101.81 (Jan 2023) - $488.54 (Dec 2024)<br>
         <strong>3-Year Performance:</strong> +322% from lows
     </div>
 
-    <h2>Executive Summary</h2>
+    <h2 class="text-3xl font-bold mb-6">Executive Summary</h2>
     <p>Tesla's three-year technical journey represents one of the more dramatic recoveries in large-cap technology stocks. From the depths of $101.81 in January 2023—a level that tested the conviction of even long-term bulls—the stock has rallied 380% to reach $488.54 in December 2024. Currently trading at $429, TSLA sits 12.2% below those recent highs but maintains a strong position above all major moving averages, suggesting the longer-term uptrend remains intact despite recent consolidation.</p>
 
-    <div class="chart">
-        <img src="/blog/images/tsla-3year-journey.png" alt="Tesla 3-Year Price Journey">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">Tesla's 380% recovery from January 2023 lows through four distinct phases</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/tsla-3year-journey.png" alt="Tesla 3-Year Price Journey" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">Tesla's 380% recovery from January 2023 lows through four distinct phases</p>
     </div>
 
-    <h2>The Three-Year Journey</h2>
+    <h2 class="text-3xl font-bold mb-6">The Three-Year Journey</h2>
 
-    <h3>Phase 1: The Capitulation (Late 2022 - Early 2023)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 1: The Capitulation (Late 2022 - Early 2023)</h3>
     <p>The period leading into 2023 represented peak pessimism for Tesla. The stock had fallen from over $400 in late 2021 to test the $100 level by January 2023—a decline of approximately 75% from peak to trough. The technical damage was severe: price had broken below all major moving averages, momentum indicators were deeply oversold, and volume patterns suggested capitulation selling.</p>
 
     <p>The $101.81 low on January 6, 2023, would prove to be a generational buying opportunity, though it certainly didn't feel that way at the time. The technical setup showed classic signs of a washed-out market: extremely oversold RSI readings, massive negative divergences on MACD, and price trading at multi-year lows while the company's fundamentals, though challenged, remained largely intact.</p>
 
-    <h3>Phase 2: The Recovery (2023)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 2: The Recovery (2023)</h3>
     <p>The rally from the January 2023 lows was initially met with skepticism. Each advance was viewed as a potential dead-cat bounce, and resistance levels that had previously acted as support became formidable overhead barriers. However, the technical character of the stock was changing: higher lows were being established, volume was confirming advances, and momentum indicators were showing positive divergences.</p>
 
     <p>By mid-2023, TSLA had reclaimed the $200 level and was beginning to establish a new trading range. The stock oscillated between roughly $200 and $280 for much of the year, building a base that would support the next leg higher. This consolidation phase, while frustrating for momentum traders, was technically constructive—it allowed moving averages to catch up to price and gave the stock time to digest the substantial gains from the January lows.</p>
 
-    <h3>Phase 3: The Breakout (2024)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 3: The Breakout (2024)</h3>
     <p>2024 began with TSLA trading around $250, having established a solid foundation above the $200 level. The year would prove to be transformative from a technical perspective. A golden cross in July 2024 at $232 signaled that the 50-day moving average had crossed above the 200-day—a classic bullish indicator that often precedes sustained uptrends.</p>
 
     <p>The rally accelerated in the second half of 2024, with TSLA breaking through resistance levels that had capped advances earlier in the year. The move from $250 to $488.54 represented a 95% gain in roughly six months, driven by improving fundamentals, positive sentiment shifts, and technical momentum that fed on itself as short positions were squeezed and momentum traders piled in.</p>
 
     <p>The December 2024 high of $488.54 came on elevated volume and with momentum indicators showing overbought conditions—classic signs of a potential near-term top. The subsequent pullback to current levels around $429 represents a healthy 12.2% correction that has allowed some of the froth to dissipate without breaking the technical structure.</p>
 
-    <h3>Phase 4: Current Consolidation (Late 2024 - Present)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Phase 4: Current Consolidation (Late 2024 - Present)</h3>
     <p>Since reaching the December highs, TSLA has entered a consolidation phase characterized by lower volume and tighter price ranges. The stock has tested support in the $400 area multiple times, each time finding buyers willing to step in. This price action suggests the market is attempting to establish a new equilibrium level after the substantial rally.</p>
 
     <p>The technical setup currently shows a stock that remains in an uptrend on longer timeframes but is experiencing short-term choppiness. Price sits above the 200-day moving average by 25.7%—a substantial premium that suggests either strong momentum or potential overextension, depending on one's perspective.</p>
 
-    <h2>Support and Resistance Architecture</h2>
+    <h2 class="text-3xl font-bold mb-6">Support and Resistance Architecture</h2>
 
     <p>Three years of price action has established several key levels, though TSLA's volatility means these zones are wider than typical large-cap stocks:</p>
 
@@ -249,14 +142,14 @@
 
     <p>On the upside, the $434 level (50-day SMA) represents immediate resistance. A decisive break above this level would open the door to a retest of the December highs near $480. The upper Bollinger Band currently sits at $460, suggesting that any move toward the highs would be considered extended from a short-term volatility perspective.</p>
 
-    <h2>Moving Average Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Moving Average Analysis</h2>
 
-    <div class="chart">
-        <img src="/blog/images/tsla-moving-averages.png" alt="Tesla Moving Averages and Golden Cross">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">50-day and 200-day moving averages showing the golden cross pattern that signaled the 2024 rally</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/tsla-moving-averages.png" alt="Tesla Moving Averages and Golden Cross" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">50-day and 200-day moving averages showing the golden cross pattern that signaled the 2024 rally</p>
     </div>
 
-    <h3>The Golden Cross Pattern</h3>
+    <h3 class="text-2xl font-semibold mb-4">The Golden Cross Pattern</h3>
     <div class="indicator bullish">
         <strong>Current Status:</strong> Golden Cross (50-day above 200-day)<br>
         <strong>Most Recent Cross:</strong> September 16, 2025 at $421.62<br>
@@ -265,7 +158,7 @@
 
     <p>The frequency of moving average crosses—six in the past two years—reveals a stock that has experienced significant trend changes. This whipsaw action can be costly for trend-following strategies, as each cross generates a signal that may quickly reverse. However, the current golden cross configuration, established in September 2025, has held for nearly three months, suggesting more stability than previous crosses.</p>
 
-    <h3>Current Moving Average Structure</h3>
+    <h3 class="text-2xl font-semibold mb-4">Current Moving Average Structure</h3>
     <div class="indicator bullish">
         <strong>20-Day SMA:</strong> $422.16 (Price +1.7%)<br>
         <strong>50-Day SMA:</strong> $434.02 (Price -1.1%)<br>
@@ -274,9 +167,9 @@
 
     <p>The moving average structure presents an interesting configuration. Price is sandwiched between the 20-day and 50-day moving averages, suggesting short-term consolidation. However, the substantial 25.7% premium to the 200-day moving average indicates strong longer-term momentum. This setup often precedes either a continuation of the uptrend (if the 50-day holds as support) or a deeper correction (if the 50-day is lost and price mean-reverts toward the 200-day).</p>
 
-    <h2>Momentum and Oscillator Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Momentum and Oscillator Analysis</h2>
 
-    <h3>RSI (Relative Strength Index)</h3>
+    <h3 class="text-2xl font-semibold mb-4">RSI (Relative Strength Index)</h3>
     <div class="indicator neutral">
         <strong>Current Reading:</strong> 52.5<br>
         <strong>Interpretation:</strong> Neutral—neither overbought nor oversold
@@ -286,7 +179,7 @@
 
     <p>From a tactical perspective, RSI readings in the 50-55 range often precede the next directional move. A push above 60 would suggest renewed bullish momentum, while a drop below 45 would indicate bears are gaining control.</p>
 
-    <h3>MACD (Moving Average Convergence Divergence)</h3>
+    <h3 class="text-2xl font-semibold mb-4">MACD (Moving Average Convergence Divergence)</h3>
     <div class="indicator bullish">
         <strong>MACD Line:</strong> -1.737<br>
         <strong>Signal Line:</strong> -4.018<br>
@@ -297,14 +190,14 @@
 
     <p>This setup often occurs during the early stages of a new uptrend or during consolidations within an existing uptrend. The fact that the crossover is occurring while both lines are still negative suggests this could be the beginning of a momentum recovery rather than a continuation of already strong momentum.</p>
 
-    <h2>Volatility Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Volatility Analysis</h2>
 
-    <div class="chart">
-        <img src="/blog/images/tsla-bollinger-bands.png" alt="Tesla Bollinger Bands and Volatility">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">Recent price action with Bollinger Bands showing the $400 support and $490 resistance zones</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/tsla-bollinger-bands.png" alt="Tesla Bollinger Bands and Volatility" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">Recent price action with Bollinger Bands showing the $400 support and $490 resistance zones</p>
     </div>
 
-    <h3>Bollinger Bands</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bollinger Bands</h3>
     <div class="indicator neutral">
         <strong>Upper Band:</strong> $459.90<br>
         <strong>Middle Band (20 SMA):</strong> $422.16<br>
@@ -316,7 +209,7 @@
 
     <p>The width of the bands suggests the market expects continued price swings. Traders should be prepared for moves of $15-20 in either direction as normal volatility rather than significant trend changes.</p>
 
-    <h3>Average True Range (ATR)</h3>
+    <h3 class="text-2xl font-semibold mb-4">Average True Range (ATR)</h3>
     <div class="indicator neutral">
         <strong>Current ATR:</strong> $18.74<br>
         <strong>ATR Percentile:</strong> 82nd percentile (high volatility regime)
@@ -326,7 +219,7 @@
 
     <p>High volatility regimes can persist for extended periods and often accompany both strong uptrends and sharp corrections. For position traders, this suggests wider stop-losses are appropriate to avoid being shaken out by normal volatility. For options traders, elevated implied volatility may make premium selling strategies more attractive than premium buying.</p>
 
-    <h2>Volume Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Volume Analysis</h2>
 
     <div class="indicator bearish">
         <strong>3-Year Average Volume:</strong> 111.7M shares<br>
@@ -337,41 +230,41 @@
 
     <p>In TSLA's case, the volume decline is occurring while price remains relatively stable in the $400-440 range. This suggests a market in equilibrium rather than active distribution. However, any breakout—in either direction—would ideally be accompanied by a surge in volume to confirm the move. A breakout on low volume would be suspect and prone to failure.</p>
 
-    <h2>Historical Context and Pattern Recognition</h2>
+    <h2 class="text-3xl font-bold mb-6">Historical Context and Pattern Recognition</h2>
 
-    <h3>The 2023 Recovery Pattern</h3>
+    <h3 class="text-2xl font-semibold mb-4">The 2023 Recovery Pattern</h3>
     <p>The rally from the January 2023 lows of $108 to current levels represents a 297% gain. This type of recovery is rare for a stock of TSLA's market capitalization and suggests either a severe mispricing at the lows or exceptional fundamental improvement—likely some combination of both.</p>
 
     <p>From a technical perspective, the recovery followed a classic bottoming pattern: capitulation selling, a sharp reversal, a retest of the lows (which held), and then a sustained uptrend. The fact that the January 2023 low has not been retested in nearly three years suggests it was a genuine bottom rather than a temporary low.</p>
 
-    <h3>Consolidation Patterns</h3>
+    <h3 class="text-2xl font-semibold mb-4">Consolidation Patterns</h3>
     <p>TSLA has shown a tendency to consolidate gains through time rather than price. The mid-2023 consolidation between $200-280 lasted several months but didn't give back significant gains. The current consolidation appears to be following a similar pattern—sideways movement that allows moving averages to catch up without triggering a significant correction.</p>
 
     <p>This type of consolidation is generally viewed as healthy and constructive, as it suggests the market is digesting gains and building a platform for the next move rather than rejecting higher prices outright.</p>
 
-    <h2>Scenario Analysis</h2>
+    <h2 class="text-3xl font-bold mb-6">Scenario Analysis</h2>
 
-    <h3>Bullish Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bullish Case</h3>
     <p><strong>Trigger:</strong> Break above $434 (50-day SMA) on volume > 100M shares</p>
     <p><strong>Confirmation:</strong> Close above $450 for two consecutive days</p>
     <p><strong>Initial Target:</strong> $488 (December 2024 highs)</p>
     <p><strong>Extended Target:</strong> $520-550 (measured move from consolidation)</p>
     <p><strong>Probability Assessment:</strong> Moderate to High. The technical structure remains bullish, and TSLA has a history of explosive moves once consolidations resolve.</p>
 
-    <h3>Bearish Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Bearish Case</h3>
     <p><strong>Trigger:</strong> Break below $400 on volume > 120M shares</p>
     <p><strong>Confirmation:</strong> Failure to reclaim $400 within 2-3 days</p>
     <p><strong>Initial Target:</strong> $360-370 (gap fill from November rally)</p>
     <p><strong>Extended Target:</strong> $341 (200-day SMA)</p>
     <p><strong>Probability Assessment:</strong> Moderate. The declining volume and proximity to support suggest a breakdown is possible but not imminent.</p>
 
-    <h3>Neutral/Consolidation Case</h3>
+    <h3 class="text-2xl font-semibold mb-4">Neutral/Consolidation Case</h3>
     <p><strong>Range:</strong> $400 - $450</p>
     <p><strong>Duration:</strong> Could persist for weeks or months</p>
     <p><strong>Strategy:</strong> Range-bound trading, selling resistance and buying support</p>
     <p><strong>Probability Assessment:</strong> High in the near term. The current setup suggests the market is comfortable with TSLA in the low $400s.</p>
 
-    <h2>Key Levels to Monitor</h2>
+    <h2 class="text-3xl font-bold mb-6">Key Levels to Monitor</h2>
 
     <p><strong>Critical Support:</strong> $400 (psychological level, recent lows)</p>
     <p><strong>Immediate Support:</strong> $422 (20-day SMA), $384 (lower Bollinger Band)</p>
@@ -379,7 +272,7 @@
     <p><strong>Major Resistance:</strong> $488 (December 2024 highs), $500 (psychological level)</p>
     <p><strong>Long-term Support:</strong> $341 (200-day SMA)</p>
 
-    <h2>Technical Observations</h2>
+    <h2 class="text-3xl font-bold mb-6">Technical Observations</h2>
 
     <p>Several factors warrant consideration when evaluating TSLA's current technical setup:</p>
 
@@ -397,7 +290,7 @@
         <li><strong>Momentum Divergence:</strong> The bullish MACD crossover occurring while RSI remains neutral presents an interesting setup. This often precedes a momentum shift, though the direction isn't always clear. The next 1-2 weeks of price action should clarify whether this divergence resolves bullishly or bearishly.</li>
     </ul>
 
-    <h2>Conclusion</h2>
+    <h2 class="text-3xl font-bold mb-6">Conclusion</h2>
 
     <p>Tesla's three-year technical journey from $101.81 to $488.54 represents one of the more impressive recoveries in large-cap technology stocks. The current consolidation around $429—12.2% below the recent highs—appears to be a healthy digestion of gains rather than the beginning of a significant correction.</p>
 
@@ -409,12 +302,13 @@
 
     <p>As always, technical analysis provides probabilities rather than certainties. TSLA's history of explosive moves in both directions means risk management is paramount, regardless of one's directional bias.</p>
 
-    <div class="disclaimer">
+    <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6 mb-8">
         <strong>Disclaimer:</strong> This analysis is for educational and informational purposes only and should not be construed as financial advice. Technical analysis is one tool among many for evaluating securities and has inherent limitations. Past price patterns do not guarantee future results. Tesla is a high-volatility stock with significant event risk related to company-specific news, regulatory developments, and broader market conditions. All investments carry risk, including the potential loss of principal. Readers should conduct their own research and consult with qualified financial professionals before making investment decisions.
     </div>
 
-    <div class="back-link">
+    <div class="mt-12 pt-8 border-t border-gray-700">
         <a href="index.html">← Back to Blog</a>
+    </div>
     </div>
 </body>
 </html>

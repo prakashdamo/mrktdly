@@ -49,91 +49,33 @@
       }
     }
     </script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.7;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-            background: #fafafa;
-        }
-        .header {
-            border-bottom: 3px solid #2c3e50;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2.2em;
-            margin-bottom: 10px;
-        }
-        .meta {
-            color: #7f8c8d;
-            font-size: 0.95em;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 40px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #34495e;
-            margin-top: 30px;
-        }
-        .chart {
-            margin: 30px 0;
-            text-align: center;
-        }
-        .chart img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .stat-box {
-            background: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .stat-box strong {
-            color: #2c3e50;
-        }
-        .key-takeaway {
-            background: #e8f4f8;
-            border-left: 4px solid #3498db;
-            padding: 15px 20px;
-            margin: 25px 0;
-        }
-        ul {
-            line-height: 1.8;
-        }
-    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/public-nav.js"></script>
 </head>
-<body>
-    <div class="header">
-        <h1>November 2025: 4 Charts That Changed Everything</h1>
-        <div class="meta">
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div id="publicNav" data-active="blog"></div>
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+<header class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-4">November 2025: 4 Charts That Changed Everything</h1>
+        <div class="text-xl text-gray-400 flex gap-4 mt-4 text-sm">
             By Uncle D | December 3, 2025 | 10 min read
         </div>
     </div>
 
-    <div class="chart">
-        <img src="/blog/images/nov-hero-image.png" alt="November 2025 Four Key Stories">
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nov-hero-image.png" alt="November 2025 Four Key Stories" class="w-full rounded-xl shadow-2xl">
     </div>
 
     <p>November 2025 will be remembered as the month when the market's narrative shifted dramatically. While the S&P 500 barely moved, beneath the surface, massive rotations were underway. AI darlings crashed while established tech soared. Volatility exploded. Momentum reversed. And index performance masked the carnage in individual stocks.</p>
 
     <p>This analysis examines four charts that tell the complete story of November 2025—a month that proved once again that in markets, what you own matters far more than whether "the market" goes up or down.</p>
 
-    <h2>Story 1: The Great Divergence - GOOGL vs NVDA</h2>
+    <h2 class="text-3xl font-bold mb-6">Story 1: The Great Divergence - GOOGL vs NVDA</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nov-story1-divergence.png" alt="GOOGL vs NVDA November Performance">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">The 27.3 percentage point spread between GOOGL and NVDA defined November's market rotation</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nov-story1-divergence.png" alt="GOOGL vs NVDA November Performance" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">The 27.3 percentage point spread between GOOGL and NVDA defined November's market rotation</p>
     </div>
 
     <p>The most striking pattern in November was the complete divergence between Alphabet (GOOGL) and NVIDIA (NVDA)—two stocks that had both been AI winners throughout 2024 and early 2025.</p>
@@ -153,11 +95,11 @@
 
     <p><strong>The lesson:</strong> Not all AI stocks move together. As the AI boom matures, the market is differentiating between infrastructure providers and revenue generators. GOOGL's ability to maintain momentum while NVDA crashed shows that profitability beats potential when sentiment shifts.</p>
 
-    <h2>Story 2: The Volatility Explosion - AMD's Wild Ride</h2>
+    <h2 class="text-3xl font-bold mb-6">Story 2: The Volatility Explosion - AMD's Wild Ride</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nov-story2-volatility.png" alt="AMD November Volatility">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">AMD's 26.66% intramonth range with a 9% best day and -7.84% worst day</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nov-story2-volatility.png" alt="AMD November Volatility" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">AMD's 26.66% intramonth range with a 9% best day and -7.84% worst day</p>
     </div>
 
     <p>If you want to understand November's volatility in one chart, look at AMD. The stock swung through a 26.66% range—from intramonth high to low—despite ending the month down "only" 16.22%.</p>
@@ -181,11 +123,11 @@
 
     <p><strong>The lesson:</strong> Volatility is not just a number—it's the emotional and financial cost of holding a position. AMD holders needed iron stomachs to endure 16.84 percentage points of daily swings (9% + 7.84%). Position sizing matters: a 5% portfolio position swinging 26% is manageable; a 25% position is portfolio-destroying.</p>
 
-    <h2>Story 3: The Index Illusion - SPY Flat, Tech Carnage</h2>
+    <h2 class="text-3xl font-bold mb-6">Story 3: The Index Illusion - SPY Flat, Tech Carnage</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nov-story3-index-illusion.png" alt="SPY vs Individual Components">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">SPY's +0.01% masked massive dispersion in individual stock performance</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nov-story3-index-illusion.png" alt="SPY vs Individual Components" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">SPY's +0.01% masked massive dispersion in individual stock performance</p>
     </div>
 
     <p>Here's the most deceptive chart of November: the S&P 500 (SPY) gained 0.01%. Essentially flat. A boring month, right? Wrong.</p>
@@ -209,11 +151,11 @@
 
     <p>This is why concentrated portfolios can dramatically outperform or underperform indexes. November proved that diversification into an index provides stability, but stock picking provides opportunity—and risk.</p>
 
-    <h2>Story 4: The Momentum Killer - October Winners Became November Losers</h2>
+    <h2 class="text-3xl font-bold mb-6">Story 4: The Momentum Killer - October Winners Became November Losers</h2>
 
-    <div class="chart">
-        <img src="/blog/images/nov-story4-momentum.png" alt="October vs November Momentum Comparison">
-        <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 10px;">Every single stock decelerated or reversed from October to November</p>
+    <div class="my-8 rounded-xl overflow-hidden">
+        <img src="/blog/images/nov-story4-momentum.png" alt="October vs November Momentum Comparison" class="w-full rounded-xl shadow-2xl">
+        <p class="text-sm text-gray-400 text-center mt-2">Every single stock decelerated or reversed from October to November</p>
     </div>
 
     <p>Perhaps the most important lesson from November: momentum doesn't persist. Every single stock that gained in October either decelerated or reversed in November.</p>
@@ -237,7 +179,7 @@
 
     <p>November also shows why trailing stops matter. A 10% trailing stop on NVDA would have triggered around $200 (from October's peak near $220), protecting most of October's gains before the -14.44% November decline.</p>
 
-    <h2>Key Takeaways: What November Teaches Us</h2>
+    <h2 class="text-3xl font-bold mb-6">Key Takeaways: What November Teaches Us</h2>
 
     <div class="key-takeaway">
         <strong>1. Divergence Matters More Than Direction</strong><br>
@@ -259,7 +201,7 @@
         October's winners became November's losers in just 30 days. Trailing stops and profit-taking discipline matter.
     </div>
 
-    <h2>Looking Ahead: What December Might Bring</h2>
+    <h2 class="text-3xl font-bold mb-6">Looking Ahead: What December Might Bring</h2>
 
     <p>November's patterns set up several scenarios for December:</p>
 
@@ -273,7 +215,7 @@
         <li><strong>Momentum Reset:</strong> November killed October's momentum. December starts fresh. Watch for new leadership rather than assuming November's winners (GOOGL, AAPL) continue.</li>
     </ul>
 
-    <h2>Conclusion</h2>
+    <h2 class="text-3xl font-bold mb-6">Conclusion</h2>
 
     <p>November 2025 proved that markets are not monolithic. While SPY went nowhere, individual stocks experienced dramatic moves. The four charts examined here—GOOGL vs NVDA divergence, AMD's volatility explosion, the index illusion, and the momentum killer—tell a complete story of a market in transition.</p>
 
@@ -285,12 +227,13 @@
 
     <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
 
-    <p style="font-size: 0.9em; color: #7f8c8d;">
+    <p class="text-sm text-gray-400 text-center mt-2">
         <strong>Disclaimer:</strong> This article is for educational purposes only and does not constitute investment advice. All data is sourced from publicly available market information as of December 3, 2025. Past performance does not guarantee future results.
     </p>
 
-    <p style="font-size: 0.9em; color: #7f8c8d; margin-top: 20px;">
+    <p class="text-sm text-gray-400 text-center mt-2">
         <a href="/blog.html" style="color: #3498db; text-decoration: none;">← Back to Blog</a>
     </p>
+    </div>
 </body>
 </html>
