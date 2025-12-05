@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | MarketDly</title>
+    <meta name="description" content="Create your MarketDly account to start learning technical analysis.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <div class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="max-w-md w-full">
+            <!-- Logo/Brand -->
+            <div class="text-center mb-8">
+                <a href="/" class="inline-flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-bold">MarketDly</span>
+                </a>
+                <h1 class="text-3xl font-bold mb-2">Start Learning Free</h1>
+                <p class="text-gray-400">Join 500+ traders learning technical analysis</p>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+                <form id="signupForm" class="space-y-6">
+                    <!-- Name -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            required
+                            class="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-500"
+                            placeholder="John Doe"
+                        >
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            required
+                            class="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-500"
+                            placeholder="you@example.com"
+                        >
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            required
+                            minlength="8"
+                            class="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white placeholder-gray-500"
+                            placeholder="••••••••"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Minimum 8 characters, include uppercase, lowercase, and number</p>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="flex items-start">
+                        <input type="checkbox" id="terms" required class="w-4 h-4 mt-1 rounded border-slate-600 bg-slate-900/50 text-blue-600 focus:ring-blue-500">
+                        <label for="terms" class="ml-2 text-sm text-gray-400">
+                            I agree to the <a href="/terms.html" target="_blank" class="text-blue-400 hover:text-blue-300">Terms of Service</a> and <a href="/disclaimer.html" target="_blank" class="text-blue-400 hover:text-blue-300">Educational Disclaimer</a>
+                        </label>
+                    </div>
+
+                    <!-- Error/Success Message -->
+                    <div id="errorMessage" class="hidden bg-red-900/30 border border-red-500/50 rounded-lg p-3 text-sm text-red-300"></div>
+                    <div id="successMessage" class="hidden bg-green-900/30 border border-green-500/50 rounded-lg p-3 text-sm text-green-300"></div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        id="submitBtn"
+                        class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-700"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-slate-800/50 text-gray-400">Already have an account?</span>
+                    </div>
+                </div>
+
+                <!-- Sign In Link -->
+                <a href="/login.html" class="block w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-center transition">
+                    Sign In
+                </a>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-6">
+                <a href="/" class="text-sm text-gray-400 hover:text-white">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COGNITO_CONFIG = {
+            UserPoolId: 'us-east-1_N5yuAGHc3',
+            ClientId: '3ras51lrq716j8mij5887uug17',
+            Region: 'us-east-1'
+        };
+
+        const poolData = {
+            UserPoolId: COGNITO_CONFIG.UserPoolId,
+            ClientId: COGNITO_CONFIG.ClientId
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Clear previous messages
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+            
+            const attributeList = [
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'email',
+                    Value: email
+                }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'name',
+                    Value: name
+                })
+            ];
+            
+            userPool.signUp(email, password, attributeList, null, (err, result) => {
+                if (err) {
+                    console.error('Signup error:', err);
+                    errorMessage.textContent = err.message || 'Signup failed. Please try again.';
+                    errorMessage.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                    return;
+                }
+                
+                console.log('Signup successful:', result);
+                successMessage.textContent = 'Account created! Please check your email to verify your account, then sign in.';
+                successMessage.classList.remove('hidden');
+                
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/login.html?verified=pending';
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>
