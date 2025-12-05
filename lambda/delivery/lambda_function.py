@@ -215,7 +215,7 @@ def send_email(email, analysis, signals, date_key):
                     <strong style="color: #60a5fa; font-size: 20px;">{sig['ticker']}</strong>
                     <span style="color: #93c5fd; font-size: 16px; margin-left: 8px;">${entry:.2f}</span>
                     <span style="background: #065f46; color: #6ee7b7; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-left: 10px;">
-                        Risk $1 to Make ${rr:.1f}
+                        R:R 1:{rr:.1f}
                     </span>
                     <span style="background: {badge_color}; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-left: 8px;">
                         {sig['source']}
@@ -227,21 +227,21 @@ def send_email(email, analysis, signals, date_key):
                 <table style="width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 6px; padding: 12px;">
                     <tr>
                         <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Entry Price</div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Pattern Level</div>
                             <div style="color: #f9fafb; font-size: 18px; font-weight: 700; margin-top: 4px;">${entry:.2f}</div>
                         </td>
                         <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Stop Loss</div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Support Level</div>
                             <div style="color: #fca5a5; font-size: 18px; font-weight: 700; margin-top: 4px;">${stop:.2f}</div>
                             <div style="font-size: 11px; color: #fca5a5; margin-top: 2px;">-{((entry - stop) / entry * 100):.1f}%</div>
                         </td>
                         <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Target</div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Resistance Level</div>
                             <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">${target:.2f}</div>
                             <div style="font-size: 11px; color: #6ee7b7; margin-top: 2px;">+{((target - entry) / entry * 100):.1f}%</div>
                         </td>
                         <td style="padding: 10px; color: #9ca3af; font-size: 13px; width: 25%;">
-                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Upside</div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Potential Move</div>
                             <div style="color: #6ee7b7; font-size: 18px; font-weight: 700; margin-top: 4px;">+{((target - entry) / entry * 100):.1f}%</div>
                         </td>
                     </tr>
@@ -298,8 +298,8 @@ def send_email(email, analysis, signals, date_key):
                     <!-- Unusual Activity (if present) -->
                     {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🔥 Unusual Activity</h2>' + unusual_html + '</td></tr>' if unusual_html else ''}
                     
-                    <!-- Trade Opportunities (Combined) -->
-                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🎯 Trade Opportunities</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical patterns and AI predictions with defined entry, stop loss, and target levels.</p>' + signals_html + '</td></tr>' if signals_html else '<tr><td style="padding: 20px 40px;"><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; text-align: center;"><h2 style="color: #ffffff; font-size: 24px; margin: 0 0 15px;">🔒 Unlock Trade Signals</h2><p style="color: #e0e0e0; font-size: 16px; margin: 0 0 20px;">Upgrade to Pro to receive daily trade opportunities with entry, stop loss, and target levels.</p><a href="https://marketdly.com/pricing.html" style="display: inline-block; background: #ffffff; color: #667eea; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">View Pricing →</a></div></td></tr>'}
+                    <!-- Pattern Examples (Combined) -->
+                    {'<tr><td style="padding: 20px 40px;"><h2 style="color: #ffffff; font-size: 22px; margin: 0 0 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">📚 Educational Pattern Examples</h2><p style="color: #aaaaaa; font-size: 14px; margin: 0 0 15px;">Technical patterns and AI analysis for learning purposes. Shows pattern levels, support/resistance, and potential price targets.</p>' + signals_html + '</td></tr>' if signals_html else '<tr><td style="padding: 20px 40px;"><div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; text-align: center;"><h2 style="color: #ffffff; font-size: 24px; margin: 0 0 15px;">🔒 Unlock Pattern Alerts</h2><p style="color: #e0e0e0; font-size: 16px; margin: 0 0 20px;">Upgrade to Pro to receive daily pattern examples with technical levels and AI analysis.</p><a href="https://marketdly.com/pricing.html" style="display: inline-block; background: #ffffff; color: #667eea; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">View Pricing →</a></div></td></tr>'}
                     
                     <!-- Disclaimer -->
                     <tr>
