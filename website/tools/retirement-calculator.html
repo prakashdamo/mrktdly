@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retirement Calculator | Free Financial Tool | MarketDly</title>
+    <meta name="description" content="Calculate how much you need to save for retirement. Plan your financial independence.">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                    <a href="/" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">MarketDly</span>
+                    </a>
+                    <div class="hidden md:flex gap-1">
+                        <a href="/" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Home</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg bg-slate-800 text-white transition">Tools</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard.html" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4">🏖️</div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">Retirement Calculator</h1>
+            <p class="text-xl text-gray-300">Plan your path to financial independence</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/40 mb-12">
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Current Age</label>
+                    <input type="number" id="currentAge" value="30" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Retirement Age</label>
+                    <input type="number" id="retireAge" value="65" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Current Savings ($)</label>
+                    <input type="number" id="currentSavings" value="50000" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Monthly Contribution ($)</label>
+                    <input type="number" id="monthlyContrib" value="1000" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Expected Annual Return (%)</label>
+                    <input type="number" id="returnRate" value="7" step="0.1" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Desired Monthly Income ($)</label>
+                    <input type="number" id="desiredIncome" value="5000" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-500 text-white text-lg">
+                </div>
+            </div>
+
+            <button onclick="calculate()" class="w-full py-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 rounded-lg font-bold text-lg transition">Calculate Retirement</button>
+
+            <div id="results" class="hidden mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+                <h3 class="text-2xl font-bold mb-6 text-center">Results</h3>
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Retirement Nest Egg</div>
+                        <div id="nestEgg" class="text-4xl font-bold text-orange-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Monthly Income (4% Rule)</div>
+                        <div id="monthlyIncome" class="text-4xl font-bold text-amber-400">-</div>
+                    </div>
+                </div>
+                <div id="verdict" class="p-4 rounded-lg text-center font-semibold text-lg mb-4"></div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-slate-800/50 rounded-lg">
+                        <div class="text-sm text-gray-400">Years Until Retirement</div>
+                        <div id="yearsLeft" class="text-xl font-bold text-white">-</div>
+                    </div>
+                    <div class="p-3 bg-slate-800/50 rounded-lg">
+                        <div class="text-sm text-gray-400">Total Contributions</div>
+                        <div id="totalContrib" class="text-xl font-bold text-white">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">The 4% Rule</h2>
+            <div class="space-y-4 text-gray-300">
+                <p>The 4% rule is a commonly used guideline suggesting retirees can withdraw 4% of their portfolio annually without running out of money over a 30-year retirement.</p>
+                <div class="bg-orange-900/20 border border-orange-500/30 rounded-lg p-4">
+                    <p class="text-sm"><strong>Example:</strong> $1,000,000 retirement portfolio</p>
+                    <div class="font-mono text-sm mt-2 space-y-1">
+                        <div>Annual withdrawal: $1,000,000 × 4% = $40,000</div>
+                        <div class="text-orange-400">Monthly income: $40,000 ÷ 12 = $3,333</div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400">This is a general guideline based on historical data. Individual circumstances vary. For educational purposes only.</p>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-orange-900/30 to-amber-900/30 border border-orange-500/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Retirement Milestones</h2>
+            <div class="space-y-3 text-gray-300 text-sm">
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Age 30: Have 1x annual salary saved</span>
+                    <span class="font-bold text-orange-400">~$60K</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Age 40: Have 3x annual salary saved</span>
+                    <span class="font-bold text-orange-400">~$180K</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Age 50: Have 6x annual salary saved</span>
+                    <span class="font-bold text-orange-400">~$360K</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Age 60: Have 8x annual salary saved</span>
+                    <span class="font-bold text-orange-400">~$480K</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Age 67: Have 10x annual salary saved</span>
+                    <span class="font-bold text-orange-400">~$600K</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">These are general benchmarks assuming $60K salary. Individual goals vary based on lifestyle and expenses.</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Accelerate Your Retirement</h2>
+            <div class="space-y-4 text-gray-300">
+                <p>Active trading can potentially accelerate wealth building, but requires skill and discipline.</p>
+                <div class="grid md:grid-cols-2 gap-6 mt-4">
+                    <div class="bg-slate-900/50 p-4 rounded-lg">
+                        <h3 class="font-bold text-blue-400 mb-2">Traditional Investing</h3>
+                        <div class="text-sm space-y-1">
+                            <div>7-10% annual returns</div>
+                            <div>Passive, low maintenance</div>
+                            <div>Long time horizon</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/50 p-4 rounded-lg">
+                        <h3 class="font-bold text-green-400 mb-2">Active Trading</h3>
+                        <div class="text-sm space-y-1">
+                            <div>Potential for higher returns</div>
+                            <div>Requires time and skill</div>
+                            <div>Higher risk</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Many investors use a combination: core portfolio for retirement + trading account for growth. For educational purposes only.</p>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/50 rounded-xl p-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Build Your Retirement Faster</h2>
+            <p class="text-xl text-gray-300 mb-6">MarketDly helps traders grow their accounts with daily signals</p>
+            <div class="flex gap-4 justify-center">
+                <a href="/dashboard.html" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-lg transition">Start Free Trial →</a>
+                <a href="/tools.html" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold text-lg transition">More Calculators</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const retireAge = parseInt(document.getElementById('retireAge').value);
+            const currentSavings = parseFloat(document.getElementById('currentSavings').value);
+            const monthlyContrib = parseFloat(document.getElementById('monthlyContrib').value);
+            const annualRate = parseFloat(document.getElementById('returnRate').value) / 100;
+            const desiredIncome = parseFloat(document.getElementById('desiredIncome').value);
+
+            if (!currentAge || !retireAge || currentSavings < 0 || monthlyContrib < 0 || !annualRate) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (retireAge <= currentAge) {
+                alert('Retirement age must be greater than current age');
+                return;
+            }
+
+            const yearsLeft = retireAge - currentAge;
+            const monthlyRate = annualRate / 12;
+            const months = yearsLeft * 12;
+            
+            let balance = currentSavings;
+            for (let i = 0; i < months; i++) {
+                balance = balance * (1 + monthlyRate) + monthlyContrib;
+            }
+
+            const nestEgg = balance;
+            const monthlyIncome = (nestEgg * 0.04) / 12;
+            const totalContrib = currentSavings + (monthlyContrib * months);
+
+            document.getElementById('nestEgg').textContent = '$' + nestEgg.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('monthlyIncome').textContent = '$' + monthlyIncome.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('yearsLeft').textContent = yearsLeft + ' years';
+            document.getElementById('totalContrib').textContent = '$' + totalContrib.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+            const verdictDiv = document.getElementById('verdict');
+            if (monthlyIncome >= desiredIncome) {
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-green-900/20 border border-green-500/30 text-green-400';
+                verdictDiv.textContent = '✅ On Track - You\'ll meet your retirement income goal!';
+            } else {
+                const shortfall = desiredIncome - monthlyIncome;
+                const neededExtra = (shortfall * 12 / 0.04 - nestEgg) / months;
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-yellow-900/20 border border-yellow-500/30 text-yellow-400';
+                verdictDiv.textContent = '⚠️ Shortfall: Need $' + neededExtra.toFixed(0) + '/month more to reach goal';
+            }
+
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                if (!document.getElementById('results').classList.contains('hidden')) calculate();
+            });
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') calculate(); });
+        });
+    </script>
+</body>
+</html>

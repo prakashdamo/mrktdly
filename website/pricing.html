@@ -3,80 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricing - Daily Market Summary</title>
+    <title>Subscription Plans | MarketDly</title>
+    <meta name="description" content="Professional trading tools with transparent pricing. 68.9% verified win rate. Free, Basic ($9.99), and Professional ($19.99) tiers.">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
-    <nav class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
         <div class="container mx-auto px-6 py-4 max-w-7xl">
             <div class="flex items-center justify-between">
-                <a href="/index.html" class="flex items-center gap-2">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center font-bold text-lg">DMS</div>
-                    <span class="text-xl font-bold">Daily Market Summary</span>
-                </a>
-                <div class="flex gap-4">
-                    <a href="/index.html" class="text-gray-400 hover:text-white transition">Home</a>
-                    <a href="/market-insights.html" class="text-gray-400 hover:text-white transition">Market Intelligence</a>
-                    <a href="/pricing.html" class="text-white font-medium">Pricing</a>
+                <div class="flex items-center gap-8">
+                    <a href="/" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">MarketDly</span>
+                    </a>
+                    <div class="hidden md:flex gap-1">
+                        <a href="/" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Home</a>
+                        <a href="/blog.html" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Blog</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Tools</a>
+                        <a href="/pricing.html" class="px-4 py-2 rounded-lg bg-slate-800 text-white transition">Pricing</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard.html" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition">
+                        Sign In
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto px-6 py-16 max-w-7xl">
+        <!-- Header -->
         <div class="text-center mb-16">
             <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Simple, Transparent Pricing
+                Subscription Plans
             </h1>
-            <p class="text-xl text-gray-400">Choose the plan that fits your trading style</p>
+            <p class="text-xl text-gray-400">Professional trading tools with transparent pricing.</p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <!-- Performance Metrics Banner -->
+        <div class="bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-2xl p-8 mb-16">
+            <h3 class="text-2xl font-semibold mb-6 text-center">Verified Performance Metrics</h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+                <div>
+                    <div class="text-green-400 text-sm mb-1">Win Rate</div>
+                    <div class="text-2xl font-bold">68.9%</div>
+                    <div class="text-xs text-gray-500">74 Trades</div>
+                </div>
+                <div>
+                    <div class="text-blue-400 text-sm mb-1">Technical Success</div>
+                    <div class="text-2xl font-bold">78.4%</div>
+                    <div class="text-xs text-gray-500">Pattern Recognition</div>
+                </div>
+                <div>
+                    <div class="text-purple-400 text-sm mb-1">Expectancy</div>
+                    <div class="text-2xl font-bold">+1.33%</div>
+                    <div class="text-xs text-gray-500">Per Trade</div>
+                </div>
+                <div>
+                    <div class="text-pink-400 text-sm mb-1">Transparency</div>
+                    <div class="text-2xl font-bold">100%</div>
+                    <div class="text-xs text-gray-500">All Trades Visible</div>
+                </div>
+                <div>
+                    <div class="text-yellow-400 text-sm mb-1">AI Predictions</div>
+                    <div class="text-2xl font-bold">59.5%</div>
+                    <div class="text-xs text-gray-500">ML Ensemble</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="grid md:grid-cols-3 gap-8 mb-16">
             <!-- Free Tier -->
-            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-                <h3 class="text-2xl font-bold mb-2">Free</h3>
-                <div class="text-4xl font-bold mb-6">$0<span class="text-lg text-gray-400">/month</span></div>
+            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 hover:border-slate-600 transition">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold mb-2">Free</h3>
+                    <div class="text-4xl font-bold mb-2">$0</div>
+                    <p class="text-gray-400">Evaluation</p>
+                </div>
                 <ul class="space-y-4 mb-8">
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Daily market summary</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>3 ticker analyses/day</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>3 sample signals</span></li>
-                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Email alerts</span></li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Dashboard Access</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Market Intelligence</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Blog & Analysis</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="text-gray-500">No Trading Signals</span>
+                    </li>
                 </ul>
-                <a href="/index.html" class="block w-full text-center py-3 px-6 bg-slate-700 hover:bg-slate-600 rounded-lg transition">Get Started</a>
+                <a href="/dashboard.html" class="block w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg text-center font-semibold transition">
+                    Access Free
+                </a>
             </div>
 
             <!-- Basic Tier -->
-            <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-                <h3 class="text-2xl font-bold mb-2">Basic</h3>
-                <div class="text-4xl font-bold mb-6">$9.99<span class="text-lg text-gray-400">/month</span></div>
+            <div class="bg-slate-800/50 border border-blue-500/50 rounded-2xl p-8 hover:border-blue-500 transition">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold mb-2">Basic</h3>
+                    <div class="text-4xl font-bold mb-2">$9.99<span class="text-lg text-gray-400">/mo</span></div>
+                    <p class="text-gray-400">Signal Access</p>
+                </div>
                 <ul class="space-y-4 mb-8">
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Daily market summary</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Unlimited</strong> ticker analyses</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>10 signals</strong> per day</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>1 evening</strong> email alert</span></li>
-                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Weekly technical report</span></li>
-                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">Full signal performance</span></li>
-                    <li class="flex items-start gap-3"><span class="text-gray-600">✗</span><span class="text-gray-500">AI portfolio analysis</span></li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">All Free Features</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Performance Page Access</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Daily Signal Feed</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Technical Pattern Identification</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Signal Confidence Scores</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">7-Day Signal History</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="text-gray-500">No AI Ticker Analysis</span>
+                    </li>
                 </ul>
-                <button onclick="checkout('basic')" class="block w-full text-center py-3 px-6 bg-slate-700 hover:bg-slate-600 rounded-lg transition font-bold">Subscribe Now</button>
+                <a href="/dashboard.html" class="block w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-center font-semibold transition">
+                    Subscribe to Basic
+                </a>
             </div>
 
-            <!-- Pro Tier -->
-            <div class="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500 rounded-2xl p-8 relative">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-bold">BEST VALUE</div>
-                <h3 class="text-2xl font-bold mb-2">Pro</h3>
-                <div class="text-4xl font-bold mb-6">$19.99<span class="text-lg text-gray-400">/month</span></div>
+            <!-- Professional Tier -->
+            <div class="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-2 border-purple-500 rounded-2xl p-8 relative">
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span class="bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</span>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold mb-2">Professional</h3>
+                    <div class="text-4xl font-bold mb-2">$19.99<span class="text-lg text-gray-400">/mo</span></div>
+                    <p class="text-gray-400">Complete System</p>
+                </div>
                 <ul class="space-y-4 mb-8">
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Market intelligence</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Unlimited</strong> ticker analyses</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>All signals</strong> (unlimited)</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span><strong>Configurable</strong> email alerts</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Weekly technical report</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>Full signal performance tracking</span></li>
-                    <li class="flex items-start gap-3"><span class="text-green-400">✓</span><span>AI portfolio analysis & backtesting</span></li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">All Basic Features</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">AI Ticker Analysis</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Complete Signal Archive</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Portfolio Management</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Confirmation Tracking (5x Signals)</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-gray-300">Priority Support</span>
+                    </li>
                 </ul>
-                <button onclick="checkout('pro')" class="block w-full text-center py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg transition font-bold">Subscribe Now</button>
+                <a href="/dashboard.html" class="block w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg text-center font-semibold transition">
+                    Subscribe to Professional
+                </a>
             </div>
         </div>
+
+        <!-- Feature Comparison Table -->
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center">Feature Comparison Matrix</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-slate-700">
+                            <th class="text-left py-4 px-4">Feature</th>
+                            <th class="text-center py-4 px-4">Free</th>
+                            <th class="text-center py-4 px-4">Basic</th>
+                            <th class="text-center py-4 px-4">Professional</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Dashboard Access</td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Market Intelligence</td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Blog & Analysis</td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Performance Page</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Daily Signal Feed</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Signal History</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4">7 Days</td>
+                            <td class="text-center py-4 px-4">Complete</td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">AI Ticker Analysis</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-4 px-4">Portfolio Management</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-4">Confirmation Tracking</td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-gray-600">—</span></td>
+                            <td class="text-center py-4 px-4"><span class="text-green-400">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+            <div class="space-y-6 max-w-3xl mx-auto">
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-3">Q: How is the 68.9% win rate verified?</h3>
+                    <p class="text-gray-400">A: Every trade is recorded in our database with entry date, exit date, and outcome. All 74 trades are tracked and published in our monthly performance reviews.</p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-3">Q: What is your signal generation methodology?</h3>
+                    <p class="text-gray-400">A: We employ a dual-signal system: technical pattern recognition (78.4% win rate) and machine learning ensemble (59.5% win rate). Only signals exceeding 65% confidence are published.</p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-3">Q: Do you publish losing trades?</h3>
+                    <p class="text-gray-400">A: Yes. Complete transparency is maintained. Of our 74 closed trades, 23 resulted in losses. All outcomes are publicly visible.</p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-3">Q: What is the cancellation policy?</h3>
+                    <p class="text-gray-400">A: Subscriptions may be cancelled at any time. No long-term commitments required.</p>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-3">Q: How do Basic and Professional tiers differ?</h3>
+                    <p class="text-gray-400">A: Basic provides daily signal access with 7-day history. Professional includes complete signal archive, real-time tracking, analytics suite, and portfolio management tools.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Disclosure -->
+        <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-xl p-8 mb-16">
+            <h3 class="text-xl font-bold mb-4 text-yellow-400">Risk Disclosure</h3>
+            <p class="text-sm text-gray-300">
+                Trading involves substantial risk of loss. Past performance does not guarantee future results. 
+                All signals are for educational purposes only and do not constitute financial advice. 
+                Conduct independent research before making investment decisions.
+            </p>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center">
+            <h2 class="text-4xl font-bold mb-6">Begin with Free Access</h2>
+            <div class="flex gap-4 justify-center">
+                <a href="/dashboard.html" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-lg transition">
+                    Create Account →
+                </a>
+                <a href="/blog/2-week-performance-review.html" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold text-lg transition">
+                    Read Performance Review →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 mt-20">
+        <div class="container mx-auto px-6 py-12 max-w-6xl">
+            <div class="text-center text-sm text-gray-500">
+                <p>© 2024 MarketDly. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

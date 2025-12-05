@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Growth Calculator | Free Financial Tool | MarketDly</title>
+    <meta name="description" content="Calculate how your investments grow over time with compound interest. Plan your financial future.">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                    <a href="/" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">MarketDly</span>
+                    </a>
+                    <div class="hidden md:flex gap-1">
+                        <a href="/" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Home</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg bg-slate-800 text-white transition">Tools</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard.html" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4">📈</div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Investment Growth Calculator</h1>
+            <p class="text-xl text-gray-300">See how your investments grow with compound interest</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/40 mb-12">
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Initial Investment ($)</label>
+                    <input type="number" id="initial" value="10000" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Monthly Contribution ($)</label>
+                    <input type="number" id="monthly" value="500" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Annual Return (%)</label>
+                    <input type="number" id="returnRate" value="8" step="0.1" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Time Period (Years)</label>
+                    <input type="number" id="years" value="20" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg">
+                </div>
+            </div>
+
+            <button onclick="calculate()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg font-bold text-lg transition">Calculate Growth</button>
+
+            <div id="results" class="hidden mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+                <h3 class="text-2xl font-bold mb-6 text-center">Results</h3>
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Future Value</div>
+                        <div id="futureValue" class="text-4xl font-bold text-blue-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Total Contributions</div>
+                        <div id="totalContrib" class="text-4xl font-bold text-cyan-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Total Gains</div>
+                        <div id="totalGains" class="text-4xl font-bold text-green-400">-</div>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-800/50 rounded-lg">
+                    <canvas id="growthChart" class="w-full" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Understanding Investment Growth</h2>
+            <div class="space-y-4 text-gray-300">
+                <p>Investment growth combines two powerful forces: compound interest on your initial investment and regular contributions over time.</p>
+                <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                    <p class="text-sm"><strong>Example:</strong> $10,000 initial + $500/month at 8% annual return for 20 years:</p>
+                    <div class="font-mono text-sm mt-2 space-y-1">
+                        <div>Total Contributions: $130,000</div>
+                        <div>Investment Gains: $168,514</div>
+                        <div class="text-green-400 mt-2">Final Value: $298,514</div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400">This demonstrates how consistent investing and compound returns can build wealth over time. For educational purposes only - actual returns vary.</p>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-500/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">The Power of Time</h2>
+            <div class="space-y-4 text-gray-300">
+                <p><strong>Scenario:</strong> Two investors contribute $500/month at 8% annual return.</p>
+                <div class="grid md:grid-cols-2 gap-6 mt-4">
+                    <div class="bg-slate-900/50 p-4 rounded-lg">
+                        <h3 class="font-bold text-yellow-400 mb-2">Investor A: Starts at 25</h3>
+                        <div class="text-sm space-y-1">
+                            <div>Invests for 40 years</div>
+                            <div>Total contributions: $240,000</div>
+                            <div class="text-green-400 mt-2">At 65: $1,745,503</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/50 p-4 rounded-lg">
+                        <h3 class="font-bold text-orange-400 mb-2">Investor B: Starts at 35</h3>
+                        <div class="text-sm space-y-1">
+                            <div>Invests for 30 years</div>
+                            <div>Total contributions: $180,000</div>
+                            <div class="text-yellow-400 mt-2">At 65: $745,179</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Starting 10 years earlier results in $1M more, despite only $60K additional contributions. Time is a powerful factor in wealth building.</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Common Return Expectations</h2>
+            <div class="space-y-3 text-gray-300 text-sm">
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>S&P 500 Historical Average:</span>
+                    <span class="font-bold text-blue-400">~10% annually</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Conservative Portfolio (Bonds):</span>
+                    <span class="font-bold text-cyan-400">4-6% annually</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Balanced Portfolio (60/40):</span>
+                    <span class="font-bold text-green-400">7-8% annually</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>High Savings Account:</span>
+                    <span class="font-bold text-gray-400">4-5% annually</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">These are historical averages for educational purposes. Past performance doesn't guarantee future results. Actual returns vary significantly year to year.</p>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/50 rounded-xl p-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Build Wealth Through Trading</h2>
+            <p class="text-xl text-gray-300 mb-6">MarketDly helps active traders grow their accounts with daily signals</p>
+            <div class="flex gap-4 justify-center">
+                <a href="/dashboard.html" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-lg transition">Start Free Trial →</a>
+                <a href="/tools.html" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold text-lg transition">More Calculators</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const initial = parseFloat(document.getElementById('initial').value);
+            const monthly = parseFloat(document.getElementById('monthly').value);
+            const annualRate = parseFloat(document.getElementById('returnRate').value) / 100;
+            const years = parseInt(document.getElementById('years').value);
+
+            if (!initial || monthly < 0 || !annualRate || !years) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const monthlyRate = annualRate / 12;
+            const months = years * 12;
+            const balances = [initial];
+            let balance = initial;
+
+            for (let i = 1; i <= months; i++) {
+                balance = balance * (1 + monthlyRate) + monthly;
+                if (i % 12 === 0) balances.push(balance);
+            }
+
+            const futureValue = balance;
+            const totalContrib = initial + (monthly * months);
+            const totalGains = futureValue - totalContrib;
+
+            document.getElementById('futureValue').textContent = '$' + futureValue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('totalContrib').textContent = '$' + totalContrib.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('totalGains').textContent = '$' + totalGains.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+            drawChart(balances);
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function drawChart(balances) {
+            const canvas = document.getElementById('growthChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const maxBalance = Math.max(...balances);
+            const padding = 40;
+
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            balances.forEach((balance, i) => {
+                const x = padding + (i / (balances.length - 1)) * (width - padding * 2);
+                const y = height - padding - (balance / maxBalance) * (height - padding * 2);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Year 0', padding, height - 10);
+            ctx.fillText('Year ' + (balances.length - 1), width - padding - 40, height - 10);
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                if (!document.getElementById('results').classList.contains('hidden')) calculate();
+            });
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') calculate(); });
+        });
+    </script>
+</body>
+</html>

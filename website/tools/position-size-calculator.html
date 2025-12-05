@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position Size Calculator | Free Trading Tool | MarketDly</title>
+    <meta name="description" content="Free position size calculator for traders. Calculate how many shares to buy based on your account size and risk tolerance.">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                    <a href="/" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">MarketDly</span>
+                    </a>
+                    <div class="hidden md:flex gap-1">
+                        <a href="/" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Home</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg bg-slate-800 text-white transition">Tools</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard.html" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4">📊</div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Position Size Calculator
+            </h1>
+            <p class="text-xl text-gray-300">Calculate how many shares to buy based on your risk tolerance</p>
+        </div>
+
+        <!-- Calculator Card -->
+        <div class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/40 mb-12">
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Inputs -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Account Size ($)</label>
+                    <input type="number" id="accountSize" value="10000" 
+                           class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg"
+                           placeholder="10000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Risk Per Trade (%)</label>
+                    <input type="number" id="riskPercent" value="1" step="0.1"
+                           class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg"
+                           placeholder="1">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Stock Price ($)</label>
+                    <input type="number" id="stockPrice" value="150" step="0.01"
+                           class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg"
+                           placeholder="150.00">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Stop Loss Distance ($)</label>
+                    <input type="number" id="stopDistance" value="5" step="0.01"
+                           class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white text-lg"
+                           placeholder="5.00">
+                </div>
+            </div>
+
+            <button onclick="calculate()" 
+                    class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-bold text-lg transition">
+                Calculate Position Size
+            </button>
+
+            <!-- Results -->
+            <div id="results" class="hidden mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+                <h3 class="text-2xl font-bold mb-6 text-center">Results</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Shares to Buy</div>
+                        <div id="shares" class="text-4xl font-bold text-blue-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Total Investment</div>
+                        <div id="investment" class="text-4xl font-bold text-purple-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Risk Amount</div>
+                        <div id="riskAmount" class="text-4xl font-bold text-pink-400">-</div>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                    <div class="text-sm text-gray-300">
+                        <strong>Stop Loss Price:</strong> <span id="stopPrice" class="text-blue-400">-</span>
+                    </div>
+                    <div class="text-sm text-gray-300 mt-2">
+                        <strong>Risk per Share:</strong> <span id="riskPerShare" class="text-blue-400">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Content -->
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">How to Use This Calculator</h2>
+            
+            <div class="space-y-6 text-gray-300">
+                <div>
+                    <h3 class="text-xl font-semibold text-white mb-2">1. Enter Your Account Size</h3>
+                    <p>This is your total trading capital. For example, if you have $10,000 in your trading account, enter 10000.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-white mb-2">2. Set Your Risk Percentage</h3>
+                    <p>Many professional traders risk 1-2% per trade. This means if you have a $10,000 account and risk 1%, you're willing to lose $100 on this trade.</p>
+                    <div class="mt-2 p-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg text-sm">
+                        <strong>⚠️ Note:</strong> Risking more than 2% per trade is generally considered aggressive. This is for educational purposes only.
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-white mb-2">3. Enter the Stock Price</h3>
+                    <p>The current price of the stock you want to buy. For example, if AAPL is trading at $150.00, enter 150.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-white mb-2">4. Set Your Stop Loss Distance</h3>
+                    <p>How far below your entry price will you exit if the trade goes against you? For example, if you buy at $150 and want to exit at $145, your stop distance is $5.</p>
+                    <div class="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg text-sm">
+                        <strong>💡 Common Practice:</strong> A 3% stop loss is frequently used for swing trading. On a $150 stock, that's $4.50.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example -->
+        <div class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Example Calculation</h2>
+            <div class="space-y-4 text-gray-300">
+                <p><strong>Scenario:</strong> You have a $10,000 account and want to buy a stock trading at $150. You'll set your stop loss at $145 (a $5 risk per share).</p>
+                
+                <div class="bg-slate-900/50 p-4 rounded-lg font-mono text-sm">
+                    <div>Account Size: $10,000</div>
+                    <div>Risk Per Trade: 1% = $100</div>
+                    <div>Stock Price: $150</div>
+                    <div>Stop Loss: $145 (risk of $5 per share)</div>
+                    <div class="mt-4 text-blue-400">
+                        <div>→ Shares to Buy: $100 ÷ $5 = 20 shares</div>
+                        <div>→ Total Investment: 20 × $150 = $3,000</div>
+                        <div>→ If stopped out: Loss of $100 (1% of account)</div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-400">This demonstrates how position sizing limits losses to a predetermined amount. For educational purposes only.</p>
+            </div>
+        </div>
+
+        <!-- Why This Matters -->
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Understanding Position Sizing</h2>
+            <div class="space-y-4 text-gray-300">
+                <p>Position sizing is widely considered a critical component of trading. Here's a comparison:</p>
+                
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div class="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                        <h3 class="text-xl font-bold text-red-400 mb-2">❌ Without Position Sizing</h3>
+                        <p class="text-sm">Trader A risks 10% per trade. After 3 losses in a row, they're down 30%. They need a 43% gain just to break even. Recovery becomes challenging.</p>
+                    </div>
+                    
+                    <div class="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+                        <h3 class="text-xl font-bold text-green-400 mb-2">✅ With Position Sizing</h3>
+                        <p class="text-sm">Trader B risks 1% per trade. After 3 losses in a row, they're down 3%. They need a 3.1% gain to break even. Recovery is more manageable.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                    <p class="text-sm"><strong>Educational Note:</strong> Historical trading data suggests that proper position sizing can significantly impact long-term results, regardless of win rate.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/50 rounded-xl p-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Want Position Sizing Done For You?</h2>
+            <p class="text-xl text-gray-300 mb-6">
+                MarketDly provides daily trading signals with position sizing calculated for your account size.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <a href="/dashboard.html" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-lg transition">
+                    Start Free Trial →
+                </a>
+                <a href="/tools.html" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold text-lg transition">
+                    More Calculators
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Get inputs
+            const accountSize = parseFloat(document.getElementById('accountSize').value);
+            const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+            const stockPrice = parseFloat(document.getElementById('stockPrice').value);
+            const stopDistance = parseFloat(document.getElementById('stopDistance').value);
+
+            // Validate inputs
+            if (!accountSize || !riskPercent || !stockPrice || !stopDistance) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (riskPercent > 5) {
+                if (!confirm('Warning: Risking more than 5% per trade is very dangerous. Continue anyway?')) {
+                    return;
+                }
+            }
+
+            // Calculate
+            const riskAmount = accountSize * (riskPercent / 100);
+            const shares = Math.floor(riskAmount / stopDistance);
+            const investment = shares * stockPrice;
+            const stopPrice = stockPrice - stopDistance;
+
+            // Display results
+            document.getElementById('shares').textContent = shares.toLocaleString();
+            document.getElementById('investment').textContent = '$' + investment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('riskAmount').textContent = '$' + riskAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('stopPrice').textContent = '$' + stopPrice.toFixed(2);
+            document.getElementById('riskPerShare').textContent = '$' + stopDistance.toFixed(2);
+
+            // Show results
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Calculate on input change
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                if (document.getElementById('results').classList.contains('hidden') === false) {
+                    calculate();
+                }
+            });
+        });
+
+        // Calculate on Enter key
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    calculate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Valuation Calculator (P/E) | Educational Tool | MarketDly</title>
+    <meta name="description" content="Simple P/E ratio calculator for educational purposes. Learn one aspect of stock valuation - not investment advice.">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
+        <div class="container mx-auto px-6 py-4 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-8">
+                    <a href="/" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">MarketDly</span>
+                    </a>
+                    <div class="hidden md:flex gap-1">
+                        <a href="/" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/50 transition">Home</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg bg-slate-800 text-white transition">Tools</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard.html" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4">🔍</div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-rose-400 to-pink-400 bg-clip-text text-transparent">Stock Valuation Calculator</h1>
+            <p class="text-xl text-gray-300">Simple P/E-based valuation estimate</p>
+            <p class="text-sm text-yellow-400 mt-2">⚠️ This is only one aspect of valuation - not investment advice</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/40 mb-12">
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Current Stock Price ($)</label>
+                    <input type="number" id="currentPrice" value="150" step="0.01" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-rose-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Earnings Per Share (EPS) ($)</label>
+                    <input type="number" id="eps" value="6" step="0.01" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-rose-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Expected Growth Rate (%/year)</label>
+                    <input type="number" id="growthRate" value="15" step="0.1" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-rose-500 text-white text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Industry Avg P/E Ratio</label>
+                    <input type="number" id="industryPE" value="20" step="0.1" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-rose-500 text-white text-lg">
+                </div>
+            </div>
+
+            <button onclick="calculate()" class="w-full py-4 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 rounded-lg font-bold text-lg transition">Calculate Valuation</button>
+
+            <div id="results" class="hidden mt-8 p-6 bg-slate-900/50 rounded-xl border border-slate-700">
+                <h3 class="text-2xl font-bold mb-6 text-center">Results</h3>
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Current P/E Ratio</div>
+                        <div id="currentPE" class="text-3xl font-bold text-rose-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">Fair Value (P/E)</div>
+                        <div id="fairValue" class="text-3xl font-bold text-pink-400">-</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-400 text-sm mb-2">PEG Ratio</div>
+                        <div id="pegRatio" class="text-3xl font-bold text-purple-400">-</div>
+                    </div>
+                </div>
+                <div id="verdict" class="p-4 rounded-lg text-center font-semibold text-lg mb-4"></div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-slate-800/50 rounded-lg">
+                        <div class="text-sm text-gray-400">Upside/Downside</div>
+                        <div id="upside" class="text-xl font-bold text-white">-</div>
+                    </div>
+                    <div class="p-3 bg-slate-800/50 rounded-lg">
+                        <div class="text-sm text-gray-400">Valuation</div>
+                        <div id="valuation" class="text-xl font-bold text-white">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Understanding P/E Ratio</h2>
+            <div class="space-y-4 text-gray-300">
+                <div class="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg mb-4">
+                    <p class="text-sm font-semibold text-yellow-400">⚠️ Important: P/E ratio is only ONE aspect of stock valuation. Professional investors use multiple methods including discounted cash flow (DCF), price-to-book, price-to-sales, and qualitative factors. This calculator provides a simplified educational example only.</p>
+                </div>
+                <p>The Price-to-Earnings (P/E) ratio compares a stock's price to its earnings. It's one of the most commonly used valuation metrics.</p>
+                <div class="bg-rose-900/20 border border-rose-500/30 rounded-lg p-4">
+                    <p class="text-sm"><strong>Formula:</strong> P/E Ratio = Stock Price ÷ Earnings Per Share</p>
+                    <div class="font-mono text-sm mt-2 space-y-1">
+                        <div>Example: Stock at $150, EPS of $6</div>
+                        <div class="text-rose-400">P/E Ratio = $150 ÷ $6 = 25</div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400">A P/E of 25 means investors pay $25 for every $1 of earnings. Higher P/E suggests growth expectations or overvaluation. Lower P/E may indicate value or concerns.</p>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-rose-900/30 to-pink-900/30 border border-rose-500/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">PEG Ratio: Growth-Adjusted Valuation</h2>
+            <div class="space-y-4 text-gray-300">
+                <p>The PEG ratio adjusts P/E for growth rate, providing a more complete picture.</p>
+                <div class="bg-slate-900/50 p-4 rounded-lg">
+                    <p class="text-sm mb-2"><strong>Formula:</strong> PEG = P/E Ratio ÷ Growth Rate</p>
+                    <div class="space-y-2 text-sm mt-3">
+                        <div class="flex justify-between p-2 bg-slate-800/50 rounded">
+                            <span>PEG &lt; 1.0:</span>
+                            <span class="text-green-400">Potentially undervalued</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-slate-800/50 rounded">
+                            <span>PEG = 1.0:</span>
+                            <span class="text-blue-400">Fairly valued</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-slate-800/50 rounded">
+                            <span>PEG &gt; 2.0:</span>
+                            <span class="text-red-400">Potentially overvalued</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Example: Stock with P/E of 25 and 15% growth has PEG of 1.67 (25 ÷ 15). This suggests moderate valuation relative to growth.</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Typical P/E Ratios by Sector</h2>
+            <div class="space-y-3 text-gray-300 text-sm">
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Technology (Growth):</span>
+                    <span class="font-bold text-rose-400">25-40</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Healthcare:</span>
+                    <span class="font-bold text-pink-400">20-30</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Consumer Discretionary:</span>
+                    <span class="font-bold text-purple-400">15-25</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Financials:</span>
+                    <span class="font-bold text-blue-400">10-15</span>
+                </div>
+                <div class="flex justify-between p-3 bg-slate-900/50 rounded-lg">
+                    <span>Energy/Utilities:</span>
+                    <span class="font-bold text-cyan-400">10-20</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">These are general ranges. Individual stocks and market conditions vary significantly. For educational purposes only.</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-xl p-8 mb-12">
+            <h2 class="text-3xl font-bold mb-6">Critical Limitations of P/E Valuation</h2>
+            <div class="p-4 bg-red-900/20 border border-red-500/30 rounded-lg mb-4">
+                <p class="text-sm font-semibold text-red-400">⚠️ WARNING: P/E ratio alone is insufficient for investment decisions. This is a simplified educational tool demonstrating one basic valuation concept.</p>
+            </div>
+            <div class="space-y-3 text-gray-300 text-sm">
+                <div class="flex gap-3">
+                    <span class="text-yellow-400">⚠️</span>
+                    <p><strong>Doesn't work for unprofitable companies:</strong> Negative earnings make P/E meaningless.</p>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-yellow-400">⚠️</span>
+                    <p><strong>Ignores debt and cash:</strong> Companies with high debt may appear cheap on P/E alone.</p>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-yellow-400">⚠️</span>
+                    <p><strong>Backward-looking:</strong> Based on past earnings, not future potential.</p>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-yellow-400">⚠️</span>
+                    <p><strong>Sector differences:</strong> Growth stocks naturally have higher P/E than value stocks.</p>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-yellow-400">⚠️</span>
+                    <p><strong>Ignores business quality:</strong> Doesn't account for competitive advantages, management, or market position.</p>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-blue-400">💡</span>
+                    <p><strong>Professional approach:</strong> Investors use P/E alongside DCF analysis, price-to-book, price-to-sales, debt ratios, cash flow analysis, and qualitative factors. This calculator is for educational purposes only.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/50 rounded-xl p-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Find Undervalued Opportunities</h2>
+            <p class="text-xl text-gray-300 mb-6">MarketDly combines technical and fundamental analysis for better trades</p>
+            <div class="flex gap-4 justify-center">
+                <a href="/dashboard.html" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-lg transition">Start Free Trial →</a>
+                <a href="/tools.html" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold text-lg transition">More Calculators</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+            const eps = parseFloat(document.getElementById('eps').value);
+            const growthRate = parseFloat(document.getElementById('growthRate').value);
+            const industryPE = parseFloat(document.getElementById('industryPE').value);
+
+            if (!currentPrice || !eps || !growthRate || !industryPE) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (eps <= 0) {
+                alert('EPS must be positive for P/E valuation');
+                return;
+            }
+
+            const currentPE = currentPrice / eps;
+            const fairValue = eps * industryPE;
+            const pegRatio = currentPE / growthRate;
+            const upside = ((fairValue - currentPrice) / currentPrice) * 100;
+
+            document.getElementById('currentPE').textContent = currentPE.toFixed(1);
+            document.getElementById('fairValue').textContent = '$' + fairValue.toFixed(2);
+            document.getElementById('pegRatio').textContent = pegRatio.toFixed(2);
+            document.getElementById('upside').textContent = (upside > 0 ? '+' : '') + upside.toFixed(1) + '%';
+
+            let valuationText = '';
+            if (pegRatio < 1) valuationText = 'Potentially Undervalued';
+            else if (pegRatio < 1.5) valuationText = 'Fairly Valued';
+            else if (pegRatio < 2) valuationText = 'Moderately Overvalued';
+            else valuationText = 'Potentially Overvalued';
+            document.getElementById('valuation').textContent = valuationText;
+
+            const verdictDiv = document.getElementById('verdict');
+            if (upside > 20) {
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-green-900/20 border border-green-500/30 text-green-400';
+                verdictDiv.textContent = '✅ Significantly Undervalued - ' + upside.toFixed(0) + '% upside potential';
+            } else if (upside > 0) {
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-blue-900/20 border border-blue-500/30 text-blue-400';
+                verdictDiv.textContent = '✓ Slightly Undervalued - ' + upside.toFixed(0) + '% upside potential';
+            } else if (upside > -20) {
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-yellow-900/20 border border-yellow-500/30 text-yellow-400';
+                verdictDiv.textContent = '⚠️ Slightly Overvalued - ' + Math.abs(upside).toFixed(0) + '% downside risk';
+            } else {
+                verdictDiv.className = 'p-4 rounded-lg text-center font-semibold text-lg mb-4 bg-red-900/20 border border-red-500/30 text-red-400';
+                verdictDiv.textContent = '❌ Significantly Overvalued - ' + Math.abs(upside).toFixed(0) + '% downside risk';
+            }
+
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                if (!document.getElementById('results').classList.contains('hidden')) calculate();
+            });
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') calculate(); });
+        });
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@
     <title>Model Performance - Daily Market Summary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/auth-helper.js?v=20251203-3"></script>
-    <script src="/js/nav.js?v=20251203-3"></script>
+    <script src="/js/nav.js?v=20251205-1"></script>
 </head>
 <body class="bg-gradient-to-br from-[#0a0f19] via-[#1a1f2e] to-[#0a0f19] min-h-screen text-white">
     <div id="appNav" data-active="performance"></div>
@@ -24,7 +24,7 @@
         <section class="mb-8 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/50 rounded-xl p-6">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-semibold">Overall Performance</h2>
-                <span class="text-sm text-gray-400">Last 30 Days</span>
+                <span class="text-sm text-gray-400">All-Time Stats</span>
             </div>
             
             <div id="modelStats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -57,6 +57,17 @@
                 <div class="bg-slate-800/50 rounded-lg p-4 text-center">
                     <div class="text-gray-400 text-xs mb-1">Loading...</div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Today's Fresh Signals -->
+        <section class="mb-8">
+            <div id="todaySignals">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold">🔥 Today's Fresh Signals</h2>
+                    <span id="scanTime" class="text-sm text-gray-400">Loading...</span>
+                </div>
+                <div class="text-gray-400 text-center py-8">Loading today's signals...</div>
             </div>
         </section>
 
@@ -165,7 +176,7 @@
                     return;
                 }
                 
-                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?days=30');
+                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?days=365');
                 const stats = await response.json();
                 
                 const statsDiv = document.getElementById('modelStats');
@@ -208,7 +219,8 @@
                 `;
                 
                 const signalsDiv = document.getElementById('activeSignals');
-                const openSignals = stats.recent_signals.filter(s => s.status === 'OPEN');
+                const openSignals = stats.recent_signals.filter(s => s.status === 'OPEN' || s.status === 'active')
+                    .sort((a, b) => (b.signal_count || 1) - (a.signal_count || 1));
                 
                 if (openSignals.length === 0) {
                     signalsDiv.innerHTML = '<h2 class="text-2xl font-semibold mb-4">Active Signals</h2><div class="text-gray-400 text-center py-8">No active signals. Check back after market close.</div>';
@@ -216,8 +228,8 @@
                     signalsDiv.innerHTML = `
                         <h2 class="text-2xl font-semibold mb-4">Active Signals (${openSignals.length})</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            ${openSignals.map(s => `
-                                <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-4 hover:border-purple-500/60 transition">
+                            ${openSignals.map((s, idx) => `
+                                <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-4 hover:border-purple-500/60 transition cursor-pointer" onclick="toggleDetails('active-${idx}')">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="font-bold text-lg">${s.ticker || 'N/A'}</span>
                                         <div class="flex gap-2">
@@ -226,7 +238,7 @@
                                         </div>
                                     </div>
                                     <div class="text-xs text-gray-500 mb-2">
-                                        Signal: ${s.date || 'N/A'}
+                                        ${s.pattern ? `<span class="text-purple-400">${s.pattern.replace(/_/g, ' ')}</span> • ` : ''}${s.date || 'N/A'}
                                     </div>
                                     <div class="text-sm text-gray-300 mb-2">
                                         Entry: $${s.entry} → Target: $${s.target}
@@ -234,8 +246,16 @@
                                     <div class="text-xs text-gray-400">
                                         Upside: ${((s.target - s.entry) / s.entry * 100).toFixed(1)}% | Stop: $${s.stop_loss}
                                     </div>
-                                    <div class="text-xs text-purple-400 mt-2">
-                                        ${s.conviction >= 4 ? '⭐ VERY HIGH' : 'HIGH'} conviction
+                                    <div class="text-xs mt-2 ${(s.signal_count || 1) > 1 ? 'text-yellow-400 font-bold' : 'text-purple-400'}">
+                                        ${(s.signal_count || 1) > 1 ? `🔥 ${s.signal_count}x Confirmed` : (s.conviction >= 4 ? '⭐ VERY HIGH conviction' : 'HIGH conviction')}
+                                    </div>
+                                    <div id="active-${idx}" class="hidden mt-3 pt-3 border-t border-gray-700 text-xs space-y-1">
+                                        <div class="text-gray-400">Risk/Reward: <span class="text-white">${s.risk_reward || 'N/A'}:1</span></div>
+                                        ${s.source === 'Technical' && s.volume_surge ? `<div class="text-gray-400">Volume: <span class="text-white">${s.volume_surge}x avg</span></div>` : ''}
+                                        ${s.source === 'AI' && s.conviction ? `<div class="text-gray-400">Confidence: <span class="text-white">${(s.conviction * 20).toFixed(0)}%</span></div>` : ''}
+                                        ${s.resistance ? `<div class="text-gray-400">Resistance: <span class="text-white">$${s.resistance}</span></div>` : ''}
+                                        ${s.support ? `<div class="text-gray-400">Support: <span class="text-white">$${s.support}</span></div>` : ''}
+                                        <div class="text-gray-400">Detected: <span class="text-white">${s.detected_at ? new Date(s.detected_at).toLocaleString() : 'N/A'}</span></div>
                                     </div>
                                 </div>
                             `).join('')}
@@ -244,7 +264,8 @@
                 }
                 
                 // Closed signals
-                const closedSignals = stats.recent_signals.filter(s => s.status !== 'OPEN');
+                const closedSignals = stats.recent_signals.filter(s => s.status !== 'OPEN' && s.status !== 'active')
+                    .sort((a, b) => (b.signal_count || 1) - (a.signal_count || 1));
                 const closedDiv = document.getElementById('closedSignals');
                 
                 if (closedSignals.length === 0) {
@@ -253,11 +274,12 @@
                     closedDiv.innerHTML = `
                         <h2 class="text-2xl font-semibold mb-4">Recent Closed Signals (${closedSignals.length})</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            ${closedSignals.map(s => {
+                            ${closedSignals.map((s, idx) => {
                                 const isWin = s.outcome === 'WIN' || (s.return_pct && s.return_pct > 0);
                                 const returnPct = s.return_pct || 0;
+                                const confirmCount = s.signal_count || 1;
                                 return `
-                                <div class="bg-slate-800/50 border ${isWin ? 'border-green-500/30' : 'border-red-500/30'} rounded-lg p-4">
+                                <div class="bg-slate-800/50 border ${isWin ? 'border-green-500/30' : 'border-red-500/30'} rounded-lg p-4 cursor-pointer hover:border-opacity-60 transition" onclick="toggleDetails('closed-${idx}')">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="font-bold text-lg">${s.ticker || 'N/A'}</span>
                                         <div class="flex gap-2">
@@ -266,7 +288,7 @@
                                         </div>
                                     </div>
                                     <div class="text-xs text-gray-500 mb-2">
-                                        Signal: ${s.date || 'N/A'}
+                                        ${s.pattern ? `<span class="text-purple-400">${s.pattern.replace(/_/g, ' ')}</span> • ` : ''}${s.date || 'N/A'}${confirmCount > 1 ? ` • 🔥 ${confirmCount}x confirmed` : ''}
                                     </div>
                                     <div class="text-sm text-gray-300 mb-2">
                                         Entry: $${s.entry} → ${isWin ? 'Target' : 'Stop'}: $${isWin ? s.target : s.stop_loss}
@@ -276,6 +298,15 @@
                                     </div>
                                     <div class="text-xs text-gray-400 mt-1">
                                         ${s.days_held ? `Held ${s.days_held} days` : ''}
+                                    </div>
+                                    <div id="closed-${idx}" class="hidden mt-3 pt-3 border-t border-gray-700 text-xs space-y-1">
+                                        <div class="text-gray-400">Risk/Reward: <span class="text-white">${s.risk_reward || 'N/A'}:1</span></div>
+                                        ${s.source === 'Technical' && s.volume_surge ? `<div class="text-gray-400">Volume: <span class="text-white">${s.volume_surge}x avg</span></div>` : ''}
+                                        ${s.source === 'AI' && s.conviction ? `<div class="text-gray-400">Confidence: <span class="text-white">${(s.conviction * 20).toFixed(0)}%</span></div>` : ''}
+                                        ${s.resistance ? `<div class="text-gray-400">Resistance: <span class="text-white">$${s.resistance}</span></div>` : ''}
+                                        ${s.support ? `<div class="text-gray-400">Support: <span class="text-white">$${s.support}</span></div>` : ''}
+                                        <div class="text-gray-400">Closed: <span class="text-white">${s.closed_date || 'N/A'}</span></div>
+                                        <div class="text-gray-400">Outcome: <span class="text-white">${s.outcome || 'N/A'}</span></div>
                                     </div>
                                 </div>
                             `}).join('')}
@@ -324,6 +355,91 @@
 
         loadModelPerformance();
         loadBacktestData();
+        loadTodaySignals();
+        
+        async function loadTodaySignals() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await authenticatedFetch('https://xfi2u4ajm9.execute-api.us-east-1.amazonaws.com/prod/signal-stats?days=365');
+                const stats = await response.json();
+                
+                // Filter for today's signals only
+                const todaySignals = stats.recent_signals.filter(s => 
+                    s.date === today && (s.status === 'active' || s.status === 'OPEN')
+                ).sort((a, b) => (b.signal_count || 1) - (a.signal_count || 1));
+                
+                const todayDiv = document.getElementById('todaySignals');
+                
+                // Update scan time
+                if (todaySignals.length > 0) {
+                    const latestSignal = todaySignals[0];
+                    const scanTime = latestSignal.detected_at ? new Date(latestSignal.detected_at).toLocaleString() : 'Today';
+                    document.getElementById('scanTime').textContent = `Last scan: ${scanTime}`;
+                }
+                
+                if (todaySignals.length === 0) {
+                    todayDiv.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">🔥 Today's Fresh Signals</h2>
+                            <span class="text-sm text-gray-400">Last scan: ${new Date().toLocaleTimeString()}</span>
+                        </div>
+                        <div class="bg-slate-800/50 border border-gray-700 rounded-lg p-8 text-center">
+                            <p class="text-gray-400">No new signals today. Scanner runs after market close (4:00 PM ET).</p>
+                        </div>
+                    `;
+                } else {
+                    todayDiv.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">🔥 Today's Fresh Signals (${todaySignals.length})</h2>
+                            <span id="scanTime" class="text-sm text-gray-400">Last scan: ${new Date(todaySignals[0].detected_at).toLocaleString()}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${todaySignals.map((s, idx) => `
+                                <div class="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/50 rounded-lg p-4 hover:border-purple-500 transition cursor-pointer" onclick="toggleDetails('today-${idx}')">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-bold text-lg">${s.ticker || 'N/A'}</span>
+                                        <div class="flex gap-2">
+                                            <span class="px-2 py-1 rounded text-xs font-bold ${s.source === 'AI' ? 'bg-green-900/50 text-green-400' : 'bg-blue-900/50 text-blue-400'}">${s.source || 'Technical'}</span>
+                                            <span class="px-2 py-1 rounded text-xs font-bold bg-yellow-900/50 text-yellow-400">NEW</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-400 mb-2">
+                                        ${s.pattern ? `<span class="text-purple-300">${s.pattern.replace(/_/g, ' ')}</span> • ` : ''}Today
+                                    </div>
+                                    <div class="text-sm text-gray-200 mb-2">
+                                        Entry: $${s.entry} → Target: $${s.target}
+                                    </div>
+                                    <div class="text-xs text-gray-300">
+                                        Upside: ${((s.target - s.entry) / s.entry * 100).toFixed(1)}% | Stop: $${s.stop_loss}
+                                    </div>
+                                    <div class="text-xs mt-2 ${(s.signal_count || 1) > 1 ? 'text-yellow-300 font-bold' : 'text-purple-300'}">
+                                        ${(s.signal_count || 1) > 1 ? `🔥 ${s.signal_count}x Confirmed` : '⭐ Fresh signal'}
+                                    </div>
+                                    <div id="today-${idx}" class="hidden mt-3 pt-3 border-t border-purple-500/30 text-xs space-y-1">
+                                        <div class="text-gray-300">Risk/Reward: <span class="text-white">${s.risk_reward || 'N/A'}:1</span></div>
+                                        ${s.source === 'Technical' && s.volume_surge ? `<div class="text-gray-300">Volume: <span class="text-white">${s.volume_surge}x avg</span></div>` : ''}
+                                        ${s.source === 'AI' && s.conviction ? `<div class="text-gray-300">Confidence: <span class="text-white">${(s.conviction * 20).toFixed(0)}%</span></div>` : ''}
+                                        ${s.resistance ? `<div class="text-gray-300">Resistance: <span class="text-white">$${s.resistance}</span></div>` : ''}
+                                        ${s.support ? `<div class="text-gray-300">Support: <span class="text-white">$${s.support}</span></div>` : ''}
+                                        <div class="text-gray-300">Detected: <span class="text-white">${s.detected_at ? new Date(s.detected_at).toLocaleString() : 'N/A'}</span></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading today signals:', error);
+                document.getElementById('todaySignals').innerHTML = '<div class="text-gray-400 text-center py-8">Unable to load today\'s signals</div>';
+            }
+        }
+        
+        function toggleDetails(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.toggle('hidden');
+            }
+        }
     </script>
 </body>
 </html>
