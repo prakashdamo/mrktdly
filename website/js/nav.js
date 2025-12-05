@@ -24,8 +24,9 @@ function renderNav(activePage = '') {
                         <a href="/dashboard.html" class="px-4 py-2 rounded-lg ${activePage === 'dashboard' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Dashboard</a>
                         <a href="/market-insights.html" class="px-4 py-2 rounded-lg ${activePage === 'market-insights' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Market Intelligence</a>
                         <a href="/portfolio.html" class="px-4 py-2 rounded-lg ${activePage === 'portfolio' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Portfolio</a>
-                        <a href="/swing-scanner.html" class="px-4 py-2 rounded-lg ${activePage === 'swing-scanner' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Swing Scanner</a>
                         <a href="/performance.html" class="px-4 py-2 rounded-lg ${activePage === 'performance' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Performance</a>
+                        <a href="/tools.html" class="px-4 py-2 rounded-lg ${activePage === 'tools' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Tools</a>
+                        <a href="/blog.html" class="px-4 py-2 rounded-lg ${activePage === 'blog' ? 'bg-slate-800 text-white' : 'text-gray-400 hover:text-white hover:bg-slate-800/50'} transition">Blog</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
