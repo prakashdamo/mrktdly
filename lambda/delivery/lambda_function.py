@@ -9,7 +9,6 @@ ses = boto3.client('ses', region_name='us-east-1')
 table = dynamodb.Table('mrktdly-data')
 waitlist_table = dynamodb.Table('mrktdly-waitlist')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
-predictions_table = dynamodb.Table('mrktdly-predictions')
 subscriptions_table = dynamodb.Table('mrktdly-subscriptions')
 
 def lambda_handler(event, context):
@@ -45,36 +44,26 @@ def lambda_handler(event, context):
             print(f"Error fetching analysis: {e}")
             return {'statusCode': 404, 'body': json.dumps(f'Error: {str(e)}')}
     
-    # Fetch swing signals - try today first, then most recent
-    swing_signals = []
+    # Fetch all active signals from unified swing-signals table
+    all_signals = []
     try:
-        swing_response = swing_signals_table.query(
-            KeyConditionExpression=Key('date').eq(date_key)
+        # Get active signals
+        scan_response = swing_signals_table.scan(
+            FilterExpression='#s = :status',
+            ExpressionAttributeNames={'#s': 'status'},
+            ExpressionAttributeValues={':status': 'active'}
         )
-        swing_signals = swing_response.get('Items', [])
+        all_signals = scan_response.get('Items', [])
         
-        # If no signals today, get most recent
-        if not swing_signals:
-            # Scan for most recent date
-            scan_response = swing_signals_table.scan(Limit=100)
-            if scan_response['Items']:
-                # Group by date and get most recent
-                from collections import defaultdict
-                by_date = defaultdict(list)
-                for item in scan_response['Items']:
-                    by_date[item['date']].append(item)
-                
-                most_recent_date = max(by_date.keys())
-                swing_signals = by_date[most_recent_date]
-                print(f"Using swing signals from {most_recent_date}")
+        # Sort by confirmation count (desc), then risk/reward (desc)
+        all_signals.sort(key=lambda x: (
+            -float(x.get('signal_count', 1)),
+            -float(x.get('risk_reward', 0))
+        ))
         
-        # Sort by risk/reward descending
-        swing_signals.sort(key=lambda x: float(x.get('risk_reward', 0)), reverse=True)
-        # Take top 10
-        swing_signals = swing_signals[:10]
-        print(f"Retrieved {len(swing_signals)} swing signals")
+        print(f"Retrieved {len(all_signals)} active signals (Technical + AI)")
     except Exception as e:
-        print(f"Error fetching swing signals: {e}")
+        print(f"Error fetching signals: {e}")
         # Continue without signals
     
     # Get waitlist emails
@@ -83,21 +72,6 @@ def lambda_handler(event, context):
     
     if not emails:
         return {'statusCode': 200, 'body': json.dumps('No subscribers yet')}
-    
-    # Fetch ML predictions (always use current date for predictions)
-    ml_predictions = []
-    current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    try:
-        print(f'Querying predictions for date: {current_date}')
-        pred_response = predictions_table.query(
-            KeyConditionExpression=Key('date').eq(current_date)
-        )
-        ml_predictions = pred_response.get('Items', [])
-        print(f'Query returned {len(ml_predictions)} items')
-        ml_predictions.sort(key=lambda x: float(x.get('probability', 0)), reverse=True)
-        ml_predictions = ml_predictions[:10]  # Top 10
-        print(f"Retrieved {len(ml_predictions)} ML predictions")
-    except Exception as e:
         print(f"Error fetching predictions: {e}")
     
     # Send emails based on subscription tier
@@ -115,24 +89,23 @@ def lambda_handler(event, context):
             if tier == 'basic':
                 if not is_morning:  # Evening only
                     # Limit to 10 signals for basic tier
-                    limited_swing = swing_signals[:10] if len(swing_signals) > 10 else swing_signals
-                    limited_ml = ml_predictions[:10] if len(ml_predictions) > 10 else ml_predictions
-                    send_email(email, analysis, limited_swing, limited_ml, date_key)
+                    limited_signals = all_signals[:10]
+                    send_email(email, analysis, limited_signals, date_key)
                     sent_count += 1
                 else:
                     print(f'Skipping morning email for basic user: {email}')
             elif tier == 'pro':
-                send_email(email, analysis, swing_signals, ml_predictions, date_key)
+                send_email(email, analysis, all_signals, date_key)
                 sent_count += 1
             else:
-                send_email(email, analysis, [], [], date_key)  # No signals for free
+                send_email(email, analysis, [], date_key)  # No signals for free
                 sent_count += 1
         except Exception as e:
             print(f'Failed to send to {email}: {e}')
     
     return {'statusCode': 200, 'body': json.dumps(f'Sent to {sent_count} subscribers')}
 
-def send_email(email, analysis, swing_signals, ml_predictions, date_key):
+def send_email(email, analysis, signals, date_key):
     """Send educational market analysis email"""
     
     date_str = datetime.strptime(date_key, '%Y-%m-%d').strftime('%B %d, %Y')
@@ -174,87 +147,56 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
                 f'<p style="color: #f3f4f6; margin: 8px 0 0; font-size: 15px;">{item.get("note", "")}</p></div>'
             )
     
-    # Combine and deduplicate signals
+    # Build signals from unified table (already has Technical + AI)
     combined_signals = []
-    seen_tickers = set()
     
-    # Add swing signals first (they have better entry/exit data)
-    for signal in swing_signals:
+    for signal in signals:
         ticker = signal.get('ticker', '')
-        if ticker not in seen_tickers:
-            pattern_name = signal.get('pattern', '').replace('_', ' ').title()
-            entry = float(signal.get('entry', 0))
-            support = float(signal.get('support', 0))
-            target = float(signal.get('target', 0))
-            rr = float(signal.get('risk_reward', 0))
-            volume_surge = float(signal.get('volume_surge', 0))
-            historical_wr = signal.get('historical_win_rate', 0)
-            
-            # Signal repetition data
-            signal_count = int(signal.get('signal_count', 1))
-            last_seen = signal.get('last_seen', signal.get('date'))
-            confirmation_dates = signal.get('confirmation_dates', [])
-            
-            # Pattern-specific reasoning
-            if signal.get('pattern') == 'ma20_pullback':
-                reason = f"Oversold bounce at 20-day MA support"
-            elif signal.get('pattern') == 'reversal_after_decline':
-                reason = f"Strong reversal after 3+ down days with volume"
-            elif signal.get('pattern') == 'gap_up_hold':
-                reason = f"Gap up holding for 2+ days"
-            elif signal.get('pattern') == 'consolidation_breakout':
-                reason = f"Breaking out of consolidation with {int(volume_surge * 100)}% volume"
-            elif signal.get('pattern') == 'bull_flag':
-                reason = f"Bull flag pattern with {int(volume_surge * 100)}% volume"
-            else:
-                reason = f"Technical breakout with {int(volume_surge * 100)}% volume"
-            
-            wr_text = f" • {float(historical_wr):.0f}% historical win rate" if historical_wr else ""
-            
-            # Add confirmation badge if signal repeated
-            confirmation_text = ""
-            if signal_count > 1:
-                confirmation_text = f" • 🔥 <strong>{signal_count}x Confirmed</strong>"
-            
-            combined_signals.append({
-                'ticker': ticker,
-                'entry': entry,
-                'stop': support,
-                'target': target,
-                'rr': rr,
-                'pattern': pattern_name,
-                'reason': reason + wr_text + confirmation_text,
-                'source': 'Technical'
-            })
-            seen_tickers.add(ticker)
-    
-    # Add ML predictions that aren't duplicates
-    for pred in ml_predictions:
-        ticker = pred.get('ticker', '')
-        if ticker not in seen_tickers:
-            price = float(pred.get('price', 0))
-            probability = float(pred.get('probability', 0))
-            
-            # Calculate entry/exit based on 3% move prediction
-            entry = price
-            target = price * 1.03  # 3% target
-            stop = price * 0.97    # 3% stop
-            rr = 1.0
-            
-            combined_signals.append({
-                'ticker': ticker,
-                'entry': entry,
-                'stop': stop,
-                'target': target,
-                'rr': rr,
-                'pattern': 'AI Prediction',
-                'reason': f"{probability*100:.0f}% probability of 3%+ move in 5 days",
-                'source': 'AI'
-            })
-            seen_tickers.add(ticker)
-    
-    # Sort by risk/reward
-    combined_signals.sort(key=lambda x: x['rr'], reverse=True)
+        source = signal.get('source', 'Technical')
+        pattern_name = signal.get('pattern', '').replace('_', ' ').title()
+        entry = float(signal.get('entry', 0))
+        support = float(signal.get('support', 0))
+        target = float(signal.get('target', 0))
+        rr = float(signal.get('risk_reward', 0))
+        volume_surge = float(signal.get('volume_surge', 0))
+        historical_wr = signal.get('historical_win_rate', 0)
+        
+        # Signal repetition data
+        signal_count = int(signal.get('signal_count', 1))
+        
+        # Pattern-specific reasoning
+        if source == 'AI':
+            reason = f"AI prediction with {signal_count}x confirmation" if signal_count > 1 else "AI prediction"
+        elif signal.get('pattern') == 'ma20_pullback':
+            reason = f"Oversold bounce at 20-day MA support"
+        elif signal.get('pattern') == 'reversal_after_decline':
+            reason = f"Strong reversal after 3+ down days with volume"
+        elif signal.get('pattern') == 'gap_up_hold':
+            reason = f"Gap up holding for 2+ days"
+        elif signal.get('pattern') == 'consolidation_breakout':
+            reason = f"Breaking out of consolidation with {int(volume_surge * 100)}% volume"
+        elif signal.get('pattern') == 'bull_flag':
+            reason = f"Bull flag pattern with {int(volume_surge * 100)}% volume"
+        else:
+            reason = f"Technical breakout with {int(volume_surge * 100)}% volume"
+        
+        wr_text = f" • {float(historical_wr):.0f}% historical win rate" if historical_wr else ""
+        
+        # Add confirmation badge if signal repeated
+        confirmation_text = ""
+        if signal_count > 1:
+            confirmation_text = f" • 🔥 <strong>{signal_count}x Confirmed</strong>"
+        
+        combined_signals.append({
+            'ticker': ticker,
+            'entry': entry,
+            'stop': support,
+            'target': target,
+            'rr': rr,
+            'pattern': pattern_name,
+            'reason': reason + wr_text + confirmation_text,
+            'source': source
+        })
     
     # Build unified signals HTML
     signals_html = ''
