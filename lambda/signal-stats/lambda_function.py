@@ -17,7 +17,7 @@ def lambda_handler(event, context):
     
     headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
         'Access-Control-Allow-Methods': 'GET,OPTIONS',
         'Content-Type': 'application/json'
     }
@@ -119,6 +119,7 @@ def calculate_stats(signals, ticker):
     for s in recent:
         try:
             conviction = float(s.get('conviction', 3.0)) if isinstance(s.get('conviction'), (int, float, Decimal)) else 3.0
+            signal_count = int(s.get('signal_count', 1)) if s.get('signal_count') else 1
             recent_signals.append({
                 'ticker': s['ticker'],
                 'date': s.get('date', s.get('signal_date')),
@@ -131,7 +132,8 @@ def calculate_stats(signals, ticker):
                 'return_pct': float(s['return_pct']) if s.get('return_pct') else None,
                 'days_held': float(s['days_held']) if s.get('days_held') else None,
                 'conviction': conviction,
-                'source': s.get('source', 'Technical')
+                'source': s.get('source', 'Technical'),
+                'signal_count': signal_count
             })
         except Exception as e:
             print(f"Error processing signal: {e}")
