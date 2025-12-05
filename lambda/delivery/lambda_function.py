@@ -190,6 +190,11 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
             volume_surge = float(signal.get('volume_surge', 0))
             historical_wr = signal.get('historical_win_rate', 0)
             
+            # Signal repetition data
+            signal_count = int(signal.get('signal_count', 1))
+            last_seen = signal.get('last_seen', signal.get('date'))
+            confirmation_dates = signal.get('confirmation_dates', [])
+            
             # Pattern-specific reasoning
             if signal.get('pattern') == 'ma20_pullback':
                 reason = f"Oversold bounce at 20-day MA support"
@@ -206,6 +211,11 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
             
             wr_text = f" • {float(historical_wr):.0f}% historical win rate" if historical_wr else ""
             
+            # Add confirmation badge if signal repeated
+            confirmation_text = ""
+            if signal_count > 1:
+                confirmation_text = f" • 🔥 <strong>{signal_count}x Confirmed</strong>"
+            
             combined_signals.append({
                 'ticker': ticker,
                 'entry': entry,
@@ -213,7 +223,7 @@ def send_email(email, analysis, swing_signals, ml_predictions, date_key):
                 'target': target,
                 'rr': rr,
                 'pattern': pattern_name,
-                'reason': reason + wr_text,
+                'reason': reason + wr_text + confirmation_text,
                 'source': 'Technical'
             })
             seen_tickers.add(ticker)
