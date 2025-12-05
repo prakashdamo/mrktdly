@@ -5,7 +5,7 @@ from boto3.dynamodb.conditions import Key
 from datetime import datetime, timedelta
 
 dynamodb = boto3.resource('dynamodb')
-signals_table = dynamodb.Table('mrktdly-signal-performance')
+signals_table = dynamodb.Table('mrktdly-swing-signals')
 
 def decimal_to_float(obj):
     if isinstance(obj, Decimal):
@@ -52,8 +52,10 @@ def get_ticker_stats(ticker, days):
     
     cutoff_date = (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d')
     
-    response = signals_table.query(
-        KeyConditionExpression=Key('ticker').eq(ticker) & Key('signal_date').gte(cutoff_date)
+    response = signals_table.scan(
+        FilterExpression='ticker = :ticker AND #d >= :cutoff',
+        ExpressionAttributeNames={'#d': 'date'},
+        ExpressionAttributeValues={':ticker': ticker, ':cutoff': cutoff_date}
     )
     
     signals = response['Items']
@@ -85,7 +87,8 @@ def calculate_stats(signals, ticker):
             'recent_signals': []
         }
     
-    closed_signals = [s for s in signals if s.get('status') in ['CLOSED', 'EXPIRED', 'WIN', 'LOSS']]
+    # swing-signals uses 'active' status, not 'OPEN'
+    closed_signals = [s for s in signals if s.get('status') in ['CLOSED', 'EXPIRED', 'WIN', 'LOSS', 'closed']]
     wins = [s for s in closed_signals if s.get('outcome') in ['WIN', 'EXPIRED'] and s.get('return_pct') and float(s['return_pct']) > 0]
     losses = [s for s in closed_signals if s not in wins]
     
@@ -110,7 +113,7 @@ def calculate_stats(signals, ticker):
     technical_win_rate = (len(technical_wins) / len(technical_signals) * 100) if technical_signals else 0
     ai_win_rate = (len(ai_wins) / len(ai_signals) * 100) if ai_signals else 0
     
-    # Get recent signals (last 200)
+    # Get recent signals (last 200) - use 'active' status for open signals
     recent = sorted(signals, key=lambda x: x.get('date', x.get('signal_date', '')), reverse=True)[:200]
     recent_signals = []
     for s in recent:
@@ -122,8 +125,8 @@ def calculate_stats(signals, ticker):
                 'action': s.get('action', 'BUY'),
                 'entry': float(s['entry']),
                 'target': float(s['target']),
-                'stop_loss': float(s['stop_loss']),
-                'status': s.get('status', 'OPEN'),
+                'stop_loss': float(s.get('stop_loss', s.get('support', 0))),
+                'status': 'OPEN' if s.get('status') == 'active' else s.get('status', 'OPEN'),
                 'outcome': s.get('outcome'),
                 'return_pct': float(s['return_pct']) if s.get('return_pct') else None,
                 'days_held': float(s['days_held']) if s.get('days_held') else None,
@@ -137,7 +140,7 @@ def calculate_stats(signals, ticker):
     return {
         'ticker': ticker,
         'total_signals': len(signals),
-        'open_signals': len([s for s in signals if s.get('status') == 'OPEN']),
+        'open_signals': len([s for s in signals if s.get('status') == 'active']),
         'closed_signals': total_closed,
         'win_count': win_count,
         'loss_count': loss_count,

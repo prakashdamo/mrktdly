@@ -59,3 +59,4 @@ Thumbs.db
 # Test outputs
 test_output/
 *.test
+website/tailwindcss-linux-x64

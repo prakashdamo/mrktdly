@@ -6,40 +6,32 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
-signals_table = dynamodb.Table('mrktdly-signal-performance')
 swing_signals_table = dynamodb.Table('mrktdly-swing-signals')
 predictions_table = dynamodb.Table('mrktdly-predictions')
 price_table = dynamodb.Table('mrktdly-price-history')
 
 def lambda_handler(event, context):
-    """Track both swing signals and AI predictions for performance verification"""
+    """Track both swing signals and AI predictions in unified swing-signals table"""
     
     try:
         # Get today's date
         today = datetime.utcnow().strftime('%Y-%m-%d')
         
-        # Track swing signals
-        swing_response = swing_signals_table.query(
-            KeyConditionExpression=Key('date').eq(today)
-        )
-        for signal in swing_response.get('Items', []):
-            track_swing_signal(signal, today)
-        
-        # Track AI predictions
+        # Track AI predictions - copy to swing-signals table
         pred_response = predictions_table.query(
             KeyConditionExpression=Key('date').eq(today)
         )
         for pred in pred_response.get('Items', []):
             track_ai_prediction(pred, today)
         
-        # Evaluate open signals
+        # Evaluate all open signals (both technical and AI)
         evaluate_open_signals()
         
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'swing_signals_tracked': len(swing_response.get('Items', [])),
-                'ai_predictions_tracked': len(pred_response.get('Items', []))
+                'ai_predictions_tracked': len(pred_response.get('Items', [])),
+                'message': 'Unified tracking in swing-signals table'
             })
         }
         
@@ -47,80 +39,48 @@ def lambda_handler(event, context):
         print(f'Error in signal tracker: {e}')
         return {'statusCode': 500, 'body': json.dumps({'error': str(e)})}
 
-def track_swing_signal(signal, date):
-    """Track a swing signal"""
-    try:
-        entry = float(signal.get('entry', 0))
-        target = float(signal.get('target', 0))
-        stop = float(signal.get('support', 0))
-        
-        item = {
-            'ticker': signal['ticker'],
-            'signal_date': date,  # Required sort key
-            'date': date,
-            'action': 'BUY',
-            'entry': Decimal(str(entry)),
-            'target': Decimal(str(target)),
-            'stop_loss': Decimal(str(stop)),
-            'conviction': Decimal('3.0'),
-            'status': 'OPEN',
-            'source': 'Technical',
-            'pattern': signal.get('pattern', ''),
-            'risk_reward': Decimal(str(signal.get('risk_reward', 0)))
-        }
-        
-        signals_table.put_item(
-            Item=item,
-            ConditionExpression='attribute_not_exists(ticker) AND attribute_not_exists(signal_date)'
-        )
-        print(f'Tracked swing signal: {signal["ticker"]}')
-    except ClientError as e:
-        if e.response['Error']['Code'] != 'ConditionalCheckFailedException':
-            print(f'Error tracking swing signal {signal.get("ticker")}: {e}')
-    except Exception as e:
-        print(f'Error tracking swing signal {signal.get("ticker")}: {e}')
-
 def track_ai_prediction(pred, date):
-    """Track an AI prediction"""
+    """Track an AI prediction in swing-signals table"""
     try:
+        ticker = pred['ticker']
+        
+        # Check if already exists
+        existing = swing_signals_table.get_item(Key={'ticker': ticker, 'date': date})
+        if 'Item' in existing:
+            print(f'AI prediction already tracked: {ticker}')
+            return
+            
         price = float(pred.get('price', 0))
         entry = price
         target = price * 1.03  # 3% target
         stop = price * 0.97    # 3% stop
         
         item = {
-            'ticker': pred['ticker'],
-            'signal_date': date,  # Required sort key
+            'ticker': ticker,
             'date': date,
-            'action': 'BUY',
             'entry': Decimal(str(entry)),
             'target': Decimal(str(target)),
-            'stop_loss': Decimal(str(stop)),
-            'conviction': Decimal(str(float(pred.get('probability', 0)) * 5)),  # Scale to 0-5
-            'status': 'OPEN',
+            'support': Decimal(str(stop)),
+            'resistance': Decimal(str(target)),
+            'status': 'active',
             'source': 'AI',
             'pattern': 'ai_prediction',
             'risk_reward': Decimal('1.0'),
-            'probability': Decimal(str(pred.get('probability', 0)))
+            'conviction': Decimal(str(float(pred.get('probability', 0)) * 5)),  # Scale to 0-5
+            'detected_at': f"{date}T12:00:00"
         }
         
-        signals_table.put_item(
-            Item=item,
-            ConditionExpression='attribute_not_exists(ticker) AND attribute_not_exists(signal_date)'
-        )
-        print(f'Tracked AI prediction: {pred["ticker"]}')
-    except ClientError as e:
-        if e.response['Error']['Code'] != 'ConditionalCheckFailedException':
-            print(f'Error tracking AI prediction {pred.get("ticker")}: {e}')
+        swing_signals_table.put_item(Item=item)
+        print(f'Tracked AI prediction: {ticker}')
     except Exception as e:
         print(f'Error tracking AI prediction {pred.get("ticker")}: {e}')
 
 def evaluate_open_signals():
     """Evaluate all open signals"""
-    response = signals_table.scan(
+    response = swing_signals_table.scan(
         FilterExpression='#s = :status',
         ExpressionAttributeNames={'#s': 'status'},
-        ExpressionAttributeValues={':status': 'OPEN'}
+        ExpressionAttributeValues={':status': 'active'}
     )
     
     for signal in response.get('Items', []):
@@ -133,7 +93,7 @@ def check_signal_outcome(signal):
         signal_date = signal['date']
         entry = float(signal['entry'])
         target = float(signal['target'])
-        stop = float(signal['stop_loss'])
+        stop = float(signal.get('stop_loss', signal.get('support', 0)))
         
         # Get price history since signal date
         end_date = datetime.utcnow().strftime('%Y-%m-%d')
@@ -177,12 +137,12 @@ def check_signal_outcome(signal):
 def update_signal(signal, outcome, return_pct, close_date, days_held):
     """Update signal with outcome"""
     try:
-        signals_table.update_item(
+        swing_signals_table.update_item(
             Key={'ticker': signal['ticker'], 'date': signal['date']},
             UpdateExpression='SET #s = :status, outcome = :outcome, return_pct = :ret, closed_date = :closed, days_held = :days',
             ExpressionAttributeNames={'#s': 'status'},
             ExpressionAttributeValues={
-                ':status': 'CLOSED',
+                ':status': 'closed',
                 ':outcome': outcome,
                 ':ret': Decimal(str(return_pct)),
                 ':closed': close_date,
