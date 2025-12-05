@@ -29,12 +29,12 @@
                 <div class="text-xs text-gray-400 mt-1">All-time</div>
             </div>
             <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30 rounded-xl p-6">
-                <div class="text-blue-400 text-sm mb-1">Active Signals</div>
+                <div class="text-blue-400 text-sm mb-1">Active Patterns</div>
                 <div id="activeCount" class="text-3xl font-bold">--</div>
                 <div class="text-xs text-gray-400 mt-1">Monitoring</div>
             </div>
             <div class="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-500/30 rounded-xl p-6">
-                <div class="text-purple-400 text-sm mb-1">Today's Signals</div>
+                <div class="text-purple-400 text-sm mb-1">Today's Patterns</div>
                 <div id="todayCount" class="text-3xl font-bold">--</div>
                 <div class="text-xs text-gray-400 mt-1">Fresh</div>
             </div>
@@ -91,10 +91,10 @@
             <!-- Performance -->
             <a href="/performance.html" class="group bg-gradient-to-br from-slate-800/70 to-slate-800/40 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-700/40 hover:border-yellow-500/50 transition-all duration-300 hover:scale-105">
                 <div class="text-5xl mb-4">📈</div>
-                <h2 class="text-2xl font-bold mb-3 group-hover:text-yellow-400 transition">Performance & Signals</h2>
-                <p class="text-gray-400 mb-4">Today's fresh signals, active positions, and historical performance tracking</p>
+                <h2 class="text-2xl font-bold mb-3 group-hover:text-yellow-400 transition">Performance & Patterns</h2>
+                <p class="text-gray-400 mb-4">Today's fresh patterns, active positions, and historical performance tracking</p>
                 <div class="flex items-center text-yellow-400 font-semibold">
-                    View Signals
+                    View Patterns
                     <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
@@ -144,7 +144,7 @@
                 document.getElementById('activeCount').textContent = stats.open_signals || 0;
                 document.getElementById('expectancy').textContent = '+' + stats.expectancy + '%';
                 
-                // Count today's signals
+                // Count today's patterns
                 const today = new Date().toISOString().split('T')[0];
                 const todaySignals = stats.recent_signals.filter(s => 
                     s.date === today && (s.status === 'active' || s.status === 'OPEN')
